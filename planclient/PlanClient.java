@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import planClient.Strategy.*;
 import planClient.Heuristic.*;
+import planclient.Node;
 
 public class PlanClient {
 	public Node initialState;
