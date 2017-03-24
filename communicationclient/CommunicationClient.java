@@ -107,9 +107,9 @@ public class CommunicationClient {
      */
     public static void main( String[] args ) {
 
-        System.err.println("*-----------------------------*");
-        System.err.println("| CommunicationClient started |");
-        System.err.println("*-----------------------------*");
+        System.err.println("*--------------------------------------*");
+        System.err.println("|     CommunicationClient started      |");
+        System.err.println("*--------------------------------------*");
 
         try {
             CommunicationClient client = new CommunicationClient();
