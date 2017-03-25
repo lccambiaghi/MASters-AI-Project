@@ -7,6 +7,8 @@ public class CommunicationClient {
 
     public class Agent {
         private MsgHub _msgHub;
+        private String _color;
+        private char _id;
 
         /**
          * Agent constructor
@@ -17,6 +19,8 @@ public class CommunicationClient {
         public Agent(char id, String color, MsgHub msgHub) {
             System.err.println("Agent " + id + " with color " + color + " created");
             _msgHub = msgHub;
+            _color = color;
+            _id = id;
         }
 
         /**
@@ -105,7 +109,7 @@ public class CommunicationClient {
      * Starts the client and runs a infinit loop until
      * client returns false
      */
-    public static void main( String[] args ) {
+    public static void main(String[] args) {
 
         System.err.println("*--------------------------------------*");
         System.err.println("|     CommunicationClient started      |");
@@ -113,9 +117,9 @@ public class CommunicationClient {
 
         try {
             CommunicationClient client = new CommunicationClient();
-            while ( client.update() ) {};
+            while (client.update()) {};
 
-        } catch ( IOException e ) {
+        } catch (IOException e) {
             // Got nowhere to write to probably
             System.err.println("Could not run the client");
         }
