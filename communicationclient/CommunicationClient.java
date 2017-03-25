@@ -2,6 +2,7 @@ package communicationclient;
 
 import java.io.*;
 import java.util.*;
+import communicationclient.Strategy.*;
 
 public class CommunicationClient {
 
@@ -9,6 +10,7 @@ public class CommunicationClient {
         private MsgHub _msgHub;
         private String _color;
         private char _id;
+        private Strategy _strategy;
 
         /**
          * Agent constructor
@@ -16,11 +18,12 @@ public class CommunicationClient {
          * @param color : Agent color
          * @param msghub : shared instance of msghub
          */
-        public Agent(char id, String color, MsgHub msgHub) {
-            System.err.println("Agent " + id + " with color " + color + " created");
+        public Agent(char id, String color, MsgHub msgHub, Strategy strategy) {
+            System.err.println("Agent " + id + " with color " + color + " using strategy " + strategy.toString() + " created");
             _msgHub = msgHub;
             _color = color;
             _id = id;
+            _strategy = strategy;
         }
 
         /**
@@ -35,14 +38,14 @@ public class CommunicationClient {
          * Posts msgs to the msgHub
          */
         private void postMsg() {
-
+            System.err.println("~~ Agent: " + _id + " posted an msg");
         }
 
         /**
          * Reads msgs from the msgHub
          */
         private void readMsg() {
-
+            System.err.println("~~ Agent: " + _id + " read an msg");
         }
     }
 
@@ -50,15 +53,15 @@ public class CommunicationClient {
     private List<Agent> agents = new ArrayList< Agent >();
     private MsgHub msgHub = new MsgHub();
 
-    public CommunicationClient() throws IOException {
-        readMap();
+    public CommunicationClient(Strategy strategy) throws IOException {
+        readMap(strategy);
     }
 
     /**
      * Reads the map into memory and creates agents with the
      * shared instance of the msgHub
      */
-    private void readMap() throws IOException {
+    private void readMap(Strategy strategy) throws IOException {
         Map<Character, String> colors = new HashMap<Character, String>();
         String line, color;
 
@@ -76,7 +79,7 @@ public class CommunicationClient {
             for (int i = 0; i < line.length(); i++) {
                 char id = line.charAt(i);
                 if ('0' <= id && id <= '9')
-                    agents.add(new Agent(id, colors.get(id), msgHub));
+                    agents.add(new Agent(id, colors.get(id), msgHub, strategy));
             }
 
             line = in.readLine();
@@ -110,13 +113,13 @@ public class CommunicationClient {
      * client returns false
      */
     public static void main(String[] args) {
-
+        Strategy strategyBFS = new StrategyBFS();
         System.err.println("*--------------------------------------*");
         System.err.println("|     CommunicationClient started      |");
         System.err.println("*--------------------------------------*");
 
         try {
-            CommunicationClient client = new CommunicationClient();
+            CommunicationClient client = new CommunicationClient(strategyBFS);
             while (client.update()) {};
 
         } catch (IOException e) {
