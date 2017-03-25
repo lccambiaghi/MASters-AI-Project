@@ -11,6 +11,7 @@ public class CommunicationClient {
         private String _color;
         private char _id;
         private Strategy _strategy;
+        private Node _initialState;
 
         /**
          * Agent constructor
@@ -18,12 +19,18 @@ public class CommunicationClient {
          * @param color : Agent color
          * @param msghub : shared instance of msghub
          */
-        public Agent(char id, String color, MsgHub msgHub, Strategy strategy) {
+        public Agent(char id, String color, MsgHub msgHub, Strategy strategy, BufferedReader serverMessages) {
             System.err.println("Agent " + id + " with color " + color + " using strategy " + strategy.toString() + " created");
             _msgHub = msgHub;
             _color = color;
             _id = id;
             _strategy = strategy;
+        
+            try {
+                setUpInitialState(serverMessages);
+            } catch (IOException e) {
+                System.err.println("Could not create agent");
+            }
         }
 
         /**
@@ -32,6 +39,59 @@ public class CommunicationClient {
          */
         public String act() {
             return "Stub commands";
+        }
+
+        private char getId() {
+            return _id;
+        }
+
+        private Node getInitialState() {
+            return _initialState;
+        }
+
+        private void setInitialState(Node state) {
+            _initialState = state;
+        }
+
+        private void setUpInitialState(BufferedReader serverMessages) throws IOException {
+            String line;
+
+            // Skip lines specifying colors
+            while ((line = in.readLine()).matches("^[a-z]+:\\s*[0-9A-Z](,\\s*[0-9A-Z])*\\s*$")) { }
+
+            int row = 0;
+            boolean agentFound = false;
+            setInitialState(new Node(null));
+
+            // Read lines specifying level layout
+            while (!line.equals("")) {
+                for (int col = 0; col < line.length(); col++) {
+                    char chr = line.charAt(col);
+
+                    if (chr == '+') { // Wall.
+                        getInitialState().walls[row][col] = true;
+                    } else if ('A' <= chr && chr <= 'Z') { // Box.
+                        getInitialState().boxes[row][col] = chr;
+                    } else if ('a' <= chr && chr <= 'z') { // Goal.
+                        getInitialState().goals[row][col] = chr;
+                    } else if (chr == ' ') {
+                        // Free space.
+                    } else if (chr == getId()) { // Agent.
+                        if (agentFound) {
+                            // other agents are considered walls
+                            getInitialState().walls[row][col] = true;
+                        } else {
+                            System.err.println("Error, read invalid level character: " + (int) chr);
+                            System.exit(1);
+                        }
+                        agentFound = true;
+                        getInitialState().agentRow = row;
+                        getInitialState().agentCol = col;
+                    }
+                }
+                line = serverMessages.readLine();
+                row++;
+            }
         }
 
         /**
@@ -49,7 +109,7 @@ public class CommunicationClient {
         }
     }
 
-    private BufferedReader in = new BufferedReader(new InputStreamReader( System.in));
+    private BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
     private List<Agent> agents = new ArrayList< Agent >();
     private MsgHub msgHub = new MsgHub();
 
@@ -78,8 +138,9 @@ public class CommunicationClient {
         while (!line.equals("")) {
             for (int i = 0; i < line.length(); i++) {
                 char id = line.charAt(i);
-                if ('0' <= id && id <= '9')
-                    agents.add(new Agent(id, colors.get(id), msgHub, strategy));
+                if ('0' <= id && id <= '9') {
+                    agents.add(new Agent(id, colors.get(id), msgHub, strategy, in));
+                }
             }
 
             line = in.readLine();
@@ -123,7 +184,6 @@ public class CommunicationClient {
             while (client.update()) {};
 
         } catch (IOException e) {
-            // Got nowhere to write to probably
             System.err.println("Could not run the client");
         }
     }
