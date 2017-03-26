@@ -15,6 +15,7 @@ public class CommunicationClient {
 
         /**
          * Agent constructor
+         * Sets up the initial state for the agent
          * @param id : Agent id
          * @param color : Agent color
          * @param msghub : shared instance of msghub
@@ -25,24 +26,56 @@ public class CommunicationClient {
             _color = color;
             _id = id;
             _strategy = strategy;
-        
+            BufferedReader serverMessagesCopy = serverMessages;
             try {
-                setUpInitialState(serverMessages);
+                setUpInitialState(serverMessagesCopy);
             } catch (IOException e) {
-                System.err.println("Could not create agent");
+                System.err.println("Could not set up inital state for agent " + id);
             }
         }
 
         /**
-         * Logic for agent actions
-         * @return string with commands for agent
+         * Search for solution for agent
+         * @return LinkedList with nodes for agent
          */
-        public String act() {
-            return "Stub commands";
+        public LinkedList<Node> search() throws IOException {
+            Strategy strategy = getStrategy();
+            System.err.println("Agent " + getId() + " started search with strategy " + strategy.toString());
+            strategy.addToFrontier(getInitialState());
+
+            int iterations = 0;
+            while (true) {
+                if (iterations == 1000) {
+                    System.err.println(strategy.searchStatus());
+                    iterations = 0;
+                }
+
+                if (strategy.frontierIsEmpty()) {
+                    return null;
+                }
+
+                Node leafNode = strategy.getAndRemoveLeaf();
+
+                if (leafNode.isGoalState()) {
+                    return leafNode.extractPlan();
+                }
+
+                strategy.addToExplored(leafNode);
+                for (Node n : leafNode.getExpandedNodes()) { // The list of expanded nodes is shuffled randomly; see Node.java.
+                    if (!strategy.isExplored(n) && !strategy.inFrontier(n)) {
+                        strategy.addToFrontier(n);
+                    }
+                }
+                iterations++;
+            }
         }
 
         private char getId() {
             return _id;
+        }
+
+        private Strategy getStrategy() {
+            return _strategy;
         }
 
         private Node getInitialState() {
@@ -53,11 +86,23 @@ public class CommunicationClient {
             _initialState = state;
         }
 
+        /**
+         * Sets up the initial state for the Agent
+         * reads the map from serverMessages param.
+         * All other agents and different colored boxes
+         * are considered walls and other goals are
+         * considered free spaces.
+         * @param serverMessages
+         * @throws IOException
+         */
         private void setUpInitialState(BufferedReader serverMessages) throws IOException {
-            String line;
+            System.err.println("Setting up initial state for agent " + getId());
 
+            String line;
             // Skip lines specifying colors
-            while ((line = in.readLine()).matches("^[a-z]+:\\s*[0-9A-Z](,\\s*[0-9A-Z])*\\s*$")) { }
+            while ((line = serverMessages.readLine()).matches("^[a-z]+:\\s*[0-9A-Z](,\\s*[0-9A-Z])*\\s*$")) {
+                System.err.println("Skipping lines specifying colors");
+            }
 
             int row = 0;
             boolean agentFound = false;
@@ -65,6 +110,7 @@ public class CommunicationClient {
 
             // Read lines specifying level layout
             while (!line.equals("")) {
+                System.err.println("line is " + line);
                 for (int col = 0; col < line.length(); col++) {
                     char chr = line.charAt(col);
 
@@ -112,9 +158,45 @@ public class CommunicationClient {
     private BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
     private List<Agent> agents = new ArrayList< Agent >();
     private MsgHub msgHub = new MsgHub();
+    private Strategy _strategy;
 
     public CommunicationClient(Strategy strategy) throws IOException {
+        _strategy = strategy;
         readMap(strategy);
+    }
+
+    public boolean update() throws IOException {
+        Strategy strategy = getStrategy();
+        LinkedList<Node> solution;
+
+        for (int i = 0; i < agents.size() - 1; i++) {
+            solution = agents.get(i).search();
+            if (solution == null) {
+                System.err.println(strategy.searchStatus());
+                System.err.println("Unable to solve level.");
+                System.exit(0);
+            } else {
+                System.err.println("\nSummary for " + strategy.toString());
+                System.err.println("Found solution of length " + solution.size());
+                System.err.println(strategy.searchStatus());
+
+                for (Node n : solution) {
+                    String act = n.action.toString();
+                    System.out.println(act);
+                    String response = in.readLine();
+                    if (response.contains("false")) {
+                        System.err.format("Server responsed with %s to the inapplicable action: %s\n", response, act);
+                        System.err.format("%s was attempted in \n%s\n", act, n.toString());
+                        break;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    private Strategy getStrategy() {
+        return _strategy;
     }
 
     /**
@@ -125,48 +207,36 @@ public class CommunicationClient {
         Map<Character, String> colors = new HashMap<Character, String>();
         String line, color;
 
-        // Read lines specifying colors
-        while ((line = in.readLine()).matches("^[a-z]+:\\s*[0-9A-Z](,\\s*[0-9A-Z])*\\s*$")) {
-            line = line.replaceAll("\\s", "");
-            color = line.split( ":" )[0];
+        line = in.readLine();
 
-            for (String id : line.split(":")[1].split(","))
-                colors.put(id.charAt(0), color);
-        }
-
-        // Read lines specifying level layout
-        while (!line.equals("")) {
-            for (int i = 0; i < line.length(); i++) {
-                char id = line.charAt(i);
-                if ('0' <= id && id <= '9') {
-                    agents.add(new Agent(id, colors.get(id), msgHub, strategy, in));
-                }
-            }
-
+        ArrayList<String> map = new ArrayList<String>();
+        while(!line.equals("")) {
+            map.add(line);
             line = in.readLine();
         }
-    }
 
-    public boolean update() throws IOException {
-        String jointAction = "[";
+        System.err.println("Printing scanned map");
+        for (String lineInMap: map) {
+            System.err.println(lineInMap);
+        }
 
-        for (int i = 0; i < agents.size() - 1; i++)
-            jointAction += agents.get(i).act() + ",";
+        for (String lineInMap: map) {
+            if (lineInMap.matches("^[a-z]+:\\s*[0-9A-Z](,\\s*[0-9A-Z])*\\s*$")) {
+                lineInMap = lineInMap.replaceAll("\\s", "");
+                color = lineInMap.split( ":" )[0];
 
-        jointAction += agents.get(agents.size() - 1).act() + "]";
+                for (String id : lineInMap.split(":")[1].split(","))
+                    colors.put(id.charAt(0), color);
 
-        // Place message in buffer
-        System.out.println(jointAction);
-
-        // Flush buffer
-        System.out.flush();
-
-        // Disregard these for now, but read or the server stalls when its output buffer gets filled!
-        String percepts = in.readLine();
-        if (percepts == null)
-            return false;
-
-        return true;
+            } else {
+                for (int i = 0; i < lineInMap.length(); i++) {
+                    char id = lineInMap.charAt(i);
+                    if ('0' <= id && id <= '9') {
+                        agents.add(new Agent(id, colors.get(id), msgHub, strategy, in));
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -175,6 +245,7 @@ public class CommunicationClient {
      */
     public static void main(String[] args) {
         Strategy strategyBFS = new StrategyBFS();
+
         System.err.println("*--------------------------------------*");
         System.err.println("|     CommunicationClient started      |");
         System.err.println("*--------------------------------------*");
@@ -182,9 +253,8 @@ public class CommunicationClient {
         try {
             CommunicationClient client = new CommunicationClient(strategyBFS);
             while (client.update()) {};
-
-        } catch (IOException e) {
-            System.err.println("Could not run the client");
+        } catch (IOException ex) {
+            System.err.println("IOException thrown!");
         }
     }
 }
