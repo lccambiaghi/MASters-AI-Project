@@ -244,7 +244,7 @@ public class CommunicationClient {
 
         try {
             CommunicationClient client = new CommunicationClient(strategyBFS);
-            while (client.update()) {};
+            client.update();
         } catch (IOException ex) {
             System.err.println("IOException thrown!");
         }
