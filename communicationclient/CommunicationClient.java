@@ -52,6 +52,9 @@ public class CommunicationClient {
 
                 Node leafNode = strategy.getAndRemoveLeaf();
 
+                System.err.println("Walls in leafNode " + leafNode.walls[2][1]);
+                System.err.println("Agent location row: " + leafNode.agentRow + " col: " + leafNode.agentCol);
+
                 if (leafNode.isGoalState()) {
                     return leafNode.extractPlan();
                 }
@@ -93,13 +96,12 @@ public class CommunicationClient {
          */
         private void setUpInitialState(ArrayList<String> map) {
             System.err.println("Setting up initial state for agent " + getId());
+            int row = 0;
 
             for (String line: map) {
 
                 // Skip lines specifying colors
                 if (!line.matches("^[a-z]+:\\s*[0-9A-Z](,\\s*[0-9A-Z])*\\s*$")) {
-                    int row = 0;
-                    boolean agentFound = false;
                     setInitialState(new Node(null));
 
                     // Read lines specifying level layout
@@ -114,20 +116,21 @@ public class CommunicationClient {
                             getInitialState().goals[row][col] = chr;
                         } else if (chr == ' ') {
                             // Free space.
-                        } else if (chr == getId()) { // Agent.
-                            if (agentFound) {
+                        } else if ('0' <= chr && chr <= '9') { // Agent.
+                            if (chr == getId()) {
+                                getInitialState().agentRow = row;
+                                getInitialState().agentCol = col;
+                            } else {
                                 // other agents are considered walls
                                 getInitialState().walls[row][col] = true;
                             }
-                            agentFound = true;
-                            getInitialState().agentRow = row;
-                            getInitialState().agentCol = col;
                         }
                     }
                     row++;
                 }
             }
             System.err.println("Initial state for agent " + getId() + " was successfully set up");
+            System.err.println(" ");
         }
 
         /**
@@ -159,8 +162,8 @@ public class CommunicationClient {
         Strategy strategy = getStrategy();
         LinkedList<Node> solution;
 
-        for (int i = 0; i < agents.size() - 1; i++) {
-            solution = agents.get(i).search();
+        for (Agent agent : agents) {
+            solution = agent.search();
             if (solution == null) {
                 System.err.println(strategy.searchStatus());
                 System.err.println("Unable to solve level.");
@@ -207,10 +210,14 @@ public class CommunicationClient {
             line = in.readLine();
         }
 
+        System.err.println(" ");
         System.err.println("Printing scanned map");
+
         for (String lineInMap: map) {
             System.err.println(lineInMap);
         }
+
+        System.err.println(" ");
 
         for (String lineInMap: map) {
             if (lineInMap.matches("^[a-z]+:\\s*[0-9A-Z](,\\s*[0-9A-Z])*\\s*$")) {
