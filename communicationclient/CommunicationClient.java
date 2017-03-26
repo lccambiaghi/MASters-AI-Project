@@ -20,18 +20,14 @@ public class CommunicationClient {
          * @param color : Agent color
          * @param msghub : shared instance of msghub
          */
-        public Agent(char id, String color, MsgHub msgHub, Strategy strategy, BufferedReader serverMessages) {
+        public Agent(char id, String color, MsgHub msgHub, Strategy strategy, ArrayList<String> map) {
             System.err.println("Agent " + id + " with color " + color + " using strategy " + strategy.toString() + " created");
             _msgHub = msgHub;
             _color = color;
             _id = id;
             _strategy = strategy;
-            BufferedReader serverMessagesCopy = serverMessages;
-            try {
-                setUpInitialState(serverMessagesCopy);
-            } catch (IOException e) {
-                System.err.println("Could not set up inital state for agent " + id);
-            }
+
+            setUpInitialState(map);
         }
 
         /**
@@ -95,49 +91,43 @@ public class CommunicationClient {
          * @param serverMessages
          * @throws IOException
          */
-        private void setUpInitialState(BufferedReader serverMessages) throws IOException {
+        private void setUpInitialState(ArrayList<String> map) {
             System.err.println("Setting up initial state for agent " + getId());
 
-            String line;
-            // Skip lines specifying colors
-            while ((line = serverMessages.readLine()).matches("^[a-z]+:\\s*[0-9A-Z](,\\s*[0-9A-Z])*\\s*$")) {
-                System.err.println("Skipping lines specifying colors");
-            }
+            for (String line: map) {
 
-            int row = 0;
-            boolean agentFound = false;
-            setInitialState(new Node(null));
+                // Skip lines specifying colors
+                if (!line.matches("^[a-z]+:\\s*[0-9A-Z](,\\s*[0-9A-Z])*\\s*$")) {
+                    int row = 0;
+                    boolean agentFound = false;
+                    setInitialState(new Node(null));
 
-            // Read lines specifying level layout
-            while (!line.equals("")) {
-                System.err.println("line is " + line);
-                for (int col = 0; col < line.length(); col++) {
-                    char chr = line.charAt(col);
+                    // Read lines specifying level layout
+                    for (int col = 0; col < line.length(); col++) {
+                        char chr = line.charAt(col);
 
-                    if (chr == '+') { // Wall.
-                        getInitialState().walls[row][col] = true;
-                    } else if ('A' <= chr && chr <= 'Z') { // Box.
-                        getInitialState().boxes[row][col] = chr;
-                    } else if ('a' <= chr && chr <= 'z') { // Goal.
-                        getInitialState().goals[row][col] = chr;
-                    } else if (chr == ' ') {
-                        // Free space.
-                    } else if (chr == getId()) { // Agent.
-                        if (agentFound) {
-                            // other agents are considered walls
+                        if (chr == '+') { // Wall.
                             getInitialState().walls[row][col] = true;
-                        } else {
-                            System.err.println("Error, read invalid level character: " + (int) chr);
-                            System.exit(1);
+                        } else if ('A' <= chr && chr <= 'Z') { // Box.
+                            getInitialState().boxes[row][col] = chr;
+                        } else if ('a' <= chr && chr <= 'z') { // Goal.
+                            getInitialState().goals[row][col] = chr;
+                        } else if (chr == ' ') {
+                            // Free space.
+                        } else if (chr == getId()) { // Agent.
+                            if (agentFound) {
+                                // other agents are considered walls
+                                getInitialState().walls[row][col] = true;
+                            }
+                            agentFound = true;
+                            getInitialState().agentRow = row;
+                            getInitialState().agentCol = col;
                         }
-                        agentFound = true;
-                        getInitialState().agentRow = row;
-                        getInitialState().agentCol = col;
                     }
+                    row++;
                 }
-                line = serverMessages.readLine();
-                row++;
             }
+            System.err.println("Initial state for agent " + getId() + " was successfully set up");
         }
 
         /**
@@ -201,7 +191,9 @@ public class CommunicationClient {
 
     /**
      * Reads the map into memory and creates agents with the
-     * shared instance of the msgHub
+     * shared instance of the msgHub.
+     * The map is converted from the BufferedReader to an ArrayList
+     * to avoid any problems when manipulating the map.
      */
     private void readMap(Strategy strategy) throws IOException {
         Map<Character, String> colors = new HashMap<Character, String>();
@@ -232,7 +224,7 @@ public class CommunicationClient {
                 for (int i = 0; i < lineInMap.length(); i++) {
                     char id = lineInMap.charAt(i);
                     if ('0' <= id && id <= '9') {
-                        agents.add(new Agent(id, colors.get(id), msgHub, strategy, in));
+                        agents.add(new Agent(id, colors.get(id), msgHub, strategy, map));
                     }
                 }
             }
