@@ -52,8 +52,13 @@ public class CommunicationClient {
 
                 Node leafNode = strategy.getAndRemoveLeaf();
 
-                System.err.println("Walls in leafNode " + leafNode.walls[2][1]);
+                /**
+                 * TODO: leafNode is not instantiated with correct values
+                 * isGoalState returns true on first run.
+                 */
+                System.err.println(" ");
                 System.err.println("Agent location row: " + leafNode.agentRow + " col: " + leafNode.agentCol);
+                System.err.println(" ");
 
                 if (leafNode.isGoalState()) {
                     return leafNode.extractPlan();
@@ -169,7 +174,7 @@ public class CommunicationClient {
                 System.err.println("Unable to solve level.");
                 System.exit(0);
             } else {
-                System.err.println("\nSummary for " + strategy.toString());
+                System.err.println("\nSummary for " + strategy.toString() + " for agent: " + agent.getId());
                 System.err.println("Found solution of length " + solution.size());
                 System.err.println(strategy.searchStatus());
 
