@@ -56,9 +56,6 @@ public class CommunicationClient {
                  * TODO: leafNode is not instantiated with correct values
                  * isGoalState returns true on first run.
                  */
-                System.err.println(" ");
-                System.err.println("Agent location row: " + leafNode.agentRow + " col: " + leafNode.agentCol);
-                System.err.println(" ");
 
                 if (leafNode.isGoalState()) {
                     return leafNode.extractPlan();
@@ -102,12 +99,12 @@ public class CommunicationClient {
         private void setUpInitialState(ArrayList<String> map) {
             System.err.println("Setting up initial state for agent " + getId());
             int row = 0;
+            setInitialState(new Node(null));
 
             for (String line: map) {
 
                 // Skip lines specifying colors
                 if (!line.matches("^[a-z]+:\\s*[0-9A-Z](,\\s*[0-9A-Z])*\\s*$")) {
-                    setInitialState(new Node(null));
 
                     // Read lines specifying level layout
                     for (int col = 0; col < line.length(); col++) {
