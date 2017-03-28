@@ -52,11 +52,6 @@ public class CommunicationClient {
 
                 Node leafNode = strategy.getAndRemoveLeaf();
 
-                /**
-                 * TODO: leafNode is not instantiated with correct values
-                 * isGoalState returns true on first run.
-                 */
-
                 if (leafNode.isGoalState()) {
                     return leafNode.extractPlan();
                 }
@@ -110,6 +105,10 @@ public class CommunicationClient {
                     for (int col = 0; col < line.length(); col++) {
                         char chr = line.charAt(col);
 
+                        /**
+                         * TODO: Need to set other boxes as walls.
+                         */
+
                         if (chr == '+') { // Wall.
                             getInitialState().walls[row][col] = true;
                         } else if ('A' <= chr && chr <= 'Z') { // Box.
@@ -160,6 +159,13 @@ public class CommunicationClient {
         readMap(strategy);
     }
 
+    /**
+     * Each agent starts to search for how to solve the level
+     * and sends the actions to the server.
+     *
+     * Actions should be combined here when working with
+     * levels with multi agents.
+     */
     public boolean update() throws IOException {
         Strategy strategy = getStrategy();
         LinkedList<Node> solution;
@@ -178,6 +184,7 @@ public class CommunicationClient {
                 for (Node n : solution) {
                     String act = n.action.toString();
                     System.out.println(act);
+                    //System.out.println("[Move(E), Move(E)]");
                     String response = in.readLine();
                     if (response.contains("false")) {
                         System.err.format("Server responsed with %s to the inapplicable action: %s\n", response, act);
@@ -221,6 +228,10 @@ public class CommunicationClient {
 
         System.err.println(" ");
 
+        /**
+         * TODO: Create boxes and goals here from box and goals class
+         */
+
         for (String lineInMap: map) {
             if (lineInMap.matches("^[a-z]+:\\s*[0-9A-Z](,\\s*[0-9A-Z])*\\s*$")) {
                 lineInMap = lineInMap.replaceAll("\\s", "");
@@ -241,8 +252,7 @@ public class CommunicationClient {
     }
 
     /**
-     * Starts the client and runs a infinit loop until
-     * client returns false
+     * Starts the client and runs a infinit loop
      */
     public static void main(String[] args) {
         Strategy strategyBFS = new StrategyBFS();
