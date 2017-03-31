@@ -1,7 +1,9 @@
 package heuristic;
 
 import communicationclient.Node;
+import level.Box;
 import level.GoalType;
+import level.Level;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -22,11 +24,24 @@ public abstract class Heuristic implements Comparator<Node> {
 			switch (n.getGoal().getGoalType()){
 				case AgentToBox:
 					h = HeuristicHelper.manhattanDistance(n.agentRow,n.agentCol,n.getGoal().getRow(),n.getGoal().getCol());
+					h += HeuristicHelper.goalCount(n);
 					break;
 				case BoxToGoal:
-					//Todo needs changing to actual box position.
-					h = HeuristicHelper.manhattanDistance(n.agentRow,n.agentCol,n.getGoal().getRow(),n.getGoal().getCol());
-					break;
+					for (int row = 0; row < Level.getInstance().MAX_ROW; row++) {
+						for (int col = 0; col < Level.getInstance().MAX_COL; col++){
+							Box box = n.boxes[row][col];
+							if (box!=null){
+								if(box.equals(n.getGoal().getGoalBox())){
+									int boxRow = row;
+									int boxCol = col;
+									h = HeuristicHelper.manhattanDistance(boxRow, boxCol, n.getGoal().getRow(), n.getGoal().getCol());
+									h += HeuristicHelper.goalCount(n);
+									break;
+								}
+							}
+
+						}
+					}
 			}
 //			int goalCount = HeuristicHelper.goalCount(n);
 //			int boxDistance = HeuristicHelper.boxDistanceToGoal(n);
@@ -36,7 +51,9 @@ public abstract class Heuristic implements Comparator<Node> {
 		return h;
 
 	}
-
+	public void clearMap(){
+		heuristicMap.clear();
+	}
 	public abstract int f(Node n);
 
 	@Override
@@ -63,8 +80,8 @@ public abstract class Heuristic implements Comparator<Node> {
 	public static class WeightedAStar extends Heuristic {
 		private int W;
 
-		public WeightedAStar(Node initialState, int W) {
-			super(initialState);
+		public WeightedAStar(int W) {
+			super();
 			this.W = W;
 		}
 

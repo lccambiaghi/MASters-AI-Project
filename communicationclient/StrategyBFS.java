@@ -43,6 +43,12 @@ public class StrategyBFS extends Strategy {
 	}
 
 	@Override
+	public void clearFrontier() {
+		frontier.clear();
+		frontierSet.clear();
+	}
+
+	@Override
 	public boolean inFrontier(Node n) {
 		return frontierSet.contains(n);
 	}

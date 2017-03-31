@@ -1,9 +1,6 @@
 package communicationclient;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.Random;
+import java.util.*;
 
 import communicationclient.Command.Type;
 import level.Box;
@@ -24,7 +21,11 @@ public class Node {
 	public Goal getGoal() {
 		return goal;
 	}
-// Arrays are indexed from the top-left of the level, with first index being row and second being column.
+
+	public void setGoal(Goal goal) {
+		this.goal = goal;
+	}
+	// Arrays are indexed from the top-left of the level, with first index being row and second being column.
 	// Row 0: (0,0) (0,1) (0,2) (0,3) ...
 	// Row 1: (1,0) (1,1) (1,2) (1,3) ...
 	// Row 2: (2,0) (2,1) (2,2) (2,3) ...
@@ -36,6 +37,18 @@ public class Node {
 
 	public boolean[][] walls = Level.getInstance().getWalls();
 	public Box[][] boxes = new Box[MAX_ROW][MAX_COL];
+
+	public Box[][] getBoxesCopy() {
+		Box[][] copy = new Box[MAX_ROW][MAX_COL];
+		for (int row = 0; row < MAX_ROW; row++) {
+			System.arraycopy(this.boxes[row], 0, copy[row], 0, MAX_COL);
+		}
+		return copy;
+	}
+
+	public void setBoxes(Box[][] boxes) {
+		this.boxes = boxes;
+	}
 
 	public Node parent;
 	public Command action;
@@ -77,9 +90,12 @@ public class Node {
 		switch (goal.getGoalType()) {
 			case BoxToGoal:
 				char goalChar = goal.getGoalChar();
-				char b = Character.toLowerCase(boxes[goal.getRow()][goal.getCol()].getBoxChar());
-				if (b == goalChar) {
-					return true;
+				Box box = boxes[goal.getRow()][goal.getCol()];
+				if (box!=null){
+					char b = Character.toLowerCase(box.getBoxChar());
+					if (b == goalChar) {
+						return true;
+					}
 				}
 				break;
 			case AgentToBox:
@@ -139,7 +155,7 @@ public class Node {
 				}
 			}
 		}
-//		Collections.shuffle(expandedNodes, RND);
+		Collections.shuffle(expandedNodes, RND);
 		return expandedNodes;
 	}
 

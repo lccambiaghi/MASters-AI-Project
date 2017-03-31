@@ -46,6 +46,13 @@ public class StrategyBestFirst extends Strategy {
     }
 
     @Override
+    public void clearFrontier() {
+        frontier = new FibonacciHeap<>();
+        frontierSet.clear();
+        heuristic.clearMap();
+    }
+
+    @Override
     public boolean inFrontier(Node n) {
         return frontierSet.contains(n);
     }

@@ -51,6 +51,7 @@ public abstract class Strategy {
 	public abstract int countFrontier();
 
 	public abstract boolean frontierIsEmpty();
+	public abstract void clearFrontier();
 
 	@Override
 	public abstract String toString();

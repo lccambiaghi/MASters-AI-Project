@@ -163,11 +163,11 @@ public class CommunicationClient {
 
     public CommunicationClient() throws IOException {
         //For Debugging
-        FileInputStream fis = null;
-        fis = new FileInputStream("levels/SAsoko1_12.lvl");
-        in = new BufferedReader(new InputStreamReader(fis));
+//        FileInputStream fis = null;
+//        fis = new FileInputStream("levels/SAsoko3_48.lvl");
+//        in = new BufferedReader(new InputStreamReader(fis));
         //For live
-//        in = new BufferedReader(new InputStreamReader(System.in));
+        in = new BufferedReader(new InputStreamReader(System.in));
 
     }
 
@@ -178,8 +178,8 @@ public class CommunicationClient {
      * Actions should be combined here when working with
      * levels with multi agents.
      */
-    public boolean update(Strategy strategy) throws IOException {
-        _strategy = strategy;
+    public boolean update() throws IOException {
+//        _strategy = strategy;
         LinkedList<Node> solution;
 
         for (Agent agent : agents) {
@@ -203,20 +203,20 @@ public class CommunicationClient {
                     agent.addSubGoal(b.getBoxGoal());
                 }
             }
-            agent.setUpInitialState(_level);
-            agent.
+//            agent.setUpInitialState(_level);
             solution = agent.search();
             if (solution == null) {
-                System.err.println(strategy.searchStatus());
+                System.err.println(_strategy.searchStatus());
                 System.err.println("Unable to solve level.");
                 System.exit(0);
             } else {
-                System.err.println("\nSummary for " + strategy.toString() + " for agent: " + agent.getId());
+                System.err.println("\nSummary for " + _strategy.toString() + " for agent: " + agent.getId());
                 System.err.println("Found solution of length " + solution.size());
-                System.err.println(strategy.searchStatus());
+                System.err.println(_strategy.searchStatus());
 
                 for (Node n : solution) {
                     String act = n.action.toString();
+//                    System.err.println(n);
                     System.out.println(act);
                     //System.out.println("[Move(E), Move(E)]");
                     String response = in.readLine();
@@ -235,6 +235,12 @@ public class CommunicationClient {
         return _strategy;
     }
 
+
+
+    public void setStrategy(Strategy _strategy) {
+        this._strategy = _strategy;
+    }
+
     /**
      * Reads the map into memory and creates agents with the
      * shared instance of the msgHub.
@@ -248,23 +254,24 @@ public class CommunicationClient {
         int MAX_COL = 0;
         int MAX_ROW = 0;
         int row = 0;
-
-//        line = in.readLine();
         ArrayList<String> map = new ArrayList<>();
-        for (String line = in.readLine(); line != null; line = in.readLine()) {
+        String line = in.readLine();
+        while(!line.equals("")) {
             map.add(line);
             if(line.length() > MAX_COL) MAX_COL = line.length();
-//            line = in.readLine();
+            line = in.readLine();
             row++;
             MAX_ROW = row;
         }
-//        while(line !=null && !line.equals("")) {
+
+//        for (String line = in.readLine(); line != null; line = in.readLine()) {
 //            map.add(line);
 //            if(line.length() > MAX_COL) MAX_COL = line.length();
-//            line = in.readLine();
+////            line = in.readLine();
 //            row++;
-//			MAX_ROW = row;
+//            MAX_ROW = row;
 //        }
+
         _level = Level.createInstance(MAX_ROW,MAX_COL);
 
         System.err.println(" ");
@@ -306,7 +313,10 @@ public class CommunicationClient {
                     } else if (chr == ' ') {
                         // Free space.
                     }else if ('0' <= chr && chr <= '9') {
-                        agents.add(new Agent(chr, colors.get(chr), msgHub, _level, _strategy));
+                        Agent newAgent = new Agent(chr, colors.get(chr), msgHub, _strategy);
+                        newAgent.setAgentRow(row);
+                        newAgent.setAgentCol(col);
+                        agents.add(newAgent);
                     }
                 }
                 row++;
@@ -315,7 +325,7 @@ public class CommunicationClient {
     }
 
     /**
-     * Starts the client and runs a infinit loop
+     * Starts the client and runs a infinite loop
      */
     public static void main(String[] args) {
 
@@ -324,10 +334,11 @@ public class CommunicationClient {
         System.err.println("*--------------------------------------*");
         try {
             CommunicationClient client = new CommunicationClient();
-            client.readMap();
-            Heuristic heuristic = new Heuristic.Greedy();
+            Heuristic heuristic = new Heuristic.WeightedAStar(5);
             Strategy strategy = new StrategyBestFirst(heuristic);
-            client.update(strategy);
+            client.setStrategy(strategy);
+            client.readMap();
+            client.update();
         } catch (IOException ex) {
             System.err.println("IOException thrown!");
         }
