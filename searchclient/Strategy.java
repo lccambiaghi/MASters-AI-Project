@@ -2,11 +2,10 @@ package searchclient;
 
 import java.util.ArrayDeque;
 import java.util.HashSet;
-import java.util.PriorityQueue;
 import java.util.Stack;
 
-import searchclient.Memory;
-import searchclient.NotImplementedException;
+import heuristic.FibonacciHeap;
+import heuristic.Heuristic;
 
 public abstract class Strategy {
 	private HashSet<Node> explored;

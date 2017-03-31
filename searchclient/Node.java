@@ -2,6 +2,7 @@ package searchclient;
 
 import java.util.*;
 
+import communicationclient.StaticLevelItems;
 import searchclient.Command.Type;
 
 public class Node {

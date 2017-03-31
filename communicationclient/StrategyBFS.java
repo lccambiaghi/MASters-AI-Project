@@ -52,3 +52,4 @@ public class StrategyBFS extends Strategy {
 		return "Breadth-first Search";
 	}
 }
+

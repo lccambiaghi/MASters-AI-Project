@@ -13,7 +13,7 @@ public abstract class Strategy {
 	private final long startTime;
 
 	public Strategy() {
-		this.explored = new HashSet<Node>();
+		this.explored = new HashSet<>();
 		this.startTime = System.currentTimeMillis();
 	}
 

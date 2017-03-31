@@ -2,22 +2,29 @@ package communicationclient;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Random;
 
 import communicationclient.Command.Type;
+import level.Box;
+import level.Color;
+import level.Goal;
+import level.Level;
 
 public class Node {
 	private static final Random RND = new Random(1);
 
-	public static int MAX_ROW = 70;
-	public static int MAX_COL = 70;
-
+	public static int MAX_ROW = Level.getInstance().MAX_ROW;
+	public static int MAX_COL = Level.getInstance().MAX_COL;
+	private Goal goal;
 	public int agentRow;
 	public int agentCol;
+	public Color agentColor;
 
-	// Arrays are indexed from the top-left of the level, with first index being row and second being column.
+	public Goal getGoal() {
+		return goal;
+	}
+// Arrays are indexed from the top-left of the level, with first index being row and second being column.
 	// Row 0: (0,0) (0,1) (0,2) (0,3) ...
 	// Row 1: (1,0) (1,1) (1,2) (1,3) ...
 	// Row 2: (2,0) (2,1) (2,2) (2,3) ...
@@ -27,9 +34,8 @@ public class Node {
 	// this.walls[row][col] is true if there's a wall at (row, col)
 	//
 
-	public boolean[][] walls = new boolean[MAX_ROW][MAX_COL];
-	public char[][] boxes = new char[MAX_ROW][MAX_COL];
-	public char[][] goals = new char[MAX_ROW][MAX_COL];
+	public boolean[][] walls = Level.getInstance().getWalls();
+	public Box[][] boxes = new Box[MAX_ROW][MAX_COL];
 
 	public Node parent;
 	public Command action;
@@ -44,7 +50,16 @@ public class Node {
 			this.g = 0;
 		} else {
 			this.g = parent.g() + 1;
+			this.goal = parent.goal;
+			this.agentColor = parent.agentColor;
 		}
+	}
+
+	public Node(Goal goal, Color agentColor) {
+		this.parent = null;
+		this.goal = goal;
+		this.g = 0;
+		this.agentColor = agentColor;
 	}
 
 	public int g() {
@@ -54,18 +69,24 @@ public class Node {
 	public boolean isInitialState() {
 		return this.parent == null;
 	}
+	public void addBox(Box box){
+		this.boxes[box.getRow()][box.getCol()] = box;
+	}
 
 	public boolean isGoalState() {
-		for (int row = 1; row < MAX_ROW - 1; row++) {
-			for (int col = 1; col < MAX_COL - 1; col++) {
-				char g = goals[row][col];
-				char b = Character.toLowerCase(boxes[row][col]);
-				if (g > 0 && b != g) {
-					return false;
+		switch (goal.getGoalType()) {
+			case BoxToGoal:
+				char goalChar = goal.getGoalChar();
+				char b = Character.toLowerCase(boxes[goal.getRow()][goal.getCol()].getBoxChar());
+				if (b == goalChar) {
+					return true;
 				}
-			}
+				break;
+			case AgentToBox:
+				if((Math.abs(agentRow-goal.getRow()) == 1 && Math.abs(agentCol-goal.getCol())==0) || (Math.abs(agentCol-goal.getCol())==1 && Math.abs(agentRow-goal.getRow())==0)) return true;
+				break;
 		}
-		return true;
+		return false;
 	}
 
 	public ArrayList<Node> getExpandedNodes() {
@@ -96,7 +117,7 @@ public class Node {
 						n.agentRow = newAgentRow;
 						n.agentCol = newAgentCol;
 						n.boxes[newBoxRow][newBoxCol] = this.boxes[newAgentRow][newAgentCol];
-						n.boxes[newAgentRow][newAgentCol] = 0;
+						n.boxes[newAgentRow][newAgentCol] = null;
 						expandedNodes.add(n);
 					}
 				}
@@ -112,30 +133,32 @@ public class Node {
 						n.agentRow = newAgentRow;
 						n.agentCol = newAgentCol;
 						n.boxes[this.agentRow][this.agentCol] = this.boxes[boxRow][boxCol];
-						n.boxes[boxRow][boxCol] = 0;
+						n.boxes[boxRow][boxCol] = null;
 						expandedNodes.add(n);
 					}
 				}
 			}
 		}
-		Collections.shuffle(expandedNodes, RND);
+//		Collections.shuffle(expandedNodes, RND);
 		return expandedNodes;
 	}
 
 	private boolean cellIsFree(int row, int col) {
-		return !this.walls[row][col] && this.boxes[row][col] == 0;
+		return !this.walls[row][col] && this.boxes[row][col] == null;
 	}
 
 	private boolean boxAt(int row, int col) {
-		return this.boxes[row][col] > 0;
+		Box box = this.boxes[row][col];
+		if(box!=null){
+			return box.getBoxColor() == agentColor;
+		}
+		return false;
 	}
 
 	private Node ChildNode() {
 		Node copy = new Node(this);
 		for (int row = 0; row < MAX_ROW; row++) {
-			System.arraycopy(this.walls[row], 0, copy.walls[row], 0, MAX_COL);
 			System.arraycopy(this.boxes[row], 0, copy.boxes[row], 0, MAX_COL);
-			System.arraycopy(this.goals[row], 0, copy.goals[row], 0, MAX_COL);
 		}
 		return copy;
 	}
@@ -158,7 +181,6 @@ public class Node {
 			result = prime * result + this.agentCol;
 			result = prime * result + this.agentRow;
 			result = prime * result + Arrays.deepHashCode(this.boxes);
-			result = prime * result + Arrays.deepHashCode(this.goals);
 			result = prime * result + Arrays.deepHashCode(this.walls);
 			this._hash = result;
 		}
@@ -178,8 +200,6 @@ public class Node {
 			return false;
 		if (!Arrays.deepEquals(this.boxes, other.boxes))
 			return false;
-		if (!Arrays.deepEquals(this.goals, other.goals))
-			return false;
 		if (!Arrays.deepEquals(this.walls, other.walls))
 			return false;
 		return true;
@@ -193,12 +213,13 @@ public class Node {
 				break;
 			}
 			for (int col = 0; col < MAX_COL; col++) {
-				if (this.boxes[row][col] > 0) {
-					s.append(this.boxes[row][col]);
-				} else if (this.goals[row][col] > 0) {
-					s.append(this.goals[row][col]);
+
+				if (this.boxes[row][col] !=null ) {
+					s.append(this.boxes[row][col].getBoxChar());
 				} else if (this.walls[row][col]) {
 					s.append("+");
+				}else if(row == goal.getRow() && col == goal.getCol()){
+						s.append(goal.getGoalChar());
 				} else if (row == this.agentRow && col == this.agentCol) {
 					s.append("0");
 				} else {
