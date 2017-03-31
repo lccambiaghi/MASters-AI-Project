@@ -19,6 +19,10 @@ public class CommunicationClient {
          * @param id : Agent id
          * @param color : Agent color
          * @param msghub : shared instance of msghub
+	 * 
+	 * TODO:
+	 * Needs to take a list with which boxes the agent can move with
+	 * Needs to take a list with sub-goals/goals for the agent to fulfill
          */
         public Agent(char id, String color, MsgHub msgHub, Strategy strategy, ArrayList<String> map) {
             System.err.println("Agent " + id + " with color " + color + " using strategy " + strategy.toString() + " created");
