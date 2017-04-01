@@ -94,47 +94,47 @@ public class Agent {
             int iterations = 0;
 
             while (true) {
-              if (iterations == 1000) {
-                  System.err.println(this.strategy.searchStatus());
-                  iterations = 0;
-              }
-
-              if (this.strategy.frontierIsEmpty()) {
-                  return null;
-              }
-              
-              Node leafNode = this.strategy.getAndRemoveLeaf();
-
-              if (leafNode.isGoalState()) {
-                LinkedList<Node> plan = leafNode.extractPlan();
-                if (plan.size() > 0){
-                    Node goalState = plan.getLast();
-                    this.agentRow = goalState.agentRow;
-                    this.agentCol = goalState.agentCol;
-                    Node newStart = new Node(subGoals.peekFirst(), this.color);
-                    newStart.setBoxes(goalState.getBoxesCopy());
-                    newStart.agentCol = goalState.agentCol;
-                    newStart.agentRow = goalState.agentRow;
-                    setInitialState(newStart);//Update initial state to where we end after this subgoal.
-                }else{
-                    Node newStart = new Node(subGoals.peekFirst(), this.color);
-                    newStart.agentRow = this.agentRow;
-                    newStart.agentCol = this.agentCol;
-                    newStart.setBoxes(leafNode.getBoxesCopy());
-                    setInitialState(newStart);//Update initial state to where we end after this subgoal.
+                if (iterations == 1000) {
+                    System.err.println(this.strategy.searchStatus());
+                    iterations = 0;
                 }
-                this.combinedSolution.addAll(plan);
-                break;
-            }
 
-            this.strategy.addToExplored(leafNode);
-            for (Node n : leafNode.getExpandedNodes()) { // The list of expanded nodes is shuffled randomly; see Node.java.
-                if (!this.strategy.isExplored(n) && !this.strategy.inFrontier(n)) {
-                    this.strategy.addToFrontier(n);
+                if (this.strategy.frontierIsEmpty()) {
+                    return null;
+                }
+                
+                Node leafNode = this.strategy.getAndRemoveLeaf();
+
+                if (leafNode.isGoalState()) {
+                    LinkedList<Node> plan = leafNode.extractPlan();
+                    if (plan.size() > 0){
+                        Node goalState = plan.getLast();
+                        this.agentRow = goalState.agentRow;
+                        this.agentCol = goalState.agentCol;
+                        Node newStart = new Node(subGoals.peekFirst(), this.color);
+                        newStart.setBoxes(goalState.getBoxesCopy());
+                        newStart.agentCol = goalState.agentCol;
+                        newStart.agentRow = goalState.agentRow;
+                        setInitialState(newStart);//Update initial state to where we end after this subgoal.
+                    }else{
+                        Node newStart = new Node(subGoals.peekFirst(), this.color);
+                        newStart.agentRow = this.agentRow;
+                        newStart.agentCol = this.agentCol;
+                        newStart.setBoxes(leafNode.getBoxesCopy());
+                        setInitialState(newStart);//Update initial state to where we end after this subgoal.
+                    }
+                    this.combinedSolution.addAll(plan);
+                    break;
+                }
+
+                this.strategy.addToExplored(leafNode);
+                for (Node n : leafNode.getExpandedNodes()) { // The list of expanded nodes is shuffled randomly; see Node.java.
+                    if (!this.strategy.isExplored(n) && !this.strategy.inFrontier(n)) {
+                        this.strategy.addToFrontier(n);
+                    }
+                    iterations++;
                 }
             }
-            iterations++;
-        }
         }
         return this.combinedSolution;
     }

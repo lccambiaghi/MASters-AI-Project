@@ -11,7 +11,6 @@ import level.Box;
 import javax.swing.*;
 
 public class CommunicationClient {
-
     private BufferedReader in;
     private List<Agent> agents = new ArrayList<>();
     private MsgHub msgHub = new MsgHub();
@@ -36,29 +35,27 @@ public class CommunicationClient {
      * levels with multi agents.
      */
     public boolean update() throws IOException {
-
         LinkedList<Node> solution;
 
-        for (Agent agent : agents) {
-
-            //Assign all goals a box
-            HashSet<Goal> allGoals = this.level.getAllGoals();
-            for (Goal g: allGoals) {
-                HashSet<Box> goalBoxes = this.level.getBoxesByChar(Character.toUpperCase(g.getGoalChar()));
-                for (Box b: goalBoxes) {
-                    g.setGoalBox(b);
-                    b.setBoxGoal(g);
-                }
+        //Assign all goals a box
+        HashSet<Goal> allGoals = this.level.getAllGoals();
+        for (Goal g: allGoals) {
+            HashSet<Box> goalBoxes = this.level.getBoxesByChar(Character.toUpperCase(g.getGoalChar()));
+            for (Box b: goalBoxes) {
+                g.setGoalBox(b);
+                b.setBoxGoal(g);
             }
+        }
 
+        for (Agent agent : agents) {
             //Start on agent subgoals
             HashSet<Box> agentBoxes =this.level.getBoxesByColor(agent.getColor());
 
             for (Box b: agentBoxes) {
                 //Only go to boxes that have a goal
-                if (b.getBoxGoal() != null) {
-                    Goal subGoal= new Goal(b.getCol(), b.getRow(), GoalType.AgentToBox);
-                    agent.addSubGoal(subGoal);
+                if(b.getBoxGoal()!=null){
+                    Goal toBoxSubGoal= new Goal(b.getCol(),b.getRow(),GoalType.AgentToBox);
+                    agent.addSubGoal(toBoxSubGoal);
                     agent.addSubGoal(b.getBoxGoal());
                 }
             }

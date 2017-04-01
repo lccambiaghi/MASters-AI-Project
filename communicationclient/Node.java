@@ -18,6 +18,13 @@ public class Node {
 	public int agentCol;
 	public Color agentColor;
 
+	public Node parent;
+	public Command action;
+
+	private int g;
+
+	private int _hash = 0;
+
 	public Goal getGoal() {
 		return goal;
 	}
@@ -40,13 +47,6 @@ public class Node {
 	public void setBoxes(Box[][] boxes) {
 		this.boxes = boxes;
 	}
-
-	public Node parent;
-	public Command action;
-
-	private int g;
-
-	private int _hash = 0;
 
 	public Node(Node parent) {
 		this.parent = parent;
