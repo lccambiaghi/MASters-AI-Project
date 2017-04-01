@@ -87,49 +87,49 @@ public class Agent {
             //getInitialState().setGoal(subGoals.pollFirst());
             _strategy.clearFrontier();
             _strategy.addToFrontier(getInitialState());
-        int iterations = 0;
-        while (true) {
-            if (iterations == 1000) {
-                System.err.println(_strategy.searchStatus());
-                iterations = 0;
-            }
-
-            if (_strategy.frontierIsEmpty()) {
-                return null;
-            }
-            Node leafNode = _strategy.getAndRemoveLeaf();
-
-            if (leafNode.isGoalState()) {
-                LinkedList<Node> plan = leafNode.extractPlan();
-                if (plan.size() > 0){
-                    Node goalState = plan.getLast();
-                    this.agentRow = goalState.agentRow;
-                    this.agentCol = goalState.agentCol;
-                    Node newStart = new Node(subGoals.peekFirst(), this._color);
-                    newStart.setBoxes(goalState.getBoxesCopy());
-                    newStart.agentCol = goalState.agentCol;
-                    newStart.agentRow = goalState.agentRow;
-                    setInitialState(newStart);//Update initial state to where we end after this subgoal.
-                }else{
-                    Node newStart = new Node(subGoals.peekFirst(), this._color);
-                    newStart.agentRow = this.agentRow;
-                    newStart.agentCol = this.agentCol;
-                    newStart.setBoxes(leafNode.getBoxesCopy());
-                    setInitialState(newStart);//Update initial state to where we end after this subgoal.
+            int iterations = 0;
+            while (true) {
+                if (iterations == 1000) {
+                    System.err.println(_strategy.searchStatus());
+                    iterations = 0;
                 }
-                combinedSolution.addAll(plan);
-                break;
-//                return plan;
-            }
 
-            _strategy.addToExplored(leafNode);
-            for (Node n : leafNode.getExpandedNodes()) { // The list of expanded nodes is shuffled randomly; see Node.java.
-                if (!_strategy.isExplored(n) && !_strategy.inFrontier(n)) {
-                    _strategy.addToFrontier(n);
+                if (_strategy.frontierIsEmpty()) {
+                    return null;
                 }
+                Node leafNode = _strategy.getAndRemoveLeaf();
+
+                if (leafNode.isGoalState()) {
+                    LinkedList<Node> plan = leafNode.extractPlan();
+                    if (plan.size() > 0){
+                        Node goalState = plan.getLast();
+                        this.agentRow = goalState.agentRow;
+                        this.agentCol = goalState.agentCol;
+                        Node newStart = new Node(subGoals.peekFirst(), this._color);
+                        newStart.setBoxes(goalState.getBoxesCopy());
+                        newStart.agentCol = goalState.agentCol;
+                        newStart.agentRow = goalState.agentRow;
+                        setInitialState(newStart);//Update initial state to where we end after this subgoal.
+                    }else{
+                        Node newStart = new Node(subGoals.peekFirst(), this._color);
+                        newStart.agentRow = this.agentRow;
+                        newStart.agentCol = this.agentCol;
+                        newStart.setBoxes(leafNode.getBoxesCopy());
+                        setInitialState(newStart);//Update initial state to where we end after this subgoal.
+                    }
+                    combinedSolution.addAll(plan);
+                    break;
+                    //                return plan;
+                }
+
+                _strategy.addToExplored(leafNode);
+                for (Node n : leafNode.getExpandedNodes()) { // The list of expanded nodes is shuffled randomly; see Node.java.
+                    if (!_strategy.isExplored(n) && !_strategy.inFrontier(n)) {
+                        _strategy.addToFrontier(n);
+                    }
+                }
+                iterations++;
             }
-            iterations++;
-        }
         }
         return combinedSolution;
     }
