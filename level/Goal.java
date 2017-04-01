@@ -27,15 +27,23 @@ public class Goal {
     }
 
     public Box getGoalBox() {
-        return goalBox;
+        return this.goalBox;
     }
 
     public void setGoalBox(Box goalBox) {
-        int newDistance = HeuristicHelper.manhattanDistance(goalBox.getRow(), goalBox.getCol(), this.row, this.col);//manhattanDistanceToGoal(goalBox.getCol(),goalBox.getRow());
+        int newDistance = HeuristicHelper.manhattanDistance(goalBox.getRow(), 
+                                                            goalBox.getCol(), 
+                                                            this.row, 
+                                                            this.col);
         int oldDistance = Integer.MAX_VALUE;
+        
         if(this.goalBox!=null){
-            oldDistance = HeuristicHelper.manhattanDistance(this.goalBox.getRow(), this.goalBox.getCol(), this.row, this.col);
+            oldDistance = HeuristicHelper.manhattanDistance(this.goalBox.getRow(), 
+                                                            this.goalBox.getCol(), 
+                                                            this.row, 
+                                                            this.col);
         }
+        
         if (newDistance < oldDistance) this.goalBox = goalBox;
     }
 
