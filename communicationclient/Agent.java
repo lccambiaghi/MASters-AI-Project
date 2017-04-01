@@ -15,11 +15,11 @@ import java.util.LinkedList;
  * Created by salik on 31-03-2017.
  */
 public class Agent {
-    private MsgHub _msgHub;
-    private Color _color;
-    private char _id;
-    private Strategy _strategy;
-    private Node _initialState;
+    private MsgHub msgHub;
+    private Color color;
+    private char id;
+    private Strategy strategy;
+    private Node initialState;
     private ArrayDeque<Goal> subGoals;
     private ArrayList<Command> solutionCommands;
     private int agentRow;
@@ -27,7 +27,7 @@ public class Agent {
     private LinkedList<Node> combinedSolution;
 
     public int getAgentRow() {
-        return agentRow;
+        return this.agentRow;
     }
 
     public void setAgentRow(int agentRow) {
@@ -35,7 +35,7 @@ public class Agent {
     }
 
     public int getAgentCol() {
-        return agentCol;
+        return this.agentCol;
     }
 
     public void setAgentCol(int agentCol) {
@@ -51,30 +51,32 @@ public class Agent {
      */
     public Agent(char id, Color color, MsgHub msgHub, Strategy strategy) {
         System.err.println("Agent " + id + " with color " + color + " created");
-        subGoals = new ArrayDeque<>();
-        solutionCommands = new ArrayList<>();
-        combinedSolution = new LinkedList<>();
-        _msgHub = msgHub;
-        _color = color;
-        _id = id;
-        _strategy = strategy;
-//        setUpInitialState(level);//Todo change to Level and only do once
+        this.subGoals = new ArrayDeque<>();
+        this.solutionCommands = new ArrayList<>();
+        this.combinedSolution = new LinkedList<>();
+        this.msgHub = msgHub;
+        this.color = color;
+        this.id = id;
+        this.strategy = strategy;
     }
+
     public void addSubGoal(Goal subGoal){
-        subGoals.addLast(subGoal);
+        this.subGoals.addLast(subGoal);
     }
+
     public ArrayList<Command> getCommands(){
-        return solutionCommands;
+        return this.solutionCommands;
     }
+
     /**
      * Search for solution for agent
      * @return LinkedList with nodes for agent
      */
     public LinkedList<Node> search() throws IOException {
 
-        System.err.println("Agent " + getId() + " started search with strategy " + _strategy.toString());
+        System.err.println("Agent " + getId() + " started search with strategy " + this.strategy.toString());
         Goal firstSub = subGoals.peekFirst();
-        Node initialNode = new Node(firstSub,_color);
+        Node initialNode = new Node(firstSub, this.color);
         HashSet<Box> allBoxes = Level.getInstance().getAllBoxes();
         for (Box b: allBoxes) {
             initialNode.addBox(b);
@@ -84,20 +86,19 @@ public class Agent {
         setInitialState(initialNode);
         while(!subGoals.isEmpty()){
             subGoals.pollFirst();
-            //getInitialState().setGoal(subGoals.pollFirst());
-            _strategy.clearFrontier();
-            _strategy.addToFrontier(getInitialState());
+            this.strategy.clearFrontier();
+            this.strategy.addToFrontier(getInitialState());
         int iterations = 0;
         while (true) {
             if (iterations == 1000) {
-                System.err.println(_strategy.searchStatus());
+                System.err.println(this.strategy.searchStatus());
                 iterations = 0;
             }
 
-            if (_strategy.frontierIsEmpty()) {
+            if (this.strategy.frontierIsEmpty()) {
                 return null;
             }
-            Node leafNode = _strategy.getAndRemoveLeaf();
+            Node leafNode = this.strategy.getAndRemoveLeaf();
 
             if (leafNode.isGoalState()) {
                 LinkedList<Node> plan = leafNode.extractPlan();
@@ -105,13 +106,13 @@ public class Agent {
                     Node goalState = plan.getLast();
                     this.agentRow = goalState.agentRow;
                     this.agentCol = goalState.agentCol;
-                    Node newStart = new Node(subGoals.peekFirst(), this._color);
+                    Node newStart = new Node(subGoals.peekFirst(), this.color);
                     newStart.setBoxes(goalState.getBoxesCopy());
                     newStart.agentCol = goalState.agentCol;
                     newStart.agentRow = goalState.agentRow;
                     setInitialState(newStart);//Update initial state to where we end after this subgoal.
                 }else{
-                    Node newStart = new Node(subGoals.peekFirst(), this._color);
+                    Node newStart = new Node(subGoals.peekFirst(), this.color);
                     newStart.agentRow = this.agentRow;
                     newStart.agentCol = this.agentCol;
                     newStart.setBoxes(leafNode.getBoxesCopy());
@@ -119,13 +120,12 @@ public class Agent {
                 }
                 combinedSolution.addAll(plan);
                 break;
-//                return plan;
             }
 
-            _strategy.addToExplored(leafNode);
+            this.strategy.addToExplored(leafNode);
             for (Node n : leafNode.getExpandedNodes()) { // The list of expanded nodes is shuffled randomly; see Node.java.
-                if (!_strategy.isExplored(n) && !_strategy.inFrontier(n)) {
-                    _strategy.addToFrontier(n);
+                if (!this.strategy.isExplored(n) && !this.strategy.inFrontier(n)) {
+                    this.strategy.addToFrontier(n);
                 }
             }
             iterations++;
@@ -135,60 +135,32 @@ public class Agent {
     }
 
     public char getId() {
-        return _id;
+        return this.id;
     }
 
-//    private Strategy getStrategy() {
-//        return _strategy;
-//    }
-
     private Node getInitialState() {
-        return _initialState;
+        return this.initialState;
     }
 
     private void setInitialState(Node state) {
-        _initialState = state;
+        this.initialState = state;
     }
 
     public Color getColor() {
-        return _color;
-    }
-
-    /**
-     * Sets up the initial state for the Agent
-     * reads the map from serverMessages param.
-     * All other agents and different colored boxes
-     * are considered walls and other goals are
-     * considered free spaces.
-     * @param level
-     * @throws IOException
-     */
-    public void setUpInitialState(Level level) {
-        System.err.println("Setting up initial state for agent " + getId());
-//        Node initialNode = new Node(subGoals.pop(),_color);
-//        HashSet<Box> allBoxes = level.getAllBoxes();
-//
-//        for (Box b: allBoxes) {
-//            initialNode.addBox(b);
-//        }
-//        initialNode.agentRow = this.agentRow;
-//        initialNode.agentCol = this.agentCol;
-//        setInitialState(initialNode);
-        System.err.println("Initial state for agent " + getId() + " was successfully set up");
-        System.err.println(" ");
+        return this.color;
     }
 
     /**
      * Posts msgs to the msgHub
      */
     private void postMsg() {
-        System.err.println("~~ Agent: " + _id + " posted an msg");
+        System.err.println("~~ Agent: " + this.id + " posted an msg");
     }
 
     /**
      * Reads msgs from the msgHub
      */
     private void readMsg() {
-        System.err.println("~~ Agent: " + _id + " read an msg");
+        System.err.println("~~ Agent: " + this.id + " read an msg");
     }
 }
