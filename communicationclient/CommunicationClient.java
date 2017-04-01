@@ -11,7 +11,6 @@ import level.Box;
 import javax.swing.*;
 
 public class CommunicationClient {
-
     private BufferedReader in;
     private List<Agent> agents = new ArrayList<>();
     private MsgHub msgHub = new MsgHub();
@@ -36,7 +35,6 @@ public class CommunicationClient {
      * levels with multi agents.
      */
     public boolean update() throws IOException {
-//        _strategy = strategy;
         LinkedList<Node> solution;
 
         for (Agent agent : agents) {
@@ -60,7 +58,7 @@ public class CommunicationClient {
                     agent.addSubGoal(b.getBoxGoal());
                 }
             }
-//            agent.setUpInitialState(_level);
+
             solution = agent.search();
             if (solution == null) {
                 System.err.println(_strategy.searchStatus());
@@ -73,9 +71,7 @@ public class CommunicationClient {
 
                 for (Node n : solution) {
                     String act = n.action.toString();
-//                    System.err.println(n);
                     System.out.println(act);
-                    //System.out.println("[Move(E), Move(E)]");
                     String response = in.readLine();
                     if (response.contains("false")) {
                         System.err.format("Server responsed with %s to the inapplicable action: %s\n", response, act);
@@ -92,8 +88,6 @@ public class CommunicationClient {
         return _strategy;
     }
 
-
-
     public void setStrategy(Strategy _strategy) {
         this._strategy = _strategy;
     }
@@ -106,7 +100,6 @@ public class CommunicationClient {
      */
     private void readMap() throws IOException {
         HashMap<Character, Color> colors = new HashMap<>();
-//        String line;//, color;
         Color color;
         int MAX_COL = 0;
         int MAX_ROW = 0;
@@ -120,14 +113,6 @@ public class CommunicationClient {
             row++;
             MAX_ROW = row;
         }
-
-//        for (String line = in.readLine(); line != null; line = in.readLine()) {
-//            map.add(line);
-//            if(line.length() > MAX_COL) MAX_COL = line.length();
-////            line = in.readLine();
-//            row++;
-//            MAX_ROW = row;
-//        }
 
         _level = Level.createInstance(MAX_ROW,MAX_COL);
 
@@ -162,11 +147,9 @@ public class CommunicationClient {
                         Color boxColor = colors.get(chr);
                         Box box = new Box(col,row,chr,boxColor);
                         _level.addBox(box);
-//                        getInitialState().boxes[row][col] = chr;
                     } else if ('a' <= chr && chr <= 'z') { // Goal.
                         Goal goal = new Goal(col,row,chr);
                         _level.addCharGoal(goal);
-//                        getInitialState().goals[row][col] = chr;
                     } else if (chr == ' ') {
                         // Free space.
                     }else if ('0' <= chr && chr <= '9') {
