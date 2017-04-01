@@ -20,9 +20,9 @@ public class CommunicationClient {
 
     public CommunicationClient() throws IOException {
         //For Debugging
-//        FileInputStream fis = null;
-//        fis = new FileInputStream("levels/SAsoko3_48.lvl");
-//        in = new BufferedReader(new InputStreamReader(fis));
+        //FileInputStream fis = null;
+        //fis = new FileInputStream("levels/SAsoko3_48.lvl");
+        //in = new BufferedReader(new InputStreamReader(fis));
 
         //For live
         in = new BufferedReader(new InputStreamReader(System.in));
@@ -111,7 +111,7 @@ public class CommunicationClient {
         ArrayList<String> map = new ArrayList<>();
         String line = in.readLine();
         
-	while(!line.equals("")) {
+	    while(!line.equals("")) {
             map.add(line);
             if(line.length() > MAX_COL) MAX_COL = line.length();
             line = in.readLine();
@@ -126,7 +126,7 @@ public class CommunicationClient {
 
         for (String lineInMap: map) {
             System.err.println(lineInMap);
-	}
+	    }
 
         System.err.println(" ");
 
@@ -143,13 +143,13 @@ public class CommunicationClient {
                 for (int col = 0; col < lineInMap.length(); col++) {
                     char chr = lineInMap.charAt(col);
                     if (chr == '+') { // Wall.
-                        _level.setWall(true,row,col);
+                        _level.setWall(true, row, col);
                     } else if ('A' <= chr && chr <= 'Z') { // Box.
                         Color boxColor = colors.get(chr);
-                        Box box = new Box(col,row,chr,boxColor);
+                        Box box = new Box(col, row, chr, boxColor);
                         _level.addBox(box);
                     } else if ('a' <= chr && chr <= 'z') { // Goal.
-                        Goal goal = new Goal(col,row,chr);
+                        Goal goal = new Goal(col, row, chr);
                         _level.addCharGoal(goal);
                     } else if (chr == ' ') {
                         // Free space.
