@@ -15,8 +15,8 @@ public class CommunicationClient {
     private BufferedReader in;
     private List<Agent> agents = new ArrayList<>();
     private MsgHub msgHub = new MsgHub();
-    private Strategy _strategy;
-    private Level _level;
+    private Strategy strategy;
+    private Level level;
 
     public CommunicationClient() throws IOException {
         //For Debugging
@@ -42,9 +42,9 @@ public class CommunicationClient {
         for (Agent agent : agents) {
 
             //Assign all goals a box
-            HashSet<Goal> allGoals = _level.getAllGoals();
+            HashSet<Goal> allGoals = this.level.getAllGoals();
             for (Goal g: allGoals) {
-                HashSet<Box> goalBoxes = _level.getBoxesByChar(Character.toUpperCase(g.getGoalChar()));
+                HashSet<Box> goalBoxes = this.level.getBoxesByChar(Character.toUpperCase(g.getGoalChar()));
                 for (Box b: goalBoxes) {
                     g.setGoalBox(b);
                     b.setBoxGoal(g);
@@ -52,12 +52,12 @@ public class CommunicationClient {
             }
 
             //Start on agent subgoals
-            HashSet<Box> agentBoxes =_level.getBoxesByColor(agent.getColor());
+            HashSet<Box> agentBoxes =this.level.getBoxesByColor(agent.getColor());
 
             for (Box b: agentBoxes) {
                 //Only go to boxes that have a goal
-                if(b.getBoxGoal()!=null){
-                    Goal subGoal= new Goal(b.getCol(),b.getRow(),GoalType.AgentToBox);
+                if (b.getBoxGoal() != null) {
+                    Goal subGoal= new Goal(b.getCol(), b.getRow(), GoalType.AgentToBox);
                     agent.addSubGoal(subGoal);
                     agent.addSubGoal(b.getBoxGoal());
                 }
@@ -65,13 +65,13 @@ public class CommunicationClient {
 
             solution = agent.search();
             if (solution == null) {
-                System.err.println(_strategy.searchStatus());
+                System.err.println(this.strategy.searchStatus());
                 System.err.println("Unable to solve level.");
                 System.exit(0);
             } else {
-                System.err.println("\nSummary for " + _strategy.toString() + " for agent: " + agent.getId());
+                System.err.println("\nSummary for " + this.strategy.toString() + " for agent: " + agent.getId());
                 System.err.println("Found solution of length " + solution.size());
-                System.err.println(_strategy.searchStatus());
+                System.err.println(this.strategy.searchStatus());
 
                 for (Node n : solution) {
                     String act = n.action.toString();
@@ -89,11 +89,11 @@ public class CommunicationClient {
     }
 
     private Strategy getStrategy() {
-        return _strategy;
+        return this.strategy;
     }
 
-    public void setStrategy(Strategy _strategy) {
-        this._strategy = _strategy;
+    public void setStrategy(Strategy strategy) {
+        this.strategy = strategy;
     }
 
     /**
@@ -119,7 +119,7 @@ public class CommunicationClient {
             MAX_ROW = row;
         }
 
-        _level = Level.createInstance(MAX_ROW, MAX_COL);
+        this.level = Level.createInstance(MAX_ROW, MAX_COL);
 
         System.err.println(" ");
         System.err.println("Printing scanned map");
@@ -143,18 +143,18 @@ public class CommunicationClient {
                 for (int col = 0; col < lineInMap.length(); col++) {
                     char chr = lineInMap.charAt(col);
                     if (chr == '+') { // Wall.
-                        _level.setWall(true, row, col);
+                        this.level.setWall(true, row, col);
                     } else if ('A' <= chr && chr <= 'Z') { // Box.
                         Color boxColor = colors.get(chr);
                         Box box = new Box(col, row, chr, boxColor);
-                        _level.addBox(box);
+                        this.level.addBox(box);
                     } else if ('a' <= chr && chr <= 'z') { // Goal.
                         Goal goal = new Goal(col, row, chr);
-                        _level.addCharGoal(goal);
+                        this.level.addCharGoal(goal);
                     } else if (chr == ' ') {
                         // Free space.
                     }else if ('0' <= chr && chr <= '9') {
-                        Agent newAgent = new Agent(chr, colors.get(chr), msgHub, _strategy);
+                        Agent newAgent = new Agent(chr, colors.get(chr), msgHub, this.strategy);
                         newAgent.setAgentRow(row);
                         newAgent.setAgentCol(col);
                         agents.add(newAgent);

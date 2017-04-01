@@ -12,14 +12,13 @@ public class Goal {
     private char goalChar;
     private Box goalBox;
 
-
-    public Goal(int col, int row, GoalType goalType ){
+    public Goal(int col, int row, GoalType goalType){
         this.col = col;
         this.row = row;
         this.goalType = goalType;
     }
 
-    public Goal(int col, int row, char goalChar ){
+    public Goal(int col, int row, char goalChar){
         this.col = col;
         this.row = row;
         this.goalType = GoalType.BoxToGoal;

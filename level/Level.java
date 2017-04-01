@@ -46,7 +46,7 @@ public class Level {
     }
 
     public void setWall(boolean wall, int row, int col){
-        walls[row][col] = wall;
+        this.walls[row][col] = wall;
     }
 
     public boolean[][] getWalls() {
@@ -59,6 +59,8 @@ public class Level {
 
     public void addCharGoal(Goal goal){
         if (this.goalsByChar.containsKey(goal.getGoalChar())){
+            HashSet<Goal> charSet = goalsByChar.get(goal.getGoalChar());
+            charSet.add(goal);
             this.allGoals.add(goal);
         }else{
             HashSet<Goal> charSet = new HashSet<>();
@@ -68,6 +70,8 @@ public class Level {
         }
 
         if (goalsByType.containsKey(GoalType.BoxToGoal)){
+            HashSet<Goal> typeSet = goalsByType.get(GoalType.BoxToGoal);
+            typeSet.add(goal);
             this.allGoals.add(goal);
         }else{
             HashSet<Goal> typeSet = new HashSet<>();
@@ -80,9 +84,12 @@ public class Level {
     public void addBox(Box box){
         char boxChar = box.getBoxChar();
         Color boxColor = box.getBoxColor();
-        allBoxes.add(box);
+        this.allBoxes.add(box);
         if(boxesByChar.containsKey(boxChar)){
-
+            HashSet<Box> boxesChar = this.boxesByChar.get(boxChar);
+            HashSet<Box> boxesColor = this.boxesByColor.get(boxColor);
+            boxesChar.add(box);
+            boxesColor.add(box);
         }else{
             HashSet<Box> boxesChar = new HashSet<>();
             HashSet<Box> boxesColor = new HashSet<>();
