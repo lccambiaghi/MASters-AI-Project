@@ -78,29 +78,34 @@ public class Agent {
         Goal firstSub = subGoals.peekFirst();
         Node initialNode = new Node(firstSub, this.color);
         HashSet<Box> allBoxes = Level.getInstance().getAllBoxes();
+        
         for (Box b: allBoxes) {
             initialNode.addBox(b);
         }
+
         initialNode.agentRow = this.agentRow;
         initialNode.agentCol = this.agentCol;
         setInitialState(initialNode);
+
         while(!subGoals.isEmpty()){
             subGoals.pollFirst();
             this.strategy.clearFrontier();
             this.strategy.addToFrontier(getInitialState());
-        int iterations = 0;
-        while (true) {
-            if (iterations == 1000) {
-                System.err.println(this.strategy.searchStatus());
-                iterations = 0;
-            }
+            int iterations = 0;
 
-            if (this.strategy.frontierIsEmpty()) {
-                return null;
-            }
-            Node leafNode = this.strategy.getAndRemoveLeaf();
+            while (true) {
+              if (iterations == 1000) {
+                  System.err.println(this.strategy.searchStatus());
+                  iterations = 0;
+              }
 
-            if (leafNode.isGoalState()) {
+              if (this.strategy.frontierIsEmpty()) {
+                  return null;
+              }
+              
+              Node leafNode = this.strategy.getAndRemoveLeaf();
+
+              if (leafNode.isGoalState()) {
                 LinkedList<Node> plan = leafNode.extractPlan();
                 if (plan.size() > 0){
                     Node goalState = plan.getLast();
