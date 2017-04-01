@@ -75,7 +75,7 @@ public class Agent {
     public LinkedList<Node> search() throws IOException {
 
         System.err.println("Agent " + getId() + " started search with strategy " + this.strategy.toString());
-        Goal firstSub = subGoals.peekFirst();
+        Goal firstSub = this.subGoals.peekFirst();
         Node initialNode = new Node(firstSub, this.color);
         HashSet<Box> allBoxes = Level.getInstance().getAllBoxes();
         
@@ -87,8 +87,8 @@ public class Agent {
         initialNode.agentCol = this.agentCol;
         setInitialState(initialNode);
 
-        while(!subGoals.isEmpty()){
-            subGoals.pollFirst();
+        while(!this.subGoals.isEmpty()){
+            this.subGoals.pollFirst();
             this.strategy.clearFrontier();
             this.strategy.addToFrontier(getInitialState());
             int iterations = 0;
@@ -123,7 +123,7 @@ public class Agent {
                     newStart.setBoxes(leafNode.getBoxesCopy());
                     setInitialState(newStart);//Update initial state to where we end after this subgoal.
                 }
-                combinedSolution.addAll(plan);
+                this.combinedSolution.addAll(plan);
                 break;
             }
 
@@ -136,7 +136,7 @@ public class Agent {
             iterations++;
         }
         }
-        return combinedSolution;
+        return this.combinedSolution;
     }
 
     public char getId() {
