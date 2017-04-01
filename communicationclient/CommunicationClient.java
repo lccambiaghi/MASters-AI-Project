@@ -23,9 +23,9 @@ public class CommunicationClient {
 //        FileInputStream fis = null;
 //        fis = new FileInputStream("levels/SAsoko3_48.lvl");
 //        in = new BufferedReader(new InputStreamReader(fis));
+
         //For live
         in = new BufferedReader(new InputStreamReader(System.in));
-
     }
 
     /**
@@ -36,10 +36,11 @@ public class CommunicationClient {
      * levels with multi agents.
      */
     public boolean update() throws IOException {
-//        _strategy = strategy;
+
         LinkedList<Node> solution;
 
         for (Agent agent : agents) {
+
             //Assign all goals a box
             HashSet<Goal> allGoals = _level.getAllGoals();
             for (Goal g: allGoals) {
@@ -49,6 +50,7 @@ public class CommunicationClient {
                     b.setBoxGoal(g);
                 }
             }
+
             //Start on agent subgoals
             HashSet<Box> agentBoxes =_level.getBoxesByColor(agent.getColor());
 
@@ -60,7 +62,7 @@ public class CommunicationClient {
                     agent.addSubGoal(b.getBoxGoal());
                 }
             }
-//            agent.setUpInitialState(_level);
+
             solution = agent.search();
             if (solution == null) {
                 System.err.println(_strategy.searchStatus());
@@ -73,9 +75,7 @@ public class CommunicationClient {
 
                 for (Node n : solution) {
                     String act = n.action.toString();
-//                    System.err.println(n);
                     System.out.println(act);
-                    //System.out.println("[Move(E), Move(E)]");
                     String response = in.readLine();
                     if (response.contains("false")) {
                         System.err.format("Server responsed with %s to the inapplicable action: %s\n", response, act);
@@ -92,8 +92,6 @@ public class CommunicationClient {
         return _strategy;
     }
 
-
-
     public void setStrategy(Strategy _strategy) {
         this._strategy = _strategy;
     }
@@ -106,14 +104,14 @@ public class CommunicationClient {
      */
     private void readMap() throws IOException {
         HashMap<Character, Color> colors = new HashMap<>();
-//        String line;//, color;
         Color color;
         int MAX_COL = 0;
         int MAX_ROW = 0;
         int row = 0;
         ArrayList<String> map = new ArrayList<>();
         String line = in.readLine();
-        while(!line.equals("")) {
+        
+	while(!line.equals("")) {
             map.add(line);
             if(line.length() > MAX_COL) MAX_COL = line.length();
             line = in.readLine();
@@ -121,28 +119,16 @@ public class CommunicationClient {
             MAX_ROW = row;
         }
 
-//        for (String line = in.readLine(); line != null; line = in.readLine()) {
-//            map.add(line);
-//            if(line.length() > MAX_COL) MAX_COL = line.length();
-////            line = in.readLine();
-//            row++;
-//            MAX_ROW = row;
-//        }
-
-        _level = Level.createInstance(MAX_ROW,MAX_COL);
+        _level = Level.createInstance(MAX_ROW, MAX_COL);
 
         System.err.println(" ");
         System.err.println("Printing scanned map");
 
         for (String lineInMap: map) {
             System.err.println(lineInMap);
-        }
+	}
 
         System.err.println(" ");
-
-        /**
-         * TODO: Create boxes and goals here from box and goals class
-         */
 
         row = 0;
         for (String lineInMap: map) {
@@ -162,11 +148,9 @@ public class CommunicationClient {
                         Color boxColor = colors.get(chr);
                         Box box = new Box(col,row,chr,boxColor);
                         _level.addBox(box);
-//                        getInitialState().boxes[row][col] = chr;
                     } else if ('a' <= chr && chr <= 'z') { // Goal.
                         Goal goal = new Goal(col,row,chr);
                         _level.addCharGoal(goal);
-//                        getInitialState().goals[row][col] = chr;
                     } else if (chr == ' ') {
                         // Free space.
                     }else if ('0' <= chr && chr <= '9') {
