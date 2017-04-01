@@ -50,11 +50,11 @@ public class Level {
     }
 
     public boolean[][] getWalls() {
-        return walls;
+        return this.walls;
     }
     
     public HashSet<Box> getAllBoxes(){
-        return allBoxes;
+        return this.allBoxes;
     }
 
     public void addCharGoal(Goal goal){
@@ -63,12 +63,12 @@ public class Level {
         }else{
             HashSet<Goal> charSet = new HashSet<>();
             charSet.add(goal);
-            allGoals.add(goal);
+            this.allGoals.add(goal);
             this.goalsByChar.put(goal.getGoalChar(), charSet);
         }
 
         if (goalsByType.containsKey(GoalType.BoxToGoal)){
-            allGoals.add(goal);
+            this.allGoals.add(goal);
         }else{
             HashSet<Goal> typeSet = new HashSet<>();
             typeSet.add(goal);
@@ -82,17 +82,14 @@ public class Level {
         Color boxColor = box.getBoxColor();
         allBoxes.add(box);
         if(boxesByChar.containsKey(boxChar)){
-            //HashSet<Box> boxesChar = boxesByChar.get(boxChar);
-            //HashSet<Box> boxesColor = boxesByColor.get(boxColor);
-            //boxesChar.add(box);
-            //boxesColor.add(box);
+
         }else{
             HashSet<Box> boxesChar = new HashSet<>();
             HashSet<Box> boxesColor = new HashSet<>();
             boxesChar.add(box);
             boxesColor.add(box);
-            boxesByChar.put(boxChar,boxesChar);
-            boxesByColor.put(boxColor,boxesColor);
+            this.boxesByChar.put(boxChar, boxesChar);
+            this.boxesByColor.put(boxColor, boxesColor);
         }
     }
 
