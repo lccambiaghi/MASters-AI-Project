@@ -58,26 +58,22 @@ public class Level {
     }
 
     public void addCharGoal(Goal goal){
-        if (goalsByChar.containsKey(goal.getGoalChar())){
-            HashSet<Goal> charSet = goalsByChar.get(goal.getGoalChar());
-            charSet.add(goal);
-            allGoals.add(goal);
+        if (this.goalsByChar.containsKey(goal.getGoalChar())){
+            this.allGoals.add(goal);
         }else{
             HashSet<Goal> charSet = new HashSet<>();
             charSet.add(goal);
             allGoals.add(goal);
-            goalsByChar.put(goal.getGoalChar(), charSet);
+            this.goalsByChar.put(goal.getGoalChar(), charSet);
         }
 
         if (goalsByType.containsKey(GoalType.BoxToGoal)){
-            HashSet<Goal> typeSet = goalsByType.get(GoalType.BoxToGoal);
-            typeSet.add(goal);
             allGoals.add(goal);
         }else{
             HashSet<Goal> typeSet = new HashSet<>();
             typeSet.add(goal);
-            allGoals.add(goal);
-            goalsByType.put(GoalType.BoxToGoal, typeSet);
+            this.allGoals.add(goal);
+            this.goalsByType.put(GoalType.BoxToGoal, typeSet);
         }
     }
     
@@ -86,10 +82,10 @@ public class Level {
         Color boxColor = box.getBoxColor();
         allBoxes.add(box);
         if(boxesByChar.containsKey(boxChar)){
-            HashSet<Box> boxesChar = boxesByChar.get(boxChar);
-            HashSet<Box> boxesColor = boxesByColor.get(boxColor);
-            boxesChar.add(box);
-            boxesColor.add(box);
+            //HashSet<Box> boxesChar = boxesByChar.get(boxChar);
+            //HashSet<Box> boxesColor = boxesByColor.get(boxColor);
+            //boxesChar.add(box);
+            //boxesColor.add(box);
         }else{
             HashSet<Box> boxesChar = new HashSet<>();
             HashSet<Box> boxesColor = new HashSet<>();
