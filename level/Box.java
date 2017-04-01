@@ -20,11 +20,11 @@ public class Box {
     }
 
     public char getBoxChar() {
-        return boxChar;
+        return this.boxChar;
     }
 
     public Color getBoxColor() {
-        return boxColor;
+        return this.boxColor;
     }
 
     public void setCol(int col) {
@@ -36,23 +36,32 @@ public class Box {
     }
 
     public void setBoxGoal(Goal goal){
-        int newDistance = HeuristicHelper.manhattanDistance(this.row, this.col, goal.getRow(),goal.getCol());
+        int newDistance = HeuristicHelper.manhattanDistance(this.row, 
+                                                            this.col, 
+                                                            goal.getRow(),
+                                                            goal.getCol());
         int oldDistance = Integer.MAX_VALUE;
-        if(this.boxGoal!=null){
-            oldDistance = HeuristicHelper.manhattanDistance(this.row, this.col, this.boxGoal.getRow(), this.boxGoal.getCol());
+
+        if(this.boxGoal != null){
+            oldDistance = HeuristicHelper.manhattanDistance(this.row, 
+                                                            this.col, 
+                                                            this.boxGoal.getRow(), 
+                                                            this.boxGoal.getCol());
         }
+
         if (newDistance < oldDistance) this.boxGoal = goal;
     }
 
     public Goal getBoxGoal() {
-        return boxGoal;
+        return this.boxGoal;
     }
 
     public int getCol() {
-        return col;
+        return this.col;
     }
+
     public int getRow() {
-        return row;
+        return this.row;
     }
 
     @Override
