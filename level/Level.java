@@ -87,15 +87,20 @@ public class Level {
         this.allBoxes.add(box);
         if(boxesByChar.containsKey(boxChar)){
             HashSet<Box> boxesChar = this.boxesByChar.get(boxChar);
-            HashSet<Box> boxesColor = this.boxesByColor.get(boxColor);
+
             boxesChar.add(box);
-            boxesColor.add(box);
+
         }else{
             HashSet<Box> boxesChar = new HashSet<>();
-            HashSet<Box> boxesColor = new HashSet<>();
             boxesChar.add(box);
-            boxesColor.add(box);
             this.boxesByChar.put(boxChar, boxesChar);
+        }
+        if(boxesByColor.containsKey(boxColor)){
+            HashSet<Box> boxesColor = this.boxesByColor.get(boxColor);
+            boxesColor.add(box);
+        }else{
+            HashSet<Box> boxesColor = new HashSet<>();
+            boxesColor.add(box);
             this.boxesByColor.put(boxColor, boxesColor);
         }
     }
