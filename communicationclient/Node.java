@@ -32,15 +32,6 @@ public class Node {
 	public void setGoal(Goal goal) {
 		this.goal = goal;
 	}
-	// Arrays are indexed from the top-left of the level, with first index being row and second being column.
-	// Row 0: (0,0) (0,1) (0,2) (0,3) ...
-	// Row 1: (1,0) (1,1) (1,2) (1,3) ...
-	// Row 2: (2,0) (2,1) (2,2) (2,3) ...
-	// ...
-	// (Start in the top left corner, first go down, then go right)
-	// E.g. this.walls[2] is an array of booleans having size MAX_COL.
-	// this.walls[row][col] is true if there's a wall at (row, col)
-	//
 
 	public boolean[][] walls = Level.getInstance().getWalls();
 	public Box[][] boxes = new Box[MAX_ROW][MAX_COL];
@@ -82,6 +73,7 @@ public class Node {
 	public boolean isInitialState() {
 		return this.parent == null;
 	}
+
 	public void addBox(Box box){
 		this.boxes[box.getRow()][box.getCol()] = box;
 	}
@@ -99,7 +91,8 @@ public class Node {
 				}
 				break;
 			case AgentToBox:
-				if((Math.abs(agentRow-goal.getRow()) == 1 && Math.abs(agentCol-goal.getCol())==0) || (Math.abs(agentCol-goal.getCol())==1 && Math.abs(agentRow-goal.getRow())==0)) return true;
+				if((Math.abs(agentRow-goal.getRow()) == 1 && Math.abs(agentCol-goal.getCol()) == 0) || 
+          (Math.abs(agentCol-goal.getCol()) == 1 && Math.abs(agentRow-goal.getRow()) == 0)) return true;
 				break;
 		}
 		return false;

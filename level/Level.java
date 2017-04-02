@@ -18,23 +18,20 @@ public class Level {
     private HashSet<Box> allBoxes;
     private HashSet<Goal> allGoals;
     private boolean[][] walls;
-//    private char[][] goals;
     public int MAX_ROW;
     public int MAX_COL;
-    private int NUM_GOALS;
+    private int NUM_GOALS = 0;
 
     private Level (int MAX_ROW, int MAX_COL){
-        walls = new boolean[MAX_ROW][MAX_COL];
-//        goals = new char[MAX_ROW][MAX_COL];
+        this.walls = new boolean[MAX_ROW][MAX_COL];
         this.MAX_ROW = MAX_ROW;
         this.MAX_COL = MAX_COL;
-        NUM_GOALS = 0;
-        goalsByChar = new HashMap<>();
-        goalsByType = new HashMap<>();
-        boxesByChar = new HashMap<>();
-        boxesByColor = new HashMap<>();
-        allBoxes = new HashSet<>();
-        allGoals = new HashSet<>();
+        this.goalsByChar = new HashMap<>();
+        this.goalsByType = new HashMap<>();
+        this.boxesByChar = new HashMap<>();
+        this.boxesByColor = new HashMap<>();
+        this.allBoxes = new HashSet<>();
+        this.allGoals = new HashSet<>();
     }
 
     public static Level createInstance(int MAX_ROW, int MAX_COL) {
@@ -47,45 +44,50 @@ public class Level {
     public static Level getInstance(){
         return instance;
     }
+
     public void setWall(boolean wall, int row, int col){
-        walls[row][col] = wall;
+        this.walls[row][col] = wall;
     }
 
     public boolean[][] getWalls() {
-        return walls;
+        return this.walls;
     }
+    
     public HashSet<Box> getAllBoxes(){
-        return allBoxes;
+        return this.allBoxes;
     }
+
     public void addCharGoal(Goal goal){
-        if (goalsByChar.containsKey(goal.getGoalChar())){
+        if (this.goalsByChar.containsKey(goal.getGoalChar())){
             HashSet<Goal> charSet = goalsByChar.get(goal.getGoalChar());
             charSet.add(goal);
-            allGoals.add(goal);
+            this.allGoals.add(goal);
         }else{
             HashSet<Goal> charSet = new HashSet<>();
             charSet.add(goal);
-            allGoals.add(goal);
-            goalsByChar.put(goal.getGoalChar(), charSet);
+            this.allGoals.add(goal);
+            this.goalsByChar.put(goal.getGoalChar(), charSet);
         }
+
         if (goalsByType.containsKey(GoalType.BoxToGoal)){
             HashSet<Goal> typeSet = goalsByType.get(GoalType.BoxToGoal);
             typeSet.add(goal);
-            allGoals.add(goal);
+            this.allGoals.add(goal);
         }else{
             HashSet<Goal> typeSet = new HashSet<>();
             typeSet.add(goal);
-            allGoals.add(goal);
-            goalsByType.put(GoalType.BoxToGoal, typeSet);
+            this.allGoals.add(goal);
+            this.goalsByType.put(GoalType.BoxToGoal, typeSet);
         }
     }
+    
     public void addBox(Box box){
         char boxChar = box.getBoxChar();
         Color boxColor = box.getBoxColor();
-        allBoxes.add(box);
+        this.allBoxes.add(box);
         if(boxesByChar.containsKey(boxChar)){
-            HashSet<Box> boxesChar = boxesByChar.get(boxChar);
-            HashSet<Box> boxesColor = boxesByColor.get(boxColor);
+            HashSet<Box> boxesChar = this.boxesByChar.get(boxChar);
+            HashSet<Box> boxesColor = this.boxesByColor.get(boxColor);
             boxesChar.add(box);
             boxesColor.add(box);
         }else{
@@ -93,13 +95,15 @@ public class Level {
             HashSet<Box> boxesColor = new HashSet<>();
             boxesChar.add(box);
             boxesColor.add(box);
-            boxesByChar.put(boxChar,boxesChar);
-            boxesByColor.put(boxColor,boxesColor);
+            this.boxesByChar.put(boxChar, boxesChar);
+            this.boxesByColor.put(boxColor, boxesColor);
         }
     }
+
     public HashSet<Box> getBoxesByColor(Color color){
         return boxesByColor.get(color);
     }
+
     public HashSet<Box> getBoxesByChar(Character chr){
         return boxesByChar.get(chr);
     }

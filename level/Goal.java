@@ -12,14 +12,13 @@ public class Goal {
     private char goalChar;
     private Box goalBox;
 
-
-    public Goal(int col, int row, GoalType goalType ){
+    public Goal(int col, int row, GoalType goalType){
         this.col = col;
         this.row = row;
         this.goalType = goalType;
     }
 
-    public Goal(int col, int row, char goalChar ){
+    public Goal(int col, int row, char goalChar){
         this.col = col;
         this.row = row;
         this.goalType = GoalType.BoxToGoal;
@@ -27,15 +26,23 @@ public class Goal {
     }
 
     public Box getGoalBox() {
-        return goalBox;
+        return this.goalBox;
     }
 
     public void setGoalBox(Box goalBox) {
-        int newDistance = HeuristicHelper.manhattanDistance(goalBox.getRow(), goalBox.getCol(), this.row, this.col);//manhattanDistanceToGoal(goalBox.getCol(),goalBox.getRow());
+        int newDistance = HeuristicHelper.manhattanDistance(goalBox.getRow(), 
+                                                            goalBox.getCol(), 
+                                                            this.row, 
+                                                            this.col);
         int oldDistance = Integer.MAX_VALUE;
+        
         if(this.goalBox!=null){
-            oldDistance = HeuristicHelper.manhattanDistance(this.goalBox.getRow(), this.goalBox.getCol(), this.row, this.col);
+            oldDistance = HeuristicHelper.manhattanDistance(this.goalBox.getRow(), 
+                                                            this.goalBox.getCol(), 
+                                                            this.row, 
+                                                            this.col);
         }
+        
         if (newDistance < oldDistance) this.goalBox = goalBox;
     }
 
