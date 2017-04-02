@@ -12,6 +12,7 @@ public class Box {
     private Color boxColor;
     private Goal boxGoal;
 
+    // if SA level, color is default to blue
     public Box(int col, int row, char boxChar, Color boxColor) {
         this.col = col;
         this.row = row;
@@ -25,6 +26,11 @@ public class Box {
 
     public Color getBoxColor() {
         return this.boxColor;
+    }
+
+
+    public void setColor(Color color) {
+        this.boxColor= color;
     }
 
     public void setCol(int col) {

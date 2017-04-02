@@ -1,9 +1,6 @@
 package communicationclient;
 
-import level.Box;
-import level.Color;
-import level.Goal;
-import level.Level;
+import level.*;
 
 import java.io.IOException;
 import java.util.ArrayDeque;
@@ -46,15 +43,15 @@ public class Agent {
      * Agent constructor
      * Sets up the initial state for the agent
      * @param id : Agent id
-     * @param color : Agent color
+     * @param color : Agent color. if Single Agent level, color is default to blue
      * @param msgHub : shared instance of msghub
      */
     public Agent(char id, Color color, MsgHub msgHub, Strategy strategy) {
-        System.err.println("Agent " + id + " with color " + color + " created");
+        System.err.println("Agent " + id + "created");
         this.subGoals = new ArrayDeque<>();
-        this.solutionCommands = new ArrayList<>();
+        //this.solutionCommands = new ArrayList<>();
         this.combinedSolution = new LinkedList<>();
-        this.msgHub = msgHub;
+        //this.msgHub = msgHub;
         this.color = color;
         this.id = id;
         this.strategy = strategy;
@@ -68,12 +65,24 @@ public class Agent {
         return this.solutionCommands;
     }
 
+    public void plan(){
+        System.err.println("Agent " + this.id + " started planning");
+        HashSet<Box> agentBoxes = Level.getInstance().getBoxesByColor(this.color);
+        for (Box b : agentBoxes) {
+            if (b.getBoxGoal() != null) {
+                Goal toBoxSubGoal = new Goal(b.getCol(), b.getRow(), GoalType.AgentToBox);
+                addSubGoal(toBoxSubGoal);
+                addSubGoal(b.getBoxGoal());
+            }
+        }
+        System.err.println("Agent " + this.id + " planned " + subGoals.size() + "subgoals");
+    }
+
     /**
      * Search for solution for agent
      * @return LinkedList with nodes for agent
      */
     public LinkedList<Node> search() throws IOException {
-
         System.err.println("Agent " + getId() + " started search with strategy " + this.strategy.toString());
         Goal firstSub = this.subGoals.peekFirst();
         Node initialNode = new Node(firstSub, this.color);
@@ -153,6 +162,10 @@ public class Agent {
 
     public Color getColor() {
         return this.color;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
     }
 
     /**

@@ -4,3 +4,4 @@ oiutput/
 */*.*.swp
 output/
 *.swp
+build/
