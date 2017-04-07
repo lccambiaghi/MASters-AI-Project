@@ -189,6 +189,7 @@ public class Node {
 			int result = 1;
 			result = prime * result + this.agentCol;
 			result = prime * result + this.agentRow;
+			result = prime * result + this.agentColor.ordinal();//Agent color not in hashCode as well
 			result = prime * result + Arrays.deepHashCode(this.boxes);
 			result = prime * result + Arrays.deepHashCode(this.walls);
 			this._hash = result;

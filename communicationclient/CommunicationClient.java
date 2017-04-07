@@ -16,7 +16,12 @@ public class CommunicationClient {
     private Level level;
 
     public CommunicationClient() throws IOException {
-        in = new BufferedReader(new InputStreamReader(System.in));
+        //For Debugging
+        FileInputStream fis = null;
+        fis = new FileInputStream("levels/MAsimple2.lvl");
+        in = new BufferedReader(new InputStreamReader(fis));
+        //For live
+//        in = new BufferedReader(new InputStreamReader(System.in));
     }
 
     /**
@@ -117,8 +122,9 @@ public class CommunicationClient {
         int row = 0;
         ArrayList<String> map = new ArrayList<>();
         String line = in.readLine();
-        
-	    while(!line.equals("")) {
+
+        while(line != null){
+//	    while(!line.equals("")) {
             map.add(line);
             if(line.length() > MAX_COL) MAX_COL = line.length();
             line = in.readLine();
