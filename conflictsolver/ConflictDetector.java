@@ -38,12 +38,14 @@ public class ConflictDetector {
                 if(i > 0){
                     HashMap<AgentPoint, Node> agentPointsBefore = timeMap.get(i-1);
                     Node before = agentPointsBefore.get(agentPoint);
+                    //Is another agent moving out of the cell
                     if(before !=null){
+                        conflictPoint = i;
+                        return conflictPoint;
                         //Are they trying to cross each other?
-                        if(Command.isOpposite(before.action.dir1,n.action.dir1)){
-                            conflictPoint = i;
-                            return conflictPoint;
-                        }
+                        //if(Command.isOpposite(before.action.dir1,n.action.dir1)){
+
+                        //}
                     }
                 }
                 //Are they trying to go to same space at same time.

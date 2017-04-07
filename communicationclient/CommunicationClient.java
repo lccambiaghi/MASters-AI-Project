@@ -70,7 +70,7 @@ public class CommunicationClient {
                 while (conflict > -1){//Pad with NoOp
                     System.err.println("Conflict found at "+conflict);
                     Node n = agentSolution.getFirst();
-                    Node noOp = new Node(n);
+                    Node noOp = new Node(null);
                     noOp.setBoxes(n.getBoxesCopy());
                     noOp.agentRow = n.agentRow;
                     noOp.agentCol = n.agentCol;
