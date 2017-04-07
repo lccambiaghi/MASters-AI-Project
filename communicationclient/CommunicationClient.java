@@ -138,11 +138,11 @@ public class CommunicationClient {
         System.err.println(" ");
 
         row = 0;
-        boolean MAlevel = false;
+        boolean colorLevel = false;
         for (String lineInMap: map) {
             // if line is a color declaration, MA level -> colors get mapped
             if (lineInMap.matches("^[a-z]+:\\s*[0-9A-Z](,\\s*[0-9A-Z])*\\s*$")) {
-                MAlevel = true;
+                colorLevel = true;
                 lineInMap = lineInMap.replaceAll("\\s", "");
                 color = Color.valueOf(lineInMap.split( ":" )[0]);
                 for (String id : lineInMap.split(":")[1].split(","))
@@ -155,7 +155,7 @@ public class CommunicationClient {
                         this.level.setWall(true, row, col);
                     } else if ('A' <= chr && chr <= 'Z') { // Box.
                         Box box = new Box(col, row, chr, Color.blue);
-                        if(MAlevel) {
+                        if(colorLevel) {
                             Color boxColor = colors.get(chr);
                             box.setColor(boxColor);
                         }
@@ -167,7 +167,7 @@ public class CommunicationClient {
                         // Free space.
                     }else if ('0' <= chr && chr <= '9') {
                         Agent newAgent = new Agent(chr, Color.blue, msgHub, this.strategy);
-                        if(MAlevel) {
+                        if(colorLevel) {
                             Color agentColor = colors.get(chr);
                             newAgent.setColor(agentColor);
                         }
