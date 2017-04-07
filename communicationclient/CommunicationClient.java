@@ -3,6 +3,7 @@ package communicationclient;
 import java.io.*;
 import java.util.*;
 
+import conflictsolver.ConflictDetector;
 import heuristic.Heuristic;
 import heuristic.HeuristicHelper;
 import level.*;
@@ -53,6 +54,7 @@ public class CommunicationClient {
         // each agent looks for the solution
         LinkedList<Node> agentSolution;
         List<LinkedList<Node>> solutions = new ArrayList<>();
+        ConflictDetector cf = new ConflictDetector();
         for (int i=0; i< agents.size(); i++) {
             agentSolution = agents.get(i).search();
             if (agentSolution == null) {
@@ -63,6 +65,21 @@ public class CommunicationClient {
                 System.err.println("\nSummary for " + this.strategy.toString() + " for agent " + agents.get(i).getId() + ":");
                 System.err.println("Found solution of length " + agentSolution.size());
                 System.err.println(this.strategy.searchStatus());
+                int conflict = cf.checkPlan(agentSolution);
+                int numConflicts = 0;
+                while (conflict > -1){//Pad with NoOp
+                    System.err.println("Conflict found at "+conflict);
+                    Node n = agentSolution.getFirst();
+                    Node noOp = new Node(n);
+                    noOp.setBoxes(n.getBoxesCopy());
+                    noOp.agentRow = n.agentRow;
+                    noOp.agentCol = n.agentCol;
+                    noOp.action= new Command(Command.Type.NoOp, n.action.dir1,n.action.dir2);
+//                    agentSolution.add(conflict+1, noOp);
+                    agentSolution.addFirst(noOp);
+                    conflict = cf.checkPlan(agentSolution);
+                }
+                cf.addPlan(agentSolution);
                 solutions.add(agentSolution);
             }
         }

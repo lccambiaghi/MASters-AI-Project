@@ -17,6 +17,7 @@ public class Node {
 	public int agentRow;
 	public int agentCol;
 	public Color agentColor;
+	public char agentId;
 
 	public Node parent;
 	public Command action;
@@ -59,11 +60,12 @@ public class Node {
 		}
 	}
 
-	public Node(Goal goal, Color agentColor) {
+	public Node(Goal goal, Color agentColor, char agentId) {
 		this.parent = null;
 		this.goal = goal;
 		this.g = 0;
 		this.agentColor = agentColor;
+		this.agentId = agentId;
 	}
 
 	public int g() {

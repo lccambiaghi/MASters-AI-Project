@@ -10,6 +10,7 @@ import java.util.List;
 
 /**
  * Created by salik on 07-04-2017.
+ * Class for parsing the level as it is given from the environment-server or reading from a file
  */
 public class LevelParser {
 

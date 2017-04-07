@@ -84,7 +84,7 @@ public class Agent {
     public LinkedList<Node> search() throws IOException {
         System.err.println("Agent " + getId() + " started search with strategy " + this.strategy.toString());
         Goal firstSub = this.subGoals.peekFirst();
-        Node initialNode = new Node(firstSub, this.color);
+        Node initialNode = new Node(firstSub, this.color, this.id);
         HashSet<Box> allBoxes = Level.getInstance().getAllBoxes();
         
         for (Box b: allBoxes) {
@@ -119,13 +119,13 @@ public class Agent {
                         Node goalState = plan.getLast();
                         this.agentRow = goalState.agentRow;
                         this.agentCol = goalState.agentCol;
-                        Node newStart = new Node(subGoals.peekFirst(), this.color);
+                        Node newStart = new Node(subGoals.peekFirst(), this.color, this.id);
                         newStart.setBoxes(goalState.getBoxesCopy());
                         newStart.agentCol = goalState.agentCol;
                         newStart.agentRow = goalState.agentRow;
                         setInitialState(newStart);//Update initial state to where we end after this subgoal.
                     }else{
-                        Node newStart = new Node(subGoals.peekFirst(), this.color);
+                        Node newStart = new Node(subGoals.peekFirst(), this.color, this.id);
                         newStart.agentRow = this.agentRow;
                         newStart.agentCol = this.agentCol;
                         newStart.setBoxes(leafNode.getBoxesCopy());
