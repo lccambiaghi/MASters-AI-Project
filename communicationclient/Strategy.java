@@ -13,7 +13,7 @@ public abstract class Strategy {
 	private final long startTime;
 
 	public Strategy() {
-		this.explored = new HashSet<Node>();
+		this.explored = new HashSet<>();
 		this.startTime = System.currentTimeMillis();
 	}
 
@@ -51,6 +51,7 @@ public abstract class Strategy {
 	public abstract int countFrontier();
 
 	public abstract boolean frontierIsEmpty();
+	public abstract void clearFrontier();
 
 	@Override
 	public abstract String toString();

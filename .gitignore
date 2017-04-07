@@ -3,3 +3,5 @@ oiutput/
 */*.class
 */*.*.swp
 output/
+*.swp
+build/

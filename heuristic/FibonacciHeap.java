@@ -1,4 +1,4 @@
-package searchclient;
+package heuristic;
 
 /***********************************************************************
  * File: FibonacciHeap.java

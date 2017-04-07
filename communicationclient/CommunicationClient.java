@@ -2,207 +2,105 @@ package communicationclient;
 
 import java.io.*;
 import java.util.*;
-import communicationclient.Strategy.*;
+
+import heuristic.Heuristic;
+import heuristic.HeuristicHelper;
+import level.*;
+import level.Box;
 
 public class CommunicationClient {
-
-    public class Agent {
-        private MsgHub _msgHub;
-        private String _color;
-        private char _id;
-        private Strategy _strategy;
-        private Node _initialState;
-
-        /**
-         * Agent constructor
-         * Sets up the initial state for the agent
-         * @param id : Agent id
-         * @param color : Agent color
-         * @param msghub : shared instance of msghub
-	 * 
-	 * TODO:
-	 * Needs to take a list with which boxes the agent can move with
-	 * Needs to take a list with sub-goals/goals for the agent to fulfill
-         */
-        public Agent(char id, String color, MsgHub msgHub, Strategy strategy, ArrayList<String> map) {
-            System.err.println("Agent " + id + " with color " + color + " using strategy " + strategy.toString() + " created");
-            _msgHub = msgHub;
-            _color = color;
-            _id = id;
-            _strategy = strategy;
-
-            setUpInitialState(map);
-        }
-
-        /**
-         * Search for solution for agent
-         * @return LinkedList with nodes for agent
-         */
-        public LinkedList<Node> search() throws IOException {
-            Strategy strategy = getStrategy();
-            System.err.println("Agent " + getId() + " started search with strategy " + strategy.toString());
-            strategy.addToFrontier(getInitialState());
-
-            int iterations = 0;
-            while (true) {
-                if (iterations == 1000) {
-                    System.err.println(strategy.searchStatus());
-                    iterations = 0;
-                }
-
-                if (strategy.frontierIsEmpty()) {
-                    return null;
-                }
-
-                Node leafNode = strategy.getAndRemoveLeaf();
-
-                if (leafNode.isGoalState()) {
-                    return leafNode.extractPlan();
-                }
-
-                strategy.addToExplored(leafNode);
-                for (Node n : leafNode.getExpandedNodes()) { // The list of expanded nodes is shuffled randomly; see Node.java.
-                    if (!strategy.isExplored(n) && !strategy.inFrontier(n)) {
-                        strategy.addToFrontier(n);
-                    }
-                }
-                iterations++;
-            }
-        }
-
-        private char getId() {
-            return _id;
-        }
-
-        private Strategy getStrategy() {
-            return _strategy;
-        }
-
-        private Node getInitialState() {
-            return _initialState;
-        }
-
-        private void setInitialState(Node state) {
-            _initialState = state;
-        }
-
-        /**
-         * Sets up the initial state for the Agent
-         * reads the map from serverMessages param.
-         * All other agents and different colored boxes
-         * are considered walls and other goals are
-         * considered free spaces.
-         * @param serverMessages
-         * @throws IOException
-         */
-        private void setUpInitialState(ArrayList<String> map) {
-            System.err.println("Setting up initial state for agent " + getId());
-            int row = 0;
-            setInitialState(new Node(null));
-
-            for (String line: map) {
-
-                // Skip lines specifying colors
-                if (!line.matches("^[a-z]+:\\s*[0-9A-Z](,\\s*[0-9A-Z])*\\s*$")) {
-
-                    // Read lines specifying level layout
-                    for (int col = 0; col < line.length(); col++) {
-                        char chr = line.charAt(col);
-
-                        /**
-                         * TODO: Need to set other boxes as walls.
-                         */
-
-                        if (chr == '+') { // Wall.
-                            getInitialState().walls[row][col] = true;
-                        } else if ('A' <= chr && chr <= 'Z') { // Box.
-                            getInitialState().boxes[row][col] = chr;
-                        } else if ('a' <= chr && chr <= 'z') { // Goal.
-                            getInitialState().goals[row][col] = chr;
-                        } else if (chr == ' ') {
-                            // Free space.
-                        } else if ('0' <= chr && chr <= '9') { // Agent.
-                            if (chr == getId()) {
-                                getInitialState().agentRow = row;
-                                getInitialState().agentCol = col;
-                            } else {
-                                // other agents are considered walls
-                                getInitialState().walls[row][col] = true;
-                            }
-                        }
-                    }
-                    row++;
-                }
-            }
-            System.err.println("Initial state for agent " + getId() + " was successfully set up");
-            System.err.println(" ");
-        }
-
-        /**
-         * Posts msgs to the msgHub
-         */
-        private void postMsg() {
-            System.err.println("~~ Agent: " + _id + " posted an msg");
-        }
-
-        /**
-         * Reads msgs from the msgHub
-         */
-        private void readMsg() {
-            System.err.println("~~ Agent: " + _id + " read an msg");
-        }
-    }
-
-    private BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-    private List<Agent> agents = new ArrayList< Agent >();
+    private BufferedReader in;
+    private List<Agent> agents = new ArrayList<>();
     private MsgHub msgHub = new MsgHub();
-    private Strategy _strategy;
+    private Strategy strategy;
+    private Level level;
 
-    public CommunicationClient(Strategy strategy) throws IOException {
-        _strategy = strategy;
-        readMap(strategy);
+    public CommunicationClient() throws IOException {
+        in = new BufferedReader(new InputStreamReader(System.in));
     }
 
     /**
-     * Each agent starts to search for how to solve the level
-     * and sends the actions to the server.
      *
-     * Actions should be combined here when working with
-     * levels with multi agents.
      */
     public boolean update() throws IOException {
-        Strategy strategy = getStrategy();
-        LinkedList<Node> solution;
+        // assign a box to each charGoal
+        HashSet<Goal> charGoals = this.level.getAllGoals();
+        for (Goal g: charGoals) {
+            HashSet<Box> goalBoxes = this.level.getBoxesByChar(Character.toUpperCase(g.getGoalChar()));
+            // assign best box to the goal
+            Box assigned = new ArrayList<>(goalBoxes).get(0);
+            for (Box b: goalBoxes) {
+                // if distance to goal is less, assign
+                int assignedDistance = HeuristicHelper.manhattanDistance(
+                        assigned.getRow(), assigned.getCol(), g.getRow(), g.getCol());
+                int bDistance = HeuristicHelper.manhattanDistance(
+                        b.getRow(), b.getCol(), g.getRow(), g.getCol());
+                if (bDistance < assignedDistance)
+                    assigned = b;
+            }
 
+            g.setGoalBox(assigned);
+            assigned.setBoxGoal(g);
+        }
+
+        // each agent plans his subgoals
         for (Agent agent : agents) {
-            solution = agent.search();
-            if (solution == null) {
-                System.err.println(strategy.searchStatus());
+            agent.plan();
+        }
+
+        // each agent looks for the solution
+        LinkedList<Node> agentSolution;
+        List<LinkedList<Node>> solutions = new ArrayList<>();
+        for (int i=0; i< agents.size(); i++) {
+            agentSolution = agents.get(i).search();
+            if (agentSolution == null) {
+                System.err.println(this.strategy.searchStatus());
                 System.err.println("Unable to solve level.");
                 System.exit(0);
             } else {
-                System.err.println("\nSummary for " + strategy.toString() + " for agent: " + agent.getId());
-                System.err.println("Found solution of length " + solution.size());
-                System.err.println(strategy.searchStatus());
-
-                for (Node n : solution) {
-                    String act = n.action.toString();
-                    System.out.println(act);
-                    //System.out.println("[Move(E), Move(E)]");
-                    String response = in.readLine();
-                    if (response.contains("false")) {
-                        System.err.format("Server responsed with %s to the inapplicable action: %s\n", response, act);
-                        System.err.format("%s was attempted in \n%s\n", act, n.toString());
-                        break;
-                    }
-                }
+                System.err.println("\nSummary for " + this.strategy.toString() + " for agent " + agents.get(i).getId() + ":");
+                System.err.println("Found solution of length " + agentSolution.size());
+                System.err.println(this.strategy.searchStatus());
+                solutions.add(agentSolution);
             }
         }
-        return true;
+
+        String jointAction = "";
+        String response = "";
+        while(!response.contains("false")) {
+            // build joint action and progress iterator of solutions
+            jointAction = "[";
+            Node n;
+            for (int i = 0; i < agents.size() - 1; i++) {
+                n = solutions.get(i).pollFirst();
+                if(n!=null)
+                    jointAction += n.action.toString() + ",";
+                else
+                    jointAction += "NoOp,";
+            }
+            n = solutions.get(agents.size() - 1).pollFirst();
+            if(n!=null)
+                jointAction += n.action.toString() + "]";
+            else
+                jointAction += "NoOp]";
+            // Place message in buffer
+            System.out.println(jointAction);
+            // Flush buffer
+            System.out.flush();
+            response = in.readLine();
+        }
+        System.err.format("Server responsed with %s to the inapplicable action: %s\n", response, jointAction);
+        //System.err.format("%s was attempted in \n%s\n", act, n.toString());
+        return false;
+
     }
 
     private Strategy getStrategy() {
-        return _strategy;
+        return this.strategy;
+    }
+
+    public void setStrategy(Strategy strategy) {
+        this.strategy = strategy;
     }
 
     /**
@@ -211,63 +109,101 @@ public class CommunicationClient {
      * The map is converted from the BufferedReader to an ArrayList
      * to avoid any problems when manipulating the map.
      */
-    private void readMap(Strategy strategy) throws IOException {
-        Map<Character, String> colors = new HashMap<Character, String>();
-        String line, color;
-
-        line = in.readLine();
-
-        ArrayList<String> map = new ArrayList<String>();
-        while(!line.equals("")) {
+    private void readMap() throws IOException {
+        HashMap<Character, Color> colors = new HashMap<>();
+        Color color;
+        int MAX_COL = 0;
+        int MAX_ROW = 0;
+        int row = 0;
+        ArrayList<String> map = new ArrayList<>();
+        String line = in.readLine();
+        
+	    while(!line.equals("")) {
             map.add(line);
+            if(line.length() > MAX_COL) MAX_COL = line.length();
             line = in.readLine();
+            row++;
+            MAX_ROW = row;
         }
+
+        this.level = Level.createInstance(MAX_ROW, MAX_COL);
 
         System.err.println(" ");
         System.err.println("Printing scanned map");
 
         for (String lineInMap: map) {
             System.err.println(lineInMap);
-        }
+	    }
 
         System.err.println(" ");
 
-        /**
-         * TODO: Create boxes and goals here from box and goals class
-         */
-
+        row = 0;
+        boolean MAlevel = false;
         for (String lineInMap: map) {
+            // if line is a color declaration, MA level -> colors get mapped
             if (lineInMap.matches("^[a-z]+:\\s*[0-9A-Z](,\\s*[0-9A-Z])*\\s*$")) {
+                MAlevel = true;
                 lineInMap = lineInMap.replaceAll("\\s", "");
-                color = lineInMap.split( ":" )[0];
-
+                color = Color.valueOf(lineInMap.split( ":" )[0]);
                 for (String id : lineInMap.split(":")[1].split(","))
                     colors.put(id.charAt(0), color);
-
             } else {
-                for (int i = 0; i < lineInMap.length(); i++) {
-                    char id = lineInMap.charAt(i);
-                    if ('0' <= id && id <= '9') {
-                        agents.add(new Agent(id, colors.get(id), msgHub, strategy, map));
+                // if SA, map of colors is empty -> all colors set to blue.
+                for (int col = 0; col < lineInMap.length(); col++) {
+                    char chr = lineInMap.charAt(col);
+                    if (chr == '+') { // Wall.
+                        this.level.setWall(true, row, col);
+                    } else if ('A' <= chr && chr <= 'Z') { // Box.
+                        Box box = new Box(col, row, chr, Color.blue);
+                        if(MAlevel) {
+                            Color boxColor = colors.get(chr);
+                            box.setColor(boxColor);
+                        }
+                        this.level.addBox(box);
+                    } else if ('a' <= chr && chr <= 'z') { // Goal.
+                        Goal goal = new Goal(col, row, chr);
+                        this.level.addCharGoal(goal);
+                    } else if (chr == ' ') {
+                        // Free space.
+                    }else if ('0' <= chr && chr <= '9') {
+                        Agent newAgent = new Agent(chr, Color.blue, msgHub, this.strategy);
+                        if(MAlevel) {
+                            Color agentColor = colors.get(chr);
+                            newAgent.setColor(agentColor);
+                        }
+                        newAgent.setAgentRow(row);
+                        newAgent.setAgentCol(col);
+                        agents.add(newAgent);
+                        System.err.println("Agent " + newAgent.getId() + " created, Color is " + newAgent.getColor().toString());
                     }
                 }
+                row++;
             }
         }
+
+        System.err.println("*--------------------------------------*");
+
     }
 
     /**
-     * Starts the client and runs a infinit loop
+     * Starts the client and runs a infinite loop
      */
     public static void main(String[] args) {
-        Strategy strategyBFS = new StrategyBFS();
 
         System.err.println("*--------------------------------------*");
         System.err.println("|     CommunicationClient started      |");
         System.err.println("*--------------------------------------*");
-
         try {
-            CommunicationClient client = new CommunicationClient(strategyBFS);
-            client.update();
+            CommunicationClient client = new CommunicationClient();
+            Heuristic heuristic = new Heuristic.WeightedAStar(5);
+            Strategy strategy = new StrategyBestFirst(heuristic);
+            client.setStrategy(strategy);
+            client.readMap();
+            while(client.update())
+                // when update returns false, we need to replan
+                // TODO update beliefs
+                ;
+
         } catch (IOException ex) {
             System.err.println("IOException thrown!");
         }

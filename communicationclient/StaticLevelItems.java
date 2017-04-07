@@ -1,4 +1,4 @@
-package searchclient;
+package communicationclient;
 
 import java.awt.*;
 import java.util.HashMap;
@@ -63,7 +63,6 @@ public class StaticLevelItems {
     public int getMAX_ROW(){
         return MAX_ROW;
     }
-
     public int getMAX_COL() {
         return MAX_COL;
     }
