@@ -44,10 +44,9 @@ public class Agent {
      * Sets up the initial state for the agent
      * @param id : Agent id
      * @param color : Agent color. if Single Agent level, color is default to blue
-     * @param msgHub : shared instance of msghub
      */
-    public Agent(char id, Color color, MsgHub msgHub, Strategy strategy) {
-        System.err.println("Agent " + id + "created");
+    public Agent(char id, Color color, Strategy strategy) {
+//        System.err.println("Agent " + id + " created");
         this.subGoals = new ArrayDeque<>();
         //this.solutionCommands = new ArrayList<>();
         this.combinedSolution = new LinkedList<>();
@@ -166,6 +165,10 @@ public class Agent {
 
     public void setColor(Color color) {
         this.color = color;
+    }
+
+    public void setMsgHub(MsgHub msgHub) {
+        this.msgHub = msgHub;
     }
 
     /**

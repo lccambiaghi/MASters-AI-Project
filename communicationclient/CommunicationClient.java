@@ -10,24 +10,21 @@ import level.Box;
 
 public class CommunicationClient {
     private BufferedReader in;
-    private List<Agent> agents = new ArrayList<>();
+    private List<Agent> agents;
     private MsgHub msgHub = new MsgHub();
     private Strategy strategy;
+    private LevelParser levelParser;
     private Level level;
 
     public CommunicationClient() throws IOException {
-        //For Debugging
-        FileInputStream fis = null;
-        fis = new FileInputStream("levels/MAsimple2.lvl");
-        in = new BufferedReader(new InputStreamReader(fis));
-        //For live
-//        in = new BufferedReader(new InputStreamReader(System.in));
+        in = new BufferedReader(new InputStreamReader(System.in));
     }
 
     /**
      *
      */
     public boolean update() throws IOException {
+        this.level = Level.getInstance();
         // assign a box to each charGoal
         HashSet<Goal> charGoals = this.level.getAllGoals();
         for (Goal g: charGoals) {
@@ -109,89 +106,6 @@ public class CommunicationClient {
     }
 
     /**
-     * Reads the map into memory and creates agents with the
-     * shared instance of the msgHub.
-     * The map is converted from the BufferedReader to an ArrayList
-     * to avoid any problems when manipulating the map.
-     */
-    private void readMap() throws IOException {
-        HashMap<Character, Color> colors = new HashMap<>();
-        Color color;
-        int MAX_COL = 0;
-        int MAX_ROW = 0;
-        int row = 0;
-        ArrayList<String> map = new ArrayList<>();
-        String line = in.readLine();
-
-        while(line != null){
-//	    while(!line.equals("")) {
-            map.add(line);
-            if(line.length() > MAX_COL) MAX_COL = line.length();
-            line = in.readLine();
-            row++;
-            MAX_ROW = row;
-        }
-
-        this.level = Level.createInstance(MAX_ROW, MAX_COL);
-
-        System.err.println(" ");
-        System.err.println("Printing scanned map");
-
-        for (String lineInMap: map) {
-            System.err.println(lineInMap);
-	    }
-
-        System.err.println(" ");
-
-        row = 0;
-        boolean colorLevel = false;
-        for (String lineInMap: map) {
-            // if line is a color declaration, MA level -> colors get mapped
-            if (lineInMap.matches("^[a-z]+:\\s*[0-9A-Z](,\\s*[0-9A-Z])*\\s*$")) {
-                colorLevel = true;
-                lineInMap = lineInMap.replaceAll("\\s", "");
-                color = Color.valueOf(lineInMap.split( ":" )[0]);
-                for (String id : lineInMap.split(":")[1].split(","))
-                    colors.put(id.charAt(0), color);
-            } else {
-                // if SA, map of colors is empty -> all colors set to blue.
-                for (int col = 0; col < lineInMap.length(); col++) {
-                    char chr = lineInMap.charAt(col);
-                    if (chr == '+') { // Wall.
-                        this.level.setWall(true, row, col);
-                    } else if ('A' <= chr && chr <= 'Z') { // Box.
-                        Box box = new Box(col, row, chr, Color.blue);
-                        if(colorLevel) {
-                            Color boxColor = colors.get(chr);
-                            box.setColor(boxColor);
-                        }
-                        this.level.addBox(box);
-                    } else if ('a' <= chr && chr <= 'z') { // Goal.
-                        Goal goal = new Goal(col, row, chr);
-                        this.level.addCharGoal(goal);
-                    } else if (chr == ' ') {
-                        // Free space.
-                    }else if ('0' <= chr && chr <= '9') {
-                        Agent newAgent = new Agent(chr, Color.blue, msgHub, this.strategy);
-                        if(colorLevel) {
-                            Color agentColor = colors.get(chr);
-                            newAgent.setColor(agentColor);
-                        }
-                        newAgent.setAgentRow(row);
-                        newAgent.setAgentCol(col);
-                        agents.add(newAgent);
-                        System.err.println("Agent " + newAgent.getId() + " created, Color is " + newAgent.getColor().toString());
-                    }
-                }
-                row++;
-            }
-        }
-
-        System.err.println("*--------------------------------------*");
-
-    }
-
-    /**
      * Starts the client and runs a infinite loop
      */
     public static void main(String[] args) {
@@ -204,7 +118,10 @@ public class CommunicationClient {
             Heuristic heuristic = new Heuristic.WeightedAStar(5);
             Strategy strategy = new StrategyBestFirst(heuristic);
             client.setStrategy(strategy);
-            client.readMap();
+            client.levelParser = new LevelParser(strategy,true);
+            client.levelParser.readMap();
+            client.agents = client.levelParser.getAgents();
+            //            client.readMap();
             while(client.update())
                 // when update returns false, we need to replan
                 // TODO update beliefs
