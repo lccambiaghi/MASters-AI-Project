@@ -25,7 +25,7 @@ public class LevelParser {
         if(this.debug){
             //For Debugging
             FileInputStream fis = null;
-            fis = new FileInputStream("levels/MAsimple3.lvl");
+            fis = new FileInputStream("levels/MAsimple2.lvl");
             in = new BufferedReader(new InputStreamReader(fis));
         }else{
             in = new BufferedReader(new InputStreamReader(System.in));
@@ -33,10 +33,8 @@ public class LevelParser {
     }
 
     /**
-     * Reads the map into memory and creates agents with the
-     * shared instance of the msgHub.
-     * The map is converted from the BufferedReader to an ArrayList
-     * to avoid any problems when manipulating the map.
+     * Creates level, sets walls and boxes with colours
+     * Creates agents with colours
      */
     public void readMap() throws IOException {
         HashMap<Character, Color> colors = new HashMap<>();

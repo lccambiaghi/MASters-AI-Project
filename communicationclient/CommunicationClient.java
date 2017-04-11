@@ -59,7 +59,7 @@ public class CommunicationClient {
             agentSolution = agents.get(i).search();
             if (agentSolution == null) {
                 System.err.println(this.strategy.searchStatus());
-                System.err.println("Unable to solve level.");
+                System.err.println("Agent " + agents.get(i).getId() + " is unable to solve level.");
                 System.exit(0);
             } else {
                 System.err.println("\nSummary for " + this.strategy.toString() + " for agent " + agents.get(i).getId() + ":");
@@ -138,7 +138,7 @@ public class CommunicationClient {
             client.levelParser = new LevelParser(strategy,true);
             client.levelParser.readMap();
             client.agents = client.levelParser.getAgents();
-            //            client.readMap();
+
             while(client.update())
                 // when update returns false, we need to replan
                 // TODO update beliefs

@@ -81,7 +81,7 @@ public class Agent {
      * Search for solution for agent
      * @return LinkedList with nodes for agent
      */
-    public LinkedList<Node> search() throws IOException {
+    public LinkedList<Node> search() {
         System.err.println("Agent " + getId() + " started search with strategy " + this.strategy.toString());
         Goal firstSub = this.subGoals.peekFirst();
         Node initialNode = new Node(firstSub, this.color, this.id);
