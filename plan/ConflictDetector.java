@@ -1,10 +1,8 @@
-package conflictsolver;
+package plan;
 
-import communicationclient.Command;
 import communicationclient.Node;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 
 /**
@@ -15,27 +13,31 @@ public class ConflictDetector {
     //Map of where agents are at a time in their plan
     private HashMap<Integer, HashMap<AgentPoint, Node>> timeMap;
 
-    // TODO singleton
-    public ConflictDetector (){
+    public ConflictDetector(){
         timeMap = new HashMap<>();
     }
 
-//    public boolean isConflict(){
-//
-//    }
+    // return time of first occurring conflict
     public int checkPlan(LinkedList<Node> agentPlan){
         int conflictPoint = -1;
-        for (int i=0;i < agentPlan.size();i++) {
+        for (int i=0; i < agentPlan.size();i++) {
             Node n = agentPlan.get(i);
-            if(!timeMap.containsKey(i)){ // first agent initialises the map for that instant in time
-                HashMap<AgentPoint, Node> agentPoints = new HashMap<>(); //initialises the map of his points
+            if(!timeMap.containsKey(i)){
+                HashMap<AgentPoint, Node> agentPoints = new HashMap<>();
                 AgentPoint agentPoint = new AgentPoint(n.agentRow,n.agentCol, n.agentId, n.action);
                 agentPoints.put(agentPoint, n);
                 timeMap.put(i,agentPoints);
-            }else{ // second agent onwards updates the map
+            }else{
                 HashMap<AgentPoint, Node> agentPointsCurrent = timeMap.get(i); // gets the map of agent points at that that time
                 AgentPoint agentPoint = new AgentPoint(n.agentRow,n.agentCol, n.agentId, n.action);
 
+                // Has another agent planned to move to the same point?
+                if(agentPointsCurrent.containsKey(agentPoint)){
+                    conflictPoint = i;
+                    return conflictPoint;
+                }
+
+                // Was another agent at t-1 in the cell I now want to reach?
                 if(i > 0){
                     HashMap<AgentPoint, Node> agentPointsBefore = timeMap.get(i-1);
                     Node before = agentPointsBefore.get(agentPoint);
@@ -57,13 +59,9 @@ public class ConflictDetector {
 
                 }
 
-                // If there is already an agent in the position I want to reach
-                if(agentPointsCurrent.containsKey(agentPoint)){
-                        conflictPoint = i;
-                        return conflictPoint;
-                    }
-                }
             }
+        }
+
         return conflictPoint;
     }
 

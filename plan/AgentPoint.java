@@ -1,4 +1,4 @@
-package conflictsolver;
+package plan;
 
 import communicationclient.Command;
 

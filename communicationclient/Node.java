@@ -13,6 +13,7 @@ public class Node {
 
 	public static int MAX_ROW = Level.getInstance().MAX_ROW;
 	public static int MAX_COL = Level.getInstance().MAX_COL;
+
 	private Goal subGoal;
 	public int agentRow;
 	public int agentCol;
@@ -62,12 +63,12 @@ public class Node {
 		}
 	}
 
-	public Node(Goal subGoal, Color agentColor, char agentId) {
+	public Node(Goal subGoal, Agent agent) {
 		this.parent = null;
-		this.subGoal = subGoal;
 		this.g = 0;
-		this.agentColor = agentColor;
-		this.agentId = agentId;
+		this.subGoal = subGoal;
+		this.agentColor = agent.getColor();
+		this.agentId = agent.getId();
 	}
 
 	public int g() {
@@ -82,7 +83,7 @@ public class Node {
 		this.boxes[box.getRow()][box.getCol()] = box;
 	}
 
-	// TODO
+
 	public boolean isGoalState() {
 
 		return subGoal.isGoalSatisfied(this);

@@ -3,78 +3,32 @@ package communicationclient;
 import java.io.*;
 import java.util.*;
 
-import level.CharCell;
+import communication.MsgHub;
 import heuristic.Heuristic;
-import heuristic.HeuristicHelper;
 import level.*;
-import level.Box;
+import plan.Planner;
 
 public class CommunicationClient {
     private BufferedReader in;
-    private List<Agent> agents;
-    private MsgHub msgHub = new MsgHub();
-    private Strategy strategy;
+    //private List<Agent> agents;
+    //private Strategy strategy;
     private LevelParser levelParser;
-    private Level level;
+    private Planner planner;
 
     public CommunicationClient() throws IOException {
         in = new BufferedReader(new InputStreamReader(System.in));
     }
 
-    /**
-     *
-     */
+
     public boolean update() throws IOException {
-        this.level = Level.getInstance();
 
-        // assign a box to each charCell
-        HashSet<CharCell> charCells = this.level.getAllCharCells();
-        for (CharCell cc: charCells) {
-            HashSet<Box> goalBoxes = this.level.getBoxesByChar(Character.toUpperCase(cc.getLetter()));
+        planner.analysisPhase();
 
-            Box closest = cc.getClosestBox(goalBoxes);
+        planner.planningPhase();
 
-            cc.setAssignedBox(closest);
-            closest.setDestination(cc);
-        }
+        planner.searchingPhase();
 
-        // each agent plans his subgoals
-        for (Agent agent : agents) {
-            agent.plan();
-        }
-
-        // each agent looks for the solution
-        LinkedList<Node> agentSolution;
-        List<LinkedList<Node>> solutions = new ArrayList<>();
-        ConflictDetector cf = new ConflictDetector();
-        for (int i=0; i< agents.size(); i++) {
-            agentSolution = agents.get(i).search();
-            if (agentSolution == null) {
-                System.err.println(this.strategy.searchStatus());
-                System.err.println("Agent " + agents.get(i).getId() + " is unable to solve level.");
-                System.exit(0);
-            } else {
-                System.err.println("\nSummary for " + this.strategy.toString() + " for agent " + agents.get(i).getId() + ":");
-                System.err.println("Found solution of length " + agentSolution.size());
-                System.err.println(this.strategy.searchStatus());
-                int conflict = cf.checkPlan(agentSolution);
-                int numConflicts = 0;
-                while (conflict > -1){//Pad with NoOp
-                    System.err.println("Conflict found at "+conflict);
-                    Node n = agentSolution.getFirst();
-                    Node noOp = new Node(null);
-                    noOp.setBoxes(n.getBoxesCopy());
-                    noOp.agentRow = n.agentRow;
-                    noOp.agentCol = n.agentCol;
-                    noOp.action= new Command(Command.Type.NoOp, n.action.dir1,n.action.dir2);
-//                    agentSolution.add(conflict+1, noOp);
-                    agentSolution.addFirst(noOp);
-                    conflict = cf.checkPlan(agentSolution);
-                }
-                cf.addPlan(agentSolution);
-                solutions.add(agentSolution);
-            }
-        }
+        List<LinkedList<Node>> solutions = planner.getSolutions();
 
         String jointAction = "";
         String response = "";
@@ -82,14 +36,14 @@ public class CommunicationClient {
             // build joint action and progress iterator of solutions
             jointAction = "[";
             Node n;
-            for (int i = 0; i < agents.size() - 1; i++) {
+            for (int i = 0; i < solutions.size() - 1; i++) {
                 n = solutions.get(i).pollFirst();
                 if(n!=null)
                     jointAction += n.action.toString() + ",";
                 else
                     jointAction += "NoOp,";
             }
-            n = solutions.get(agents.size() - 1).pollFirst();
+            n = solutions.get(solutions.size() - 1).pollFirst();
             if(n!=null)
                 jointAction += n.action.toString() + "]";
             else
@@ -106,13 +60,6 @@ public class CommunicationClient {
 
     }
 
-    private Strategy getStrategy() {
-        return this.strategy;
-    }
-
-    public void setStrategy(Strategy strategy) {
-        this.strategy = strategy;
-    }
 
     /**
      * Starts the client and runs a infinite loop
@@ -125,11 +72,22 @@ public class CommunicationClient {
         try {
             CommunicationClient client = new CommunicationClient();
             Heuristic heuristic = new Heuristic.WeightedAStar(5);
+            //Heuristic heuristic = new Heuristic.Greedy();
             Strategy strategy = new StrategyBestFirst(heuristic);
-            client.setStrategy(strategy);
+            //Strategy strategy = new StrategyBFS();
+            //client.setStrategy(strategy);
+
             client.levelParser = new LevelParser(strategy,true);
             client.levelParser.readMap();
-            client.agents = client.levelParser.getAgents();
+
+            //client.agents = client.levelParser.getAgents();
+
+            List<Agent> agentList = client.levelParser.getAgents();
+
+            client.planner = new Planner(agentList);
+            client.planner.setStrategy(strategy);
+
+            MsgHub.createInstance(agentList);
 
             while(client.update())
                 // when update returns false, we need to replan
