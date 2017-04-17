@@ -10,7 +10,7 @@ public class Box {
     private int row;
     private char boxChar;
     private Color boxColor;
-    private Goal boxGoal;
+    private CharCell Destination;
 
     // if SA level, color is default to blue
     public Box(int col, int row, char boxChar, Color boxColor) {
@@ -41,25 +41,25 @@ public class Box {
         this.row = row;
     }
 
-    public void setBoxGoal(Goal goal){
+    public void setDestination(CharCell charCell){
         int newDistance = HeuristicHelper.manhattanDistance(this.row, 
                                                             this.col, 
-                                                            goal.getRow(),
-                                                            goal.getCol());
+                                                            charCell.getRow(),
+                                                            charCell.getCol());
         int oldDistance = Integer.MAX_VALUE;
 
-        if(this.boxGoal != null){
+        if(this.Destination != null){
             oldDistance = HeuristicHelper.manhattanDistance(this.row, 
                                                             this.col, 
-                                                            this.boxGoal.getRow(), 
-                                                            this.boxGoal.getCol());
+                                                            this.Destination.getRow(),
+                                                            this.Destination.getCol());
         }
 
-        if (newDistance < oldDistance) this.boxGoal = goal;
+        if (newDistance < oldDistance) this.Destination = charCell;
     }
 
-    public Goal getBoxGoal() {
-        return this.boxGoal;
+    public CharCell getDestination() {
+        return this.Destination;
     }
 
     public int getCol() {

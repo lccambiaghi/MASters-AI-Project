@@ -1,5 +1,7 @@
 package communicationclient;
 
+import goal.Goal;
+import goal.GoalBoxToChar;
 import level.*;
 
 import java.io.IOException;
@@ -23,22 +25,6 @@ public class Agent {
     private int agentCol;
     private LinkedList<Node> combinedSolution;
 
-    public int getAgentRow() {
-        return this.agentRow;
-    }
-
-    public void setAgentRow(int agentRow) {
-        this.agentRow = agentRow;
-    }
-
-    public int getAgentCol() {
-        return this.agentCol;
-    }
-
-    public void setAgentCol(int agentCol) {
-        this.agentCol = agentCol;
-    }
-
     /**
      * Agent constructor
      * Sets up the initial state for the agent
@@ -56,8 +42,8 @@ public class Agent {
         this.strategy = strategy;
     }
 
-    public void addSubGoal(Goal subGoal){
-        this.subGoals.addLast(subGoal);
+    public void addSubGoal(Goal subgoal){
+        this.subGoals.addLast(subgoal);
     }
 
     public ArrayList<Command> getCommands(){
@@ -66,12 +52,20 @@ public class Agent {
 
     public void plan(){
         System.err.println("Agent " + this.id + " started planning");
+
         HashSet<Box> agentBoxes = Level.getInstance().getBoxesByColor(this.color);
+
         for (Box b : agentBoxes) {
-            if (b.getBoxGoal() != null) {
-                Goal toBoxSubGoal = new Goal(b.getCol(), b.getRow(), GoalType.AgentToBox);
-                addSubGoal(toBoxSubGoal);
-                addSubGoal(b.getBoxGoal());
+            if (b.getDestination() != null) { // if box has a goal assigned
+                GoalBoxToChar goal = new GoalBoxToChar(b, b.getDestination());
+                // TODO add to a list of goals
+                goal.refine();
+                for(Goal subgoal : goal.getSubgoals()){
+                    addSubGoal(subgoal);
+                }
+                //CharCell toBoxSubGoal = new CharCell(b.getCol(), b.getRow(), GoalType.MoveToBox);
+                //addSubGoal(toBoxSubGoal);
+                //addSubGoal(b.getDestination());
             }
         }
         System.err.println("Agent " + this.id + " planned " + subGoals.size() + "subgoals");
@@ -169,6 +163,22 @@ public class Agent {
 
     public void setMsgHub(MsgHub msgHub) {
         this.msgHub = msgHub;
+    }
+
+    public int getAgentRow() {
+        return this.agentRow;
+    }
+
+    public void setAgentRow(int agentRow) {
+        this.agentRow = agentRow;
+    }
+
+    public int getAgentCol() {
+        return this.agentCol;
+    }
+
+    public void setAgentCol(int agentCol) {
+        this.agentCol = agentCol;
     }
 
     /**

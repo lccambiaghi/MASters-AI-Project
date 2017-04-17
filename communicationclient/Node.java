@@ -3,9 +3,9 @@ package communicationclient;
 import java.util.*;
 
 import communicationclient.Command.Type;
+import goal.Goal;
 import level.Box;
 import level.Color;
-import level.Goal;
 import level.Level;
 
 public class Node {
@@ -13,9 +13,10 @@ public class Node {
 
 	public static int MAX_ROW = Level.getInstance().MAX_ROW;
 	public static int MAX_COL = Level.getInstance().MAX_COL;
-	private Goal goal;
+	private Goal subGoal;
 	public int agentRow;
 	public int agentCol;
+
 	public Color agentColor;
 
 	public Node parent;
@@ -25,15 +26,16 @@ public class Node {
 
 	private int _hash = 0;
 
-	public Goal getGoal() {
-		return goal;
+	public Goal getSubGoal() {
+		return subGoal;
 	}
 
-	public void setGoal(Goal goal) {
-		this.goal = goal;
+	public void setSubGoal(Goal subGoal) {
+		this.subGoal = subGoal;
 	}
 
 	public boolean[][] walls = Level.getInstance().getWalls();
+
 	public Box[][] boxes = new Box[MAX_ROW][MAX_COL];
 
 	public Box[][] getBoxesCopy() {
@@ -54,14 +56,14 @@ public class Node {
 			this.g = 0;
 		} else {
 			this.g = parent.g() + 1;
-			this.goal = parent.goal;
+			this.subGoal = parent.subGoal;
 			this.agentColor = parent.agentColor;
 		}
 	}
 
-	public Node(Goal goal, Color agentColor) {
+	public Node(Goal subGoal, Color agentColor) {
 		this.parent = null;
-		this.goal = goal;
+		this.subGoal = subGoal;
 		this.g = 0;
 		this.agentColor = agentColor;
 	}
@@ -78,11 +80,15 @@ public class Node {
 		this.boxes[box.getRow()][box.getCol()] = box;
 	}
 
+	// TODO
 	public boolean isGoalState() {
-		switch (goal.getGoalType()) {
-			case BoxToGoal:
-				char goalChar = goal.getGoalChar();
-				Box box = boxes[goal.getRow()][goal.getCol()];
+
+		return subGoal.isGoalSatisfied(this);
+
+		/*switch (subGoal.getGoalType()) {
+			case PushBox:
+				char goalChar = subGoal.getLetter();
+				Box box = boxes[subGoal.getRow()][subGoal.getCol()];
 				if (box!=null){
 					char b = Character.toLowerCase(box.getBoxChar());
 					if (b == goalChar) {
@@ -90,12 +96,13 @@ public class Node {
 					}
 				}
 				break;
-			case AgentToBox:
-				if((Math.abs(agentRow-goal.getRow()) == 1 && Math.abs(agentCol-goal.getCol()) == 0) || 
-          (Math.abs(agentCol-goal.getCol()) == 1 && Math.abs(agentRow-goal.getRow()) == 0)) return true;
+
+			case MoveToBox:
+				if((Math.abs(agentRow-subGoal.getRow()) == 1 && Math.abs(agentCol-subGoal.getCol()) == 0) ||
+          (Math.abs(agentCol-subGoal.getCol()) == 1 && Math.abs(agentRow-subGoal.getRow()) == 0)) return true;
 				break;
 		}
-		return false;
+		return false;*/
 	}
 
 	public ArrayList<Node> getExpandedNodes() {
@@ -182,6 +189,20 @@ public class Node {
 		return plan;
 	}
 
+
+	public int getAgentRow() {
+		return agentRow;
+	}
+
+	public int getAgentCol() {
+		return agentCol;
+	}
+
+	public Box[][] getBoxes() {
+		return boxes;
+	}
+
+
 	@Override
 	public int hashCode() {
 		if (this._hash == 0) {
@@ -228,8 +249,8 @@ public class Node {
 					s.append(this.boxes[row][col].getBoxChar());
 				} else if (this.walls[row][col]) {
 					s.append("+");
-				}else if(row == goal.getRow() && col == goal.getCol()){
-						s.append(goal.getGoalChar());
+//				}else if(row == subGoal.getRow() && col == subGoal.getCol()){
+//						s.append(subGoal.getLetter());
 				} else if (row == this.agentRow && col == this.agentCol) {
 					s.append("0");
 				} else {

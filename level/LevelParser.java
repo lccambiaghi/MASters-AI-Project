@@ -24,7 +24,7 @@ public class LevelParser {
         if(this.debug){
             //For Debugging
             FileInputStream fis = null;
-            fis = new FileInputStream("levels/MAsimple2.lvl");
+            fis = new FileInputStream("levels/MAsimple1.lvl");
             in = new BufferedReader(new InputStreamReader(fis));
         }else{
             in = new BufferedReader(new InputStreamReader(System.in));
@@ -78,6 +78,7 @@ public class LevelParser {
 
         row = 0;
         boolean colorLevel = false;
+
         for (String lineInMap: map) {
             // if line is a color declaration, MA level -> colors get mapped
             if (lineInMap.matches("^[a-z]+:\\s*[0-9A-Z](,\\s*[0-9A-Z])*\\s*$")) {
@@ -99,9 +100,9 @@ public class LevelParser {
                             box.setColor(boxColor);
                         }
                         level.addBox(box);
-                    } else if ('a' <= chr && chr <= 'z') { // Goal.
-                        Goal goal = new Goal(col, row, chr);
-                        level.addCharGoal(goal);
+                    } else if ('a' <= chr && chr <= 'z') { // CharCell.
+                        CharCell charCell = new CharCell(col, row, chr);
+                        level.addCharCell(charCell);
                     } else if (chr == ' ') {
                         // Free space.
                     }else if ('0' <= chr && chr <= '9') {

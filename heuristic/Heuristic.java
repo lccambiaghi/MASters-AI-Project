@@ -1,9 +1,7 @@
 package heuristic;
 
 import communicationclient.Node;
-import level.Box;
-import level.GoalType;
-import level.Level;
+import goal.Goal;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -21,28 +19,32 @@ public abstract class Heuristic implements Comparator<Node> {
 	public int h(Node n) {
 		Integer h = heuristicMap.get(n);
 		if (h==null){
-			switch (n.getGoal().getGoalType()){
-				case AgentToBox:
-					h = HeuristicHelper.manhattanDistance(n.agentRow,n.agentCol,n.getGoal().getRow(),n.getGoal().getCol());
-					h += HeuristicHelper.goalCount(n);
-					break;
-				case BoxToGoal:
-					for (int row = 0; row < Level.getInstance().MAX_ROW; row++) {
-						for (int col = 0; col < Level.getInstance().MAX_COL; col++){
-							Box box = n.boxes[row][col];
-							if (box!=null){
-								if(box.equals(n.getGoal().getGoalBox())){
-									int boxRow = row;
-									int boxCol = col;
-									h = HeuristicHelper.manhattanDistance(boxRow, boxCol, n.getGoal().getRow(), n.getGoal().getCol());
-									h += HeuristicHelper.goalCount(n);
-									break;
-								}
-							}
 
-						}
-					}
-			}
+			Goal subgoal = n.getSubGoal();
+			h = subgoal.calculateHeuristic(n);
+
+//			switch (n.getSubGoal().getGoalType()){
+//				case MoveToBox:
+//					h = HeuristicHelper.manhattanDistance(n.agentRow,n.agentCol,n.getSubGoal().getRow(),n.getSubGoal().getCol());
+//					h += HeuristicHelper.goalCount(n);
+//					break;
+//				case PushBox:
+//					for (int row = 0; row < Level.getInstance().MAX_ROW; row++) {
+//						for (int col = 0; col < Level.getInstance().MAX_COL; col++){
+//							Box box = n.boxes[row][col];
+//							if (box!=null){
+//								if(box.equals(n.getSubGoal().getAssignedBox())){
+//									int boxRow = row;
+//									int boxCol = col;
+//									h = HeuristicHelper.manhattanDistance(boxRow, boxCol, n.getSubGoal().getRow(), n.getSubGoal().getCol());
+//									h += HeuristicHelper.goalCount(n);
+//									break;
+//								}
+//							}
+//
+//						}
+//					}
+//			}
 //			int goalCount = HeuristicHelper.goalCount(n);
 //			int boxDistance = HeuristicHelper.boxDistanceToGoal(n);
 //			h = Math.max(goalCount,boxDistance);

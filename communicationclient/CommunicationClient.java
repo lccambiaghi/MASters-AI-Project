@@ -3,6 +3,7 @@ package communicationclient;
 import java.io.*;
 import java.util.*;
 
+import level.CharCell;
 import heuristic.Heuristic;
 import heuristic.HeuristicHelper;
 import level.*;
@@ -25,24 +26,16 @@ public class CommunicationClient {
      */
     public boolean update() throws IOException {
         this.level = Level.getInstance();
-        // assign a box to each charGoal
-        HashSet<Goal> charGoals = this.level.getAllGoals();
-        for (Goal g: charGoals) {
-            HashSet<Box> goalBoxes = this.level.getBoxesByChar(Character.toUpperCase(g.getGoalChar()));
-            // assign best box to the goal
-            Box assigned = new ArrayList<>(goalBoxes).get(0);
-            for (Box b: goalBoxes) {
-                // if distance to goal is less, assign
-                int assignedDistance = HeuristicHelper.manhattanDistance(
-                        assigned.getRow(), assigned.getCol(), g.getRow(), g.getCol());
-                int bDistance = HeuristicHelper.manhattanDistance(
-                        b.getRow(), b.getCol(), g.getRow(), g.getCol());
-                if (bDistance < assignedDistance)
-                    assigned = b;
-            }
 
-            g.setGoalBox(assigned);
-            assigned.setBoxGoal(g);
+        // assign a box to each charCell
+        HashSet<CharCell> charCells = this.level.getAllCharCells();
+        for (CharCell cc: charCells) {
+            HashSet<Box> goalBoxes = this.level.getBoxesByChar(Character.toUpperCase(cc.getLetter()));
+
+            Box closest = cc.getClosestBox(goalBoxes);
+
+            cc.setAssignedBox(closest);
+            closest.setDestination(cc);
         }
 
         // each agent plans his subgoals

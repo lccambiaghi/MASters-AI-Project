@@ -1,7 +1,6 @@
 package level;
 
-import java.awt.*;
-import java.util.ArrayList;
+
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -11,12 +10,12 @@ import java.util.HashSet;
 public class Level {
 
     private static Level instance;
-    private HashMap<Character, HashSet<Goal>> goalsByChar;
-    private HashMap<GoalType, HashSet<Goal>> goalsByType;
+    private HashMap<Character, HashSet<CharCell>> goalsByChar;
+    //private HashMap<GoalType, HashSet<CharCell>> goalsByType;
     private HashMap<Character, HashSet<Box>> boxesByChar;
     private HashMap<Color, HashSet<Box>> boxesByColor;
     private HashSet<Box> allBoxes;
-    private HashSet<Goal> allGoals;
+    private HashSet<CharCell> allCharCells;
     private boolean[][] walls;
     public int MAX_ROW;
     public int MAX_COL;
@@ -27,11 +26,11 @@ public class Level {
         this.MAX_ROW = MAX_ROW;
         this.MAX_COL = MAX_COL;
         this.goalsByChar = new HashMap<>();
-        this.goalsByType = new HashMap<>();
+        //this.goalsByType = new HashMap<>();
         this.boxesByChar = new HashMap<>();
         this.boxesByColor = new HashMap<>();
         this.allBoxes = new HashSet<>();
-        this.allGoals = new HashSet<>();
+        this.allCharCells = new HashSet<>();
     }
 
     public static Level createInstance(int MAX_ROW, int MAX_COL) {
@@ -57,28 +56,28 @@ public class Level {
         return this.allBoxes;
     }
 
-    public void addCharGoal(Goal goal){
-        if (this.goalsByChar.containsKey(goal.getGoalChar())){
-            HashSet<Goal> charSet = goalsByChar.get(goal.getGoalChar());
-            charSet.add(goal);
-            this.allGoals.add(goal);
+    public void addCharCell(CharCell charCell){
+        if (this.goalsByChar.containsKey(charCell.getLetter())){
+            HashSet<CharCell> charSet = goalsByChar.get(charCell.getLetter());
+            charSet.add(charCell);
+            this.allCharCells.add(charCell);
         }else{
-            HashSet<Goal> charSet = new HashSet<>();
-            charSet.add(goal);
-            this.allGoals.add(goal);
-            this.goalsByChar.put(goal.getGoalChar(), charSet);
+            HashSet<CharCell> charSet = new HashSet<>();
+            charSet.add(charCell);
+            this.allCharCells.add(charCell);
+            this.goalsByChar.put(charCell.getLetter(), charSet);
         }
 
-        if (goalsByType.containsKey(GoalType.BoxToGoal)){
-            HashSet<Goal> typeSet = goalsByType.get(GoalType.BoxToGoal);
-            typeSet.add(goal);
-            this.allGoals.add(goal);
-        }else{
-            HashSet<Goal> typeSet = new HashSet<>();
-            typeSet.add(goal);
-            this.allGoals.add(goal);
-            this.goalsByType.put(GoalType.BoxToGoal, typeSet);
-        }
+//        if (goalsByType.containsKey(GoalType.PushBox)){
+//            HashSet<CharCell> typeSet = goalsByType.get(GoalType.PushBox);
+//            typeSet.add(charCell);
+//            this.allCharCells.add(charCell);
+//        }else{
+//            HashSet<CharCell> typeSet = new HashSet<>();
+//            typeSet.add(charCell);
+//            this.allCharCells.add(charCell);
+//            this.goalsByType.put(GoalType.PushBox, typeSet);
+//        }
     }
     
     public void addBox(Box box){
@@ -87,9 +86,7 @@ public class Level {
         this.allBoxes.add(box);
         if(boxesByChar.containsKey(boxChar)){
             HashSet<Box> boxesChar = this.boxesByChar.get(boxChar);
-
             boxesChar.add(box);
-
         }else{
             HashSet<Box> boxesChar = new HashSet<>();
             boxesChar.add(box);
@@ -113,11 +110,11 @@ public class Level {
         return boxesByChar.get(chr);
     }
 
-    public HashSet<Goal> getGoalsByChar(Character chr){
+    public HashSet<CharCell> getGoalsByChar(Character chr){
         return goalsByChar.get(chr);
     }
 
-    public HashSet<Goal> getAllGoals() {
-        return allGoals;
+    public HashSet<CharCell> getAllCharCells() {
+        return allCharCells;
     }
 }
