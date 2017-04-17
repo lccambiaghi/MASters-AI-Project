@@ -9,7 +9,7 @@ public class Command {
 	};
 
 	public static enum Type {
-		Move, Push, Pull
+		Move, Push, Pull, NoOp
 	};
 	
 	public static final Command[] EVERY;
@@ -82,11 +82,17 @@ public class Command {
 
 	@Override
 	public String toString() {
-		if (this.actionType == Type.Move)
-			//return String.format("[%s(%s)]", this.actionType.toString(), this.dir1.toString());
-			return String.format("%s(%s)", this.actionType.toString(), this.dir1.toString());
-		else
-			//return String.format("[%s(%s,%s)]", this.actionType.toString(), this.dir1.toString(), this.dir2.toString());
-			return String.format("%s(%s,%s)", this.actionType.toString(), this.dir1.toString(), this.dir2.toString());
+		switch (this.actionType) {
+			case Move: return String.format("%s(%s)", this.actionType.toString(), this.dir1.toString());
+			case NoOp: return String.format("%s", this.actionType.toString());
+			case Pull: return String.format("%s(%s,%s)", this.actionType.toString(), this.dir1.toString(), this.dir2.toString());
+			case Push: return String.format("%s(%s,%s)", this.actionType.toString(), this.dir1.toString(), this.dir2.toString());
+		}
+//		if (this.actionType == Type.Move)
+//			//return String.format("[%s(%s)]", this.actionType.toString(), this.dir1.toString());
+//
+//		else
+//			//return String.format("[%s(%s,%s)]", this.actionType.toString(), this.dir1.toString(), this.dir2.toString());
+		return null;
 	}
 }

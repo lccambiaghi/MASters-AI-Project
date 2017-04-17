@@ -10,6 +10,7 @@ import java.util.List;
 
 /**
  * Created by salik on 07-04-2017.
+ * Class for parsing the level as it is given from the environment-server or reading from a file
  */
 public class LevelParser {
 
@@ -32,10 +33,8 @@ public class LevelParser {
     }
 
     /**
-     * Reads the map into memory and creates agents with the
-     * shared instance of the msgHub.
-     * The map is converted from the BufferedReader to an ArrayList
-     * to avoid any problems when manipulating the map.
+     * Creates level, sets walls and boxes with colours
+     * Creates agents with colours
      */
     public void readMap() throws IOException {
         HashMap<Character, Color> colors = new HashMap<>();

@@ -46,16 +46,32 @@ public class CommunicationClient {
         // each agent looks for the solution
         LinkedList<Node> agentSolution;
         List<LinkedList<Node>> solutions = new ArrayList<>();
+        ConflictDetector cf = new ConflictDetector();
         for (int i=0; i< agents.size(); i++) {
             agentSolution = agents.get(i).search();
             if (agentSolution == null) {
                 System.err.println(this.strategy.searchStatus());
-                System.err.println("Unable to solve level.");
+                System.err.println("Agent " + agents.get(i).getId() + " is unable to solve level.");
                 System.exit(0);
             } else {
                 System.err.println("\nSummary for " + this.strategy.toString() + " for agent " + agents.get(i).getId() + ":");
                 System.err.println("Found solution of length " + agentSolution.size());
                 System.err.println(this.strategy.searchStatus());
+                int conflict = cf.checkPlan(agentSolution);
+                int numConflicts = 0;
+                while (conflict > -1){//Pad with NoOp
+                    System.err.println("Conflict found at "+conflict);
+                    Node n = agentSolution.getFirst();
+                    Node noOp = new Node(null);
+                    noOp.setBoxes(n.getBoxesCopy());
+                    noOp.agentRow = n.agentRow;
+                    noOp.agentCol = n.agentCol;
+                    noOp.action= new Command(Command.Type.NoOp, n.action.dir1,n.action.dir2);
+//                    agentSolution.add(conflict+1, noOp);
+                    agentSolution.addFirst(noOp);
+                    conflict = cf.checkPlan(agentSolution);
+                }
+                cf.addPlan(agentSolution);
                 solutions.add(agentSolution);
             }
         }
@@ -114,7 +130,7 @@ public class CommunicationClient {
             client.levelParser = new LevelParser(strategy,true);
             client.levelParser.readMap();
             client.agents = client.levelParser.getAgents();
-            //            client.readMap();
+
             while(client.update())
                 // when update returns false, we need to replan
                 // TODO update beliefs
