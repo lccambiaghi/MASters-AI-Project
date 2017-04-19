@@ -78,8 +78,9 @@ public class CommunicationClient {
             //client.setStrategy(strategy);
 
             client.levelParser = new LevelParser(strategy,true);
+            LevelAnalyzer analyzer = new LevelAnalyzer();
             client.levelParser.readMap();
-
+            PriorityQueue<CharCell> priorityQueue = analyzer.analyze(Level.getInstance());
             //client.agents = client.levelParser.getAgents();
 
             List<Agent> agentList = client.levelParser.getAgents();

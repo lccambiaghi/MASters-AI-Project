@@ -14,12 +14,53 @@ public class CharCell {
     //private GoalType goalType;
     private char letter;
     private Box assignedBox;
+    private int priority = 0;
+    private int numWalls = 0;
+    private boolean corner = false;
+    private boolean deadEnd = false;
 
 //    public CharCell(int col, int row, GoalType goalType){
 //        this.col = col;
 //        this.row = row;
 //        this.goalType = goalType;
 //    }
+
+    public int getPriority() {
+        return priority;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
+    }
+    public void calculatePriority(){
+        priority += numWalls;
+        if(corner) priority++;//if corner give higher priority
+        if (deadEnd) priority +=2;//If deadend give higher priority
+    }
+
+    public int getNumWalls() {
+        return numWalls;
+    }
+
+    public void setNumWalls(int numWalls) {
+        this.numWalls = numWalls;
+    }
+
+    public boolean isCorner() {
+        return corner;
+    }
+
+    public void setCorner(boolean corner) {
+        this.corner = corner;
+    }
+
+    public boolean isDeadEnd() {
+        return deadEnd;
+    }
+
+    public void setDeadEnd(boolean deadEnd) {
+        this.deadEnd = deadEnd;
+    }
 
     public CharCell(int col, int row, char letter){
         this.col = col;
