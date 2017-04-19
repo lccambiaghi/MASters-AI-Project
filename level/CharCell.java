@@ -69,6 +69,10 @@ public class CharCell {
         this.letter = letter;
     }
 
+    public Box getAssignedBox() {
+        return assignedBox;
+    }
+
     public Box getClosestBox(HashSet<Box> boxes) {
 
         int oldDistance = Integer.MAX_VALUE;

@@ -85,7 +85,7 @@ public class CommunicationClient {
 
             List<Agent> agentList = client.levelParser.getAgents();
 
-            client.planner = new Planner(agentList);
+            client.planner = new Planner(agentList, priorityQueue, client.levelParser);
             client.planner.setStrategy(strategy);
 
             MsgHub.createInstance(agentList);

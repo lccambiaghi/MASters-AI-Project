@@ -7,6 +7,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.PriorityQueue;
 
 /**
  * Created by salik on 07-04-2017.
@@ -16,6 +17,7 @@ public class LevelParser {
 
     private BufferedReader in;
     private List<Agent> agents = new ArrayList<>();
+    private HashMap<Color, List<Agent>> agentsByColorMap = new HashMap<>();//TODO What if multiple agents of same color? HashMap<Color, List<Agent>>??
     private Strategy strategy;
     private boolean debug;
 
@@ -25,7 +27,7 @@ public class LevelParser {
         if(this.debug){
             //For Debugging
             FileInputStream fis = null;
-            fis = new FileInputStream("levels/MAsimple3.lvl");
+            fis = new FileInputStream("levels/MAsimple4.lvl");
             in = new BufferedReader(new InputStreamReader(fis));
         }else{
             in = new BufferedReader(new InputStreamReader(System.in));
@@ -105,14 +107,22 @@ public class LevelParser {
                     } else if (chr == ' ') {
                         // Free space.
                     }else if ('0' <= chr && chr <= '9') {
-                        Agent newAgent = new Agent(chr, Color.blue, this.strategy);
+                        Color agentColor = Color.blue;
+                        Agent newAgent = new Agent(chr, agentColor, this.strategy);
                         if(colorLevel) {
-                            Color agentColor = colors.get(chr);
+                            agentColor = colors.get(chr);
                             newAgent.setColor(agentColor);
                         }
                         newAgent.setAgentRow(row);
                         newAgent.setAgentCol(col);
                         agents.add(newAgent);
+                        if (agentsByColorMap.containsKey(agentColor)){
+                            agentsByColorMap.get(agentColor).add(newAgent);
+                        }else{
+                            List<Agent> agentList = new ArrayList<>();
+                            agentList.add(newAgent);
+                            agentsByColorMap.put(agentColor,agentList);
+                        }
                         System.err.println("Agent " + newAgent.getId() + " created, Color is " + newAgent.getColor().toString());
                     }
                 }
@@ -125,5 +135,9 @@ public class LevelParser {
     }
     public List<Agent> getAgents(){
         return agents;
+    }
+
+    public HashMap<Color, List<Agent>> getAgentsByColorMap() {
+        return agentsByColorMap;
     }
 }

@@ -18,7 +18,7 @@ public class ConflictDetector {
     }
 
     // return time of first occurring conflict
-    public int checkPlan(LinkedList<Node> agentPlan){
+    public int checkPlan(LinkedList<Node> agentPlan){//TODO need to check for boxes as well in order to complete MAsimple4
         int conflictPoint = -1;
         for (int i=0; i < agentPlan.size();i++) {
             Node n = agentPlan.get(i);
