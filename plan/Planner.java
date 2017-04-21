@@ -96,7 +96,7 @@ public class Planner {
 
     public List<LinkedList<Node>> getSolutions() {
         List<LinkedList<Node>> solutions = new LinkedList<>();
-        Map<Integer, LinkedList<Node>> treeMap = new TreeMap<Integer, LinkedList<Node>>(this.solutions);
+        Map<Integer, LinkedList<Node>> treeMap = new TreeMap<>(this.solutions);
 
         for (LinkedList<Node> solution : treeMap.values()) {
             solutions.add(solution);
