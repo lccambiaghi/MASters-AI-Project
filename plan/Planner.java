@@ -28,25 +28,25 @@ public class Planner {
     private List<LinkedList<Node>> solutions;
     private PriorityQueue<CharCell> charCellPriorityQueue;
     private LevelParser levelParser;
+    private Level level;
 
     public Planner(List<Agent> agentList, PriorityQueue<CharCell> priorityQueue, LevelParser levelParser) {
         this.agents = agentList;
         this.charCellPriorityQueue = priorityQueue;
         this.levelParser = levelParser;
+        this.level = Level.getInstance();
     }
 
     public void analysisPhase() {
-        Level level = Level.getInstance();
-
         // assign a box to each charCell
-        HashSet<CharCell> charCells = level.getAllCharCells();
+        HashSet<CharCell> charCells = this.level.getAllCharCells();
         for (CharCell cc: charCells) {
-            HashSet<Box> goalBoxes = level.getBoxesByChar(Character.toUpperCase(cc.getLetter()));
+            HashSet<Box> goalBoxes = this.level.getBoxesByChar(Character.toUpperCase(cc.getLetter()));
 
             Box closest = cc.getClosestBox(goalBoxes);
 
             cc.setAssignedBox(closest);
-            List<Agent> agentPriorityQueue = levelParser.getAgentsByColorMap().get(closest.getBoxColor());
+            List<Agent> agentPriorityQueue = this.level.getAgentsByColorMap().get(closest.getBoxColor());
             for (Agent a: agentPriorityQueue) {
                 closest.setAssignedAgent(a); //Will override and the closest agent will get the box
             }
