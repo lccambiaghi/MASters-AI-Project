@@ -21,7 +21,7 @@ import java.util.*;
  */
 public class Planner {
     private Strategy strategy;
-    private List<LinkedList<Node>> solutions;
+    private HashMap<Integer, LinkedList<Node>> solutions;
     private PriorityQueue<CharCell> charCellPriorityQueue;
     private Level level;
 
@@ -62,7 +62,7 @@ public class Planner {
 
     public void searchingPhase() {
 
-        solutions = new ArrayList<>();
+        this.solutions = new HashMap<>();
         HashSet<Agent> hasSearched = new HashSet<>();
         while(!charCellPriorityQueue.isEmpty()){
             CharCell goal = charCellPriorityQueue.poll();//Get the highest priority CharCell
@@ -75,7 +75,6 @@ public class Planner {
 
                 System.err.println(this.strategy.searchStatus());
                 System.err.println("Agent " + agent.getId() + " is unable to complete his subgoals.");
-                System.exit(0);
             } else {
                 System.err.println("\nSummary for " + this.strategy.toString() + " for agent " + agent.getId() + ":");
                 System.err.println("Found solution of length " + agentSolution.size());
@@ -90,15 +89,18 @@ public class Planner {
 
                 agent.evaluateRequests(solutionAnnouncement);
 
-                agentSolution = agent.getCombinedSolution();
-
-                solutions.add(agentSolution);
+                this.solutions.put(Character.getNumericValue(agent.getId()), agentSolution);
             }
         }
     }
 
-
     public List<LinkedList<Node>> getSolutions() {
+        List<LinkedList<Node>> solutions = new LinkedList<>();
+        Map<Integer, LinkedList<Node>> treeMap = new TreeMap<Integer, LinkedList<Node>>(this.solutions);
+
+        for (LinkedList<Node> solution : treeMap.values()) {
+            solutions.add(solution);
+        }
         return solutions;
     }
 

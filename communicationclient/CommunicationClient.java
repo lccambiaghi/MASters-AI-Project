@@ -36,7 +36,7 @@ public class CommunicationClient {
             Node n;
             for (int i = 0; i < solutions.size() - 1; i++) {
                 n = solutions.get(i).pollFirst();
-                if(n!=null)
+                if(n != null)
                     jointAction += n.action.toString() + ",";
                 else
                     jointAction += "NoOp,";
@@ -70,7 +70,7 @@ public class CommunicationClient {
             Heuristic heuristic = new Heuristic.WeightedAStar(5);
             Strategy strategy = new StrategyBestFirst(heuristic);
 
-            client.levelParser = new LevelParser(strategy,true);
+            client.levelParser = new LevelParser(strategy,false);
             LevelAnalyzer analyzer = new LevelAnalyzer();
             client.levelParser.readMap();
             PriorityQueue<CharCell> priorityQueue = analyzer.analyze(Level.getInstance());
