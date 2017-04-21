@@ -10,8 +10,6 @@ import plan.Planner;
 
 public class CommunicationClient {
     private BufferedReader in;
-    //private List<Agent> agents;
-    //private Strategy strategy;
     private LevelParser levelParser;
     private Planner planner;
 
@@ -72,16 +70,12 @@ public class CommunicationClient {
         try {
             CommunicationClient client = new CommunicationClient();
             Heuristic heuristic = new Heuristic.WeightedAStar(5);
-            //Heuristic heuristic = new Heuristic.Greedy();
             Strategy strategy = new StrategyBestFirst(heuristic);
-            //Strategy strategy = new StrategyBFS();
-            //client.setStrategy(strategy);
 
             client.levelParser = new LevelParser(strategy,true);
             LevelAnalyzer analyzer = new LevelAnalyzer();
             client.levelParser.readMap();
             PriorityQueue<CharCell> priorityQueue = analyzer.analyze(Level.getInstance());
-            //client.agents = client.levelParser.getAgents();
 
             List<Agent> agentList = client.levelParser.getAgents();
 
