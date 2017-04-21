@@ -23,20 +23,19 @@ public class Agent {
     private Strategy strategy;
     private Node initialState;
 
-    //private ArrayList<Command> solutionCommands;
     private LinkedList<Node> combinedSolution;
     private ArrayDeque<Goal> subGoals;
 
 
 
-    public Agent(char id, Color color, Strategy strategy) {
+    public Agent(char id, Strategy strategy, int row, int col) {
         this.subGoals = new ArrayDeque<>();
-        //this.solutionCommands = new ArrayList<>();
         this.combinedSolution = new LinkedList<>();
-        //this.msgHub = msgHub;
-        this.color = color;
+        this.color = Color.blue;
         this.id = id;
         this.strategy = strategy;
+        this.agentRow = row;
+        this.agentCol = col;
     }
 
     public void broadcastSolution(Message solutionAnnouncement) {
@@ -121,7 +120,6 @@ public class Agent {
             noOp.agentRow = n.agentRow;
             noOp.agentCol = n.agentCol;
             noOp.action= new Command(Command.Type.NoOp, n.action.dir1,n.action.dir2);
-//                    agentSolution.add(conflict+1, noOp);
             newSolution.addFirst(noOp);
             conflictTime = cd.checkPlan(newSolution);
         }
@@ -133,7 +131,6 @@ public class Agent {
     public ArrayDeque<Goal> plan(CharCell goalCell){
         System.err.println("Agent " + this.id + " started planning");
 
-//        HashSet<Box> agentBoxes = Level.getInstance().getBoxesByColor(this.color);//TODO this will not work with multiple agents of same color
         Box goalBox = goalCell.getAssignedBox();
         if (goalBox.getDestination() != null) { // if box has a goal assigned
             GoalBoxToChar goal = new GoalBoxToChar(goalBox, goalBox.getDestination());
@@ -142,24 +139,7 @@ public class Agent {
             for(Goal subgoal : goal.getSubgoals()){
                 addSubGoal(subgoal);
             }
-            //CharCell toBoxSubGoal = new CharCell(b.getCol(), b.getRow(), GoalType.MoveToBox);
-            //addSubGoal(toBoxSubGoal);
-            //addSubGoal(b.getDestination());
         }
-//        HashSet<Box> agentBoxes = Level.getInstance().getBoxesByChar(Character.toUpperCase(goalCell.getLetter()));
-//        for (Box b : agentBoxes) {
-//            if (b.getDestination() != null) { // if box has a goal assigned
-//                GoalBoxToChar goal = new GoalBoxToChar(b, b.getDestination());
-//                // TODO add to a list of goals
-//                goal.refine();
-//                for(Goal subgoal : goal.getSubgoals()){
-//                    addSubGoal(subgoal);
-//                }
-//                //CharCell toBoxSubGoal = new CharCell(b.getCol(), b.getRow(), GoalType.MoveToBox);
-//                //addSubGoal(toBoxSubGoal);
-//                //addSubGoal(b.getDestination());
-//            }
-//        }
         System.err.println("Agent " + this.id + " planned " + subGoals.size() + "subgoals");
         return subGoals;
     }

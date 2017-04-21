@@ -46,9 +46,9 @@ public class Planner {
             Box closest = cc.getClosestBox(goalBoxes);
 
             cc.setAssignedBox(closest);
-            List<Agent> agentPriorityQueue =levelParser.getAgentsByColorMap().get(closest.getBoxColor());
+            List<Agent> agentPriorityQueue = levelParser.getAgentsByColorMap().get(closest.getBoxColor());
             for (Agent a: agentPriorityQueue) {
-                closest.setAssignedAgent(a);//Will override and the closest agent will get the box
+                closest.setAssignedAgent(a); //Will override and the closest agent will get the box
             }
             closest.setDestination(cc);
         }

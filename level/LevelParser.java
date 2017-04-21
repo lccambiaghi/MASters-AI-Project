@@ -12,6 +12,10 @@ import java.util.PriorityQueue;
 /**
  * Created by salik on 07-04-2017.
  * Class for parsing the level as it is given from the environment-server or reading from a file
+ *
+ * TODO:
+ * Level Parser should only parse the level
+ * All information about the level should be in the level instance it creates.
  */
 public class LevelParser {
 
@@ -20,6 +24,7 @@ public class LevelParser {
     private HashMap<Color, List<Agent>> agentsByColorMap = new HashMap<>();//TODO What if multiple agents of same color? HashMap<Color, List<Agent>>??
     private Strategy strategy;
     private boolean debug;
+    private Level level;
 
     public LevelParser(Strategy strategy, boolean debug) throws FileNotFoundException {
         this.strategy = strategy;
@@ -65,8 +70,7 @@ public class LevelParser {
             }
         }
 
-
-        Level level = Level.createInstance(MAX_ROW, MAX_COL);
+        this.level = Level.createInstance(MAX_ROW, MAX_COL);
 
         System.err.println(" ");
         System.err.println("Printing scanned map");
@@ -93,36 +97,25 @@ public class LevelParser {
                 for (int col = 0; col < lineInMap.length(); col++) {
                     char chr = lineInMap.charAt(col);
                     if (chr == '+') { // Wall.
-                        level.setWall(true, row, col);
+                        this.level.setWall(true, row, col);
                     } else if ('A' <= chr && chr <= 'Z') { // Box.
                         Box box = new Box(col, row, chr, Color.blue);
                         if(colorLevel) {
                             Color boxColor = colors.get(chr);
                             box.setColor(boxColor);
                         }
-                        level.addBox(box);
+                        this.level.addBox(box);
                     } else if ('a' <= chr && chr <= 'z') { // CharCell.
                         CharCell charCell = new CharCell(col, row, chr);
-                        level.addCharCell(charCell);
+                        this.level.addCharCell(charCell);
                     } else if (chr == ' ') {
                         // Free space.
                     }else if ('0' <= chr && chr <= '9') {
-                        Color agentColor = Color.blue;
-                        Agent newAgent = new Agent(chr, agentColor, this.strategy);
+                        Agent newAgent = new Agent(chr, this.strategy, row, col);
                         if(colorLevel) {
-                            agentColor = colors.get(chr);
-                            newAgent.setColor(agentColor);
+                            newAgent.setColor(colors.get(chr));
                         }
-                        newAgent.setAgentRow(row);
-                        newAgent.setAgentCol(col);
-                        agents.add(newAgent);
-                        if (agentsByColorMap.containsKey(agentColor)){
-                            agentsByColorMap.get(agentColor).add(newAgent);
-                        }else{
-                            List<Agent> agentList = new ArrayList<>();
-                            agentList.add(newAgent);
-                            agentsByColorMap.put(agentColor,agentList);
-                        }
+                        this.level.setAgentInColorMap(newAgent);
                         System.err.println("Agent " + newAgent.getId() + " created, Color is " + newAgent.getColor().toString());
                     }
                 }
