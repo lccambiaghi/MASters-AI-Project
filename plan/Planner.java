@@ -62,16 +62,9 @@ public class Planner {
             agent.setNumberOfGoals(agent.getNumberOfGoals()+1);
             agent.plan(goal);//Plan for a single goal at a time
             tmp.add(goal);
-
-                //Message announcement = new Message(MsgType.inform, plan, agent.getId());
-                //agent.broadcastSolution(announcement);
-
-                //agent.getComplaints(announcement);
-
-
         }
-        charCellPriorityQueue = tmp;//Save all the charcells so they are not lost after poll
 
+        charCellPriorityQueue = tmp;//Save all the charcells so they are not lost after poll
     }
 
     public void searchingPhase() {
@@ -80,7 +73,6 @@ public class Planner {
         HashSet<Agent> hasSearched = new HashSet<>();
         while(!charCellPriorityQueue.isEmpty()){
             CharCell goal = charCellPriorityQueue.poll();//Get the highest priority CharCell
-//            Agent agent = levelParser.getAgentsByColorMap().get(goal.getAssignedBox().getBoxColor()).peek();//Get the agent that has the same color as the box that matches the goalcell and has the fewest goals
             Agent agent = goal.getAssignedBox().getAssignedAgent();
             if (hasSearched.contains(agent)) continue;
             hasSearched.add(agent);
@@ -108,38 +100,8 @@ public class Planner {
                 agentSolution = agent.getCombinedSolution();
 
                 solutions.add(agentSolution);
+            }
         }
-
-//        for (int i=0; i< agents.size(); i++) {
-//                    Agent agent = agents.get(i);
-//                    LinkedList<Node> agentSolution = agent.search();
-//                    if (agentSolution == null) {
-//                        // TODO agent is stuck
-//
-//                        System.err.println(this.strategy.searchStatus());
-//                        System.err.println("Agent " + agents.get(i).getId() + " is unable to complete his subgoals.");
-//                        System.exit(0);
-//                    } else {
-//                        System.err.println("\nSummary for " + this.strategy.toString() + " for agent " + agents.get(i).getId() + ":");
-//                        System.err.println("Found solution of length " + agentSolution.size());
-//                        System.err.println(this.strategy.searchStatus());
-//
-//                        // agentSolution found
-//
-//                        Message solutionAnnouncement = new Message(MsgType.inform, agentSolution, agent.getId());
-//
-//                        agent.broadcastSolution(solutionAnnouncement);
-//
-//                        agent.evaluateRequests(solutionAnnouncement);
-//
-//                        agentSolution = agent.getCombinedSolution();
-//
-//                        solutions.add(agentSolution);
-//
-//            }
-        }
-
-
     }
 
 
