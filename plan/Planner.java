@@ -20,20 +20,13 @@ import java.util.*;
  * Searching phase
  */
 public class Planner {
-
-    private List<Agent> agents;
-
     private Strategy strategy;
-
     private List<LinkedList<Node>> solutions;
     private PriorityQueue<CharCell> charCellPriorityQueue;
-    private LevelParser levelParser;
     private Level level;
 
-    public Planner(List<Agent> agentList, PriorityQueue<CharCell> priorityQueue, LevelParser levelParser) {
-        this.agents = agentList;
+    public Planner(PriorityQueue<CharCell> priorityQueue) {
         this.charCellPriorityQueue = priorityQueue;
-        this.levelParser = levelParser;
         this.level = Level.getInstance();
     }
 

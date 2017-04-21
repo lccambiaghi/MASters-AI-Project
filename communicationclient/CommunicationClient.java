@@ -77,12 +77,10 @@ public class CommunicationClient {
             client.levelParser.readMap();
             PriorityQueue<CharCell> priorityQueue = analyzer.analyze(Level.getInstance());
 
-            List<Agent> agentList = client.levelParser.getAgents();
-
-            client.planner = new Planner(agentList, priorityQueue, client.levelParser);
+            client.planner = new Planner(priorityQueue);
             client.planner.setStrategy(strategy);
 
-            MsgHub.createInstance(agentList);
+            MsgHub.createInstance(Level.getInstance());
 
             while(client.update())
                 // when update returns false, we need to replan
