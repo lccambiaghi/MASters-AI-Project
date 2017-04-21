@@ -12,16 +12,10 @@ import java.util.PriorityQueue;
 /**
  * Created by salik on 07-04-2017.
  * Class for parsing the level as it is given from the environment-server or reading from a file
- *
- * TODO:
- * Level Parser should only parse the level
- * All information about the level should be in the level instance it creates.
  */
 public class LevelParser {
 
     private BufferedReader in;
-    private List<Agent> agents = new ArrayList<>();
-    private HashMap<Color, List<Agent>> agentsByColorMap = new HashMap<>();//TODO What if multiple agents of same color? HashMap<Color, List<Agent>>??
     private Strategy strategy;
     private boolean debug;
     private Level level;
@@ -125,12 +119,5 @@ public class LevelParser {
 
         System.err.println("*--------------------------------------*");
 
-    }
-    public List<Agent> getAgents(){
-        return agents;
-    }
-
-    public HashMap<Color, List<Agent>> getAgentsByColorMap() {
-        return agentsByColorMap;
     }
 }

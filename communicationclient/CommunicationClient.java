@@ -18,7 +18,7 @@ public class CommunicationClient {
     }
 
 
-    public boolean update() throws IOException {
+    public boolean run() throws IOException {
 
         planner.analysisPhase();
 
@@ -52,10 +52,8 @@ public class CommunicationClient {
             System.out.flush();
             response = in.readLine();
         }
-        System.err.format("Server responsed with %s to the inapplicable action: %s\n", response, jointAction);
-        //System.err.format("%s was attempted in \n%s\n", act, n.toString());
+        System.err.format("Server responded with %s to the inapplicable action: %s\n", response, jointAction);
         return false;
-
     }
 
 
@@ -82,11 +80,9 @@ public class CommunicationClient {
 
             MsgHub.createInstance(Level.getInstance());
 
-            while(client.update())
-                // when update returns false, we need to replan
-                // TODO update beliefs
-                ;
-
+            // when update returns false, we need to re plan
+            // TODO update beliefs
+            client.run();
         } catch (IOException ex) {
             System.err.println("IOException thrown!");
         }

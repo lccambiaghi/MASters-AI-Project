@@ -1,6 +1,5 @@
 package level;
 
-
 import communicationclient.Agent;
 
 import java.util.ArrayList;
