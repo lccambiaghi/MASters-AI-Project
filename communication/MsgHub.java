@@ -5,6 +5,7 @@
 package communication;
 
 import communicationclient.Agent;
+import level.*;
 
 import java.util.*;
 
@@ -20,12 +21,12 @@ public class MsgHub {
 
     private static MsgHub instance;
 
-    private List<Agent> agents;
+    private HashMap<Color, List<Agent>> agents;
 
     // in this map we store each message and its replies
     private HashMap<Message, Queue<Message>> messageMap;
 
-    private MsgHub(List<Agent> agents){
+    private MsgHub(HashMap<Color, List<Agent>> agents){
         this.agents = agents;
         messageMap = new HashMap<>();
     }
@@ -37,17 +38,20 @@ public class MsgHub {
 
         char sender = announcement.getSender();
 
-        for (Agent agent : agents)
-            if (agent.getId() != sender)
-                agent.receiveAnnouncement(announcement);
-
+        for (List<Agent> agentList : this.agents.values()) {
+            for (Agent agent : agentList) {
+                if (agent.getId() != sender)
+                    agent.receiveAnnouncement(announcement);
+            }
+        }
     }
 
     public Queue<Message> getResponses(Message announcement) {
         return messageMap.get(announcement);
     }
 
-    public static MsgHub createInstance(List<Agent> agents){
+    public static MsgHub createInstance(Level level){
+        HashMap<Color, List<Agent>> agents = level.getAgentsByColorMap();
         if(instance == null) {
             instance = new MsgHub(agents);
         }

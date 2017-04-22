@@ -10,8 +10,6 @@ import plan.Planner;
 
 public class CommunicationClient {
     private BufferedReader in;
-    //private List<Agent> agents;
-    //private Strategy strategy;
     private LevelParser levelParser;
     private Planner planner;
 
@@ -20,7 +18,7 @@ public class CommunicationClient {
     }
 
 
-    public boolean update() throws IOException {
+    public boolean run() throws IOException {
 
         planner.analysisPhase();
 
@@ -38,7 +36,7 @@ public class CommunicationClient {
             Node n;
             for (int i = 0; i < solutions.size() - 1; i++) {
                 n = solutions.get(i).pollFirst();
-                if(n!=null)
+                if(n != null)
                     jointAction += n.action.toString() + ",";
                 else
                     jointAction += "NoOp,";
@@ -54,10 +52,8 @@ public class CommunicationClient {
             System.out.flush();
             response = in.readLine();
         }
-        System.err.format("Server responsed with %s to the inapplicable action: %s\n", response, jointAction);
-        //System.err.format("%s was attempted in \n%s\n", act, n.toString());
+        System.err.format("Server responded with %s to the inapplicable action: %s\n", response, jointAction);
         return false;
-
     }
 
 
@@ -72,28 +68,21 @@ public class CommunicationClient {
         try {
             CommunicationClient client = new CommunicationClient();
             Heuristic heuristic = new Heuristic.WeightedAStar(5);
-            //Heuristic heuristic = new Heuristic.Greedy();
             Strategy strategy = new StrategyBestFirst(heuristic);
-            //Strategy strategy = new StrategyBFS();
-            //client.setStrategy(strategy);
 
-            client.levelParser = new LevelParser(strategy,true);
+            client.levelParser = new LevelParser(strategy,false);
+            LevelAnalyzer analyzer = new LevelAnalyzer();
             client.levelParser.readMap();
+            PriorityQueue<CharCell> priorityQueue = analyzer.analyze(Level.getInstance());
 
-            //client.agents = client.levelParser.getAgents();
-
-            List<Agent> agentList = client.levelParser.getAgents();
-
-            client.planner = new Planner(agentList);
+            client.planner = new Planner(priorityQueue);
             client.planner.setStrategy(strategy);
 
-            MsgHub.createInstance(agentList);
+            MsgHub.createInstance(Level.getInstance());
 
-            while(client.update())
-                // when update returns false, we need to replan
-                // TODO update beliefs
-                ;
-
+            // when update returns false, we need to re plan
+            // TODO update beliefs
+            client.run();
         } catch (IOException ex) {
             System.err.println("IOException thrown!");
         }

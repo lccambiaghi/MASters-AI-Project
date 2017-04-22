@@ -1,5 +1,6 @@
 package level;
 
+import communicationclient.Agent;
 import heuristic.HeuristicHelper;
 
 /**
@@ -11,7 +12,7 @@ public class Box {
     private char boxChar;
     private Color boxColor;
     private CharCell Destination;
-
+    private Agent assignedAgent;
     // if SA level, color is default to blue
     public Box(int col, int row, char boxChar, Color boxColor) {
         this.col = col;
@@ -56,6 +57,28 @@ public class Box {
         }
 
         if (newDistance < oldDistance) this.Destination = charCell;
+    }
+
+    public Agent getAssignedAgent() {
+        return assignedAgent;
+    }
+
+    public void setAssignedAgent(Agent assignedAgent) {
+        int newDistance = HeuristicHelper.manhattanDistance(this.row,
+                this.col,
+                assignedAgent.getAgentRow(),
+                assignedAgent.getAgentCol());
+        int oldDistance = Integer.MAX_VALUE;
+
+        if(this.assignedAgent != null){
+            oldDistance = HeuristicHelper.manhattanDistance(this.row,
+                    this.col,
+                    this.assignedAgent.getAgentRow(),
+                    this.assignedAgent.getAgentCol());
+        }
+
+        if (newDistance < oldDistance) this.assignedAgent = assignedAgent;
+        this.assignedAgent = assignedAgent;
     }
 
     public CharCell getDestination() {

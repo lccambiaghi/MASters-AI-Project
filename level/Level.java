@@ -1,8 +1,11 @@
 package level;
 
+import communicationclient.Agent;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * Created by salik on 31-03-2017.
@@ -11,7 +14,6 @@ public class Level {
 
     private static Level instance;
     private HashMap<Character, HashSet<CharCell>> goalsByChar;
-    //private HashMap<GoalType, HashSet<CharCell>> goalsByType;
     private HashMap<Character, HashSet<Box>> boxesByChar;
     private HashMap<Color, HashSet<Box>> boxesByColor;
     private HashSet<Box> allBoxes;
@@ -20,13 +22,13 @@ public class Level {
     public int MAX_ROW;
     public int MAX_COL;
     private int NUM_GOALS = 0;
+    private HashMap<Color, List<Agent>> agentsByColorMap = new HashMap<>(); //TODO What if multiple agents of same color? HashMap<Color, List<Agent>>??
 
     private Level (int MAX_ROW, int MAX_COL){
         this.walls = new boolean[MAX_ROW][MAX_COL];
         this.MAX_ROW = MAX_ROW;
         this.MAX_COL = MAX_COL;
         this.goalsByChar = new HashMap<>();
-        //this.goalsByType = new HashMap<>();
         this.boxesByChar = new HashMap<>();
         this.boxesByColor = new HashMap<>();
         this.allBoxes = new HashSet<>();
@@ -67,19 +69,8 @@ public class Level {
             this.allCharCells.add(charCell);
             this.goalsByChar.put(charCell.getLetter(), charSet);
         }
-
-//        if (goalsByType.containsKey(GoalType.PushBox)){
-//            HashSet<CharCell> typeSet = goalsByType.get(GoalType.PushBox);
-//            typeSet.add(charCell);
-//            this.allCharCells.add(charCell);
-//        }else{
-//            HashSet<CharCell> typeSet = new HashSet<>();
-//            typeSet.add(charCell);
-//            this.allCharCells.add(charCell);
-//            this.goalsByType.put(GoalType.PushBox, typeSet);
-//        }
     }
-    
+
     public void addBox(Box box){
         char boxChar = box.getBoxChar();
         Color boxColor = box.getBoxColor();
@@ -100,6 +91,20 @@ public class Level {
             boxesColor.add(box);
             this.boxesByColor.put(boxColor, boxesColor);
         }
+    }
+
+    public void setAgentInColorMap(Agent agent) {
+        if (this.agentsByColorMap.containsKey(agent.getColor())){
+            this.agentsByColorMap.get(agent.getColor()).add(agent);
+        }else{
+            List<Agent> agentList = new ArrayList<>();
+            agentList.add(agent);
+            this.agentsByColorMap.put(agent.getColor(), agentList);
+        }
+    }
+
+    public HashMap<Color, List<Agent>> getAgentsByColorMap() {
+        return this.agentsByColorMap;
     }
 
     public HashSet<Box> getBoxesByColor(Color color){

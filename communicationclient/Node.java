@@ -85,27 +85,7 @@ public class Node {
 
 
 	public boolean isGoalState() {
-
 		return subGoal.isGoalSatisfied(this);
-
-		/*switch (subGoal.getGoalType()) {
-			case PushBox:
-				char goalChar = subGoal.getLetter();
-				Box box = boxes[subGoal.getRow()][subGoal.getCol()];
-				if (box!=null){
-					char b = Character.toLowerCase(box.getBoxChar());
-					if (b == goalChar) {
-						return true;
-					}
-				}
-				break;
-
-			case MoveToBox:
-				if((Math.abs(agentRow-subGoal.getRow()) == 1 && Math.abs(agentCol-subGoal.getCol()) == 0) ||
-          (Math.abs(agentCol-subGoal.getCol()) == 1 && Math.abs(agentRow-subGoal.getRow()) == 0)) return true;
-				break;
-		}
-		return false;*/
 	}
 
 	public ArrayList<Node> getExpandedNodes() {
@@ -252,8 +232,6 @@ public class Node {
 					s.append(this.boxes[row][col].getBoxChar());
 				} else if (this.walls[row][col]) {
 					s.append("+");
-//				}else if(row == subGoal.getRow() && col == subGoal.getCol()){
-//						s.append(subGoal.getLetter());
 				} else if (row == this.agentRow && col == this.agentCol) {
 					s.append("0");
 				} else {
