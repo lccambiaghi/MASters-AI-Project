@@ -70,7 +70,7 @@ public class CommunicationClient {
             Heuristic heuristic = new Heuristic.WeightedAStar(5);
             Strategy strategy = new StrategyBestFirst(heuristic);
 
-            client.levelParser = new LevelParser(strategy,false);
+            client.levelParser = new LevelParser(strategy,true);
             LevelAnalyzer analyzer = new LevelAnalyzer();
             client.levelParser.readMap();
             PriorityQueue<CharCell> priorityQueue = analyzer.analyze(Level.getInstance());

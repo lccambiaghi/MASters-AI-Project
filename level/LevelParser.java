@@ -2,12 +2,12 @@ package level;
 
 import communicationclient.Agent;
 import communicationclient.Strategy;
+import graph.Graph;
+import graph.Vertex;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.PriorityQueue;
 
 /**
  * Created by salik on 07-04-2017.
@@ -26,7 +26,7 @@ public class LevelParser {
         if(this.debug){
             //For Debugging
             FileInputStream fis = null;
-            fis = new FileInputStream("levels/MAsimple4.lvl");
+            fis = new FileInputStream("C:\\Users\\salik\\Documents\\02285-MASters-prog_proj\\levels\\MAsimple3.lvl");
             in = new BufferedReader(new InputStreamReader(fis));
         }else{
             in = new BufferedReader(new InputStreamReader(System.in));
@@ -77,7 +77,7 @@ public class LevelParser {
 
         row = 0;
         boolean colorLevel = false;
-
+        Graph graph = new Graph();
         for (String lineInMap: map) {
             // if line is a color declaration, MA level -> colors get mapped
             if (lineInMap.matches("^[a-z]+:\\s*[0-9A-Z](,\\s*[0-9A-Z])*\\s*$")) {
@@ -93,7 +93,10 @@ public class LevelParser {
                     if (chr == '+') { // Wall.
                         this.level.setWall(true, row, col);
                     } else if ('A' <= chr && chr <= 'Z') { // Box.
+                        Vertex v = new Vertex(row,col);
                         Box box = new Box(col, row, chr, Color.blue);
+                        v.setBox(box);
+                        graph.addVertex(v);
                         if(colorLevel) {
                             Color boxColor = colors.get(chr);
                             box.setColor(boxColor);
@@ -101,22 +104,30 @@ public class LevelParser {
                         this.level.addBox(box);
                     } else if ('a' <= chr && chr <= 'z') { // CharCell.
                         CharCell charCell = new CharCell(col, row, chr);
+                        Vertex v = new Vertex(row,col);
                         this.level.addCharCell(charCell);
+                        v.setGoalCell(charCell);
+                        graph.addVertex(v);
                     } else if (chr == ' ') {
                         // Free space.
+                        Vertex v = new Vertex(row,col);
+                        graph.addVertex(v);
                     }else if ('0' <= chr && chr <= '9') {
+                        Vertex v = new Vertex(row,col);
                         Agent newAgent = new Agent(chr, this.strategy, row, col);
                         if(colorLevel) {
                             newAgent.setColor(colors.get(chr));
                         }
                         this.level.setAgentInColorMap(newAgent);
+                        graph.addVertex(v);
                         System.err.println("Agent " + newAgent.getId() + " created, Color is " + newAgent.getColor().toString());
                     }
                 }
                 row++;
             }
         }
-
+        graph.createGraph();
+        graph.analyzeGraph();
         System.err.println("*--------------------------------------*");
 
     }

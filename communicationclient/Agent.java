@@ -200,7 +200,7 @@ public class Agent {
                 }
 
                 this.strategy.addToExplored(leafNode);
-                for (Node n : leafNode.getExpandedNodes()) { // The list of expanded nodes is shuffled randomly; see Node.java.
+                for (Node n : leafNode.getExpandedNodes()) { // The list of expanded nodes is shuffled randomly; see Vertex.java.
                     if (!this.strategy.isExplored(n) && !this.strategy.inFrontier(n)) {
                         this.strategy.addToFrontier(n);
                     }

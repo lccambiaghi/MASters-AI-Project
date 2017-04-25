@@ -89,7 +89,7 @@ public class Planner {
 
                 agent.evaluateRequests(solutionAnnouncement);
 
-                this.solutions.put(Character.getNumericValue(agent.getId()), agentSolution);
+                this.solutions.put(Character.getNumericValue(agent.getId()), agent.getCombinedSolution());
             }
         }
     }
