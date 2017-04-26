@@ -8,6 +8,7 @@ import graph.Vertex;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by salik on 07-04-2017.
@@ -26,7 +27,7 @@ public class LevelParser {
         if(this.debug){
             //For Debugging
             FileInputStream fis = null;
-            fis = new FileInputStream("levels/MAsimple.lvl");
+            fis = new FileInputStream("levels/MAsimple1.lvl");
             in = new BufferedReader(new InputStreamReader(fis));
         }else{
             in = new BufferedReader(new InputStreamReader(System.in));
@@ -128,6 +129,7 @@ public class LevelParser {
         }
         graph.createGraph();
         graph.analyzeGraph();
+        List<Vertex> limited = graph.getLimitedRessources();
         System.err.println("*--------------------------------------*");
 
     }

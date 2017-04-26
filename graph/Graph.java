@@ -11,10 +11,11 @@ public class Graph {
     private HashSet<Vertex> vertices = new HashSet<>();
     //private HashSet<Edge> edges = new HashSet<>();
     private HashMap<Vertex, HashSet<Edge>> edges = new HashMap<>();
-    private List<Vertex> goalVerticies = new ArrayList<>();
+    private HashSet<Vertex> goalVerticies = new HashSet<>();
     private List<Vertex> boxVerticies = new ArrayList<>();
     private HashSet<Vertex> visited = new HashSet<>();
     private List<Edge> tmp = new ArrayList<>();
+    private List<Vertex> limitedRessources = new ArrayList<>();
     public void addVertex(Vertex vertex){
         vertices.add(vertex);
     }
@@ -22,7 +23,7 @@ public class Graph {
     private Graph getCopy(){
         Graph g = new Graph();
         g.setBoxVerticies(new ArrayList<>(this.getBoxVerticies()));
-        g.setGoalVerticies(new ArrayList<>(this.getGoalVerticies()));
+        g.setGoalVerticies(new HashSet<>(this.getGoalVerticies()));
         HashSet<Vertex> newVerticies = new HashSet<>();
         newVerticies.addAll(this.getVertices());
         g.setVertices(newVerticies);
@@ -46,12 +47,19 @@ public class Graph {
         }
     }
 
+    public List<Vertex> getLimitedRessources() {
+        return limitedRessources;
+    }
 
+    /**
+     * This method analyzes the graph and finds limited ressources
+     */
     public void analyzeGraph(){
-        for (Vertex goalVertex : goalVerticies) {
+
+        for (Vertex vertex : vertices) {//Go through all verticies in the graph and find the ones that divide the graph when occupied.
             int numberOfComponents = 0;//Start on zero as goalcell is counted as single component!
             Graph newGraph = this.getCopy();
-            newGraph.removeVertex(goalVertex);
+            newGraph.removeVertex(vertex);
             newGraph.visited = new HashSet<>();
             Vertex startVertex = null;
             for (Vertex v: newGraph.getVertices()) {
@@ -62,16 +70,22 @@ public class Graph {
             for (Vertex u: vertices) {
                 if(!newGraph.visited.contains(u)){
                     numberOfComponents++;
-                    if(goalVertex != u) newGraph.runDFS(u);//Only Run DFS on new graph if it is not trying to on the goalcell we removed.
+                    if(vertex != u) newGraph.runDFS(u);//Only Run DFS on new graph if it is not trying to on the goalcell we removed.
                 }
             }
             //Insert the edges that were removed as Java points to the same object even when copying the verticies and edges
             for (Edge e: newGraph.tmp) {
                 edges.get(e.getFrom()).add(e);
             }
-            CharCell goalCell = goalVertex.getGoalCell();
-            goalCell.setGraphComponentsIfFulfilled(numberOfComponents);
-            System.err.println("Removing goal: " + goalVertex.getGoalCell().getLetter() +" will make graph have "+ numberOfComponents +" components");
+            //Is it a goalVertex then update the CharCell
+            if(goalVerticies.contains(vertex)){
+                CharCell goalCell = vertex.getGoalCell();
+                goalCell.setGraphComponentsIfFulfilled(numberOfComponents);
+                System.err.println("Removing goal: " + vertex.getGoalCell().getLetter() +" will make graph have "+ numberOfComponents +" components");
+            }
+            vertex.setGraphComponentsIfRemoved(numberOfComponents);
+            if(numberOfComponents > 1) limitedRessources.add(vertex);
+
         }
     }
 
@@ -101,11 +115,11 @@ public class Graph {
         this.edges = edges;
     }
 
-    public List<Vertex> getGoalVerticies() {
+    public HashSet<Vertex> getGoalVerticies() {
         return goalVerticies;
     }
 
-    public void setGoalVerticies(List<Vertex> goalVerticies) {
+    public void setGoalVerticies(HashSet<Vertex> goalVerticies) {
         this.goalVerticies = goalVerticies;
     }
 

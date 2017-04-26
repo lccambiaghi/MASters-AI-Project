@@ -13,6 +13,7 @@ import java.util.List;
 public class Vertex {
     private int row;
     private int col;
+    private int graphComponentsIfRemoved = 1;
     private boolean satisfied;
     private CharCell goalCell = null;
     private Box box = null;
@@ -29,12 +30,21 @@ public class Vertex {
         this.row = row;
     }
 
+
     public int getCol() {
         return col;
     }
 
     public void setCol(int col) {
         this.col = col;
+    }
+
+    public int getGraphComponentsIfRemoved() {
+        return graphComponentsIfRemoved;
+    }
+
+    public void setGraphComponentsIfRemoved(int graphComponentsIfRemoved) {
+        this.graphComponentsIfRemoved = graphComponentsIfRemoved;
     }
     public boolean isSatisfied(){
         return satisfied;
