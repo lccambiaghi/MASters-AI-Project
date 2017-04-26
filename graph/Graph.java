@@ -19,11 +19,14 @@ public class Graph {
     public void addVertex(Vertex vertex){
         vertices.add(vertex);
     }
-    public Graph getCopy(){
+
+    private Graph getCopy(){
         Graph g = new Graph();
         g.setBoxVerticies(new ArrayList<>(this.getBoxVerticies()));
         g.setGoalVerticies(new ArrayList<>(this.getGoalVerticies()));
-        g.setVertices((HashSet<Vertex>) this.getVertices().clone());
+        HashSet<Vertex> newVerticies = new HashSet<>();
+        newVerticies.addAll(this.getVertices());
+        g.setVertices(newVerticies);
         g.setEdges((HashMap<Vertex, HashSet<Edge>>) this.getEdges().clone());
         return g;
     }
@@ -35,36 +38,40 @@ public class Graph {
             HashSet<Edge> n1Edges = new HashSet<>();
             edges.put(n1,n1Edges);
             for (Vertex n2: vertices){
-                if((n2.getRow() == n1.getRow() && Math.abs(n2.getCol()-n1.getCol()) == 1)|| (n2.getCol() == n1.getCol() && Math.abs(n2.getRow()-n1.getRow())==1)){
+                if((n2.getRow() == n1.getRow() && Math.abs(n2.getCol()-n1.getCol()) == 1)
+                        || (n2.getCol() == n1.getCol() && Math.abs(n2.getRow()-n1.getRow())==1)){//Add edge if n1 and n2 are adjacent
                     Edge e = new Edge(n1, n2);
-                    n1.addEdge(n2);
                     n1Edges.add(e);
                 }
             }
         }
     }
+
+
     public void analyzeGraph(){
+
         for (Vertex goal : goalVerticies) {
             int numberOfComponents = 0;//Start on zero as goalcell is counted as single component!
             Graph newGraph = this.getCopy();
             newGraph.removeVertex(goal);
-            visited = new HashSet<>();
+            newGraph.visited = new HashSet<>();
             Vertex startVertex = null;
             for (Vertex v: newGraph.getVertices()) {
                 startVertex = v;
                 break;
             }
-            runDFS(startVertex);
+            newGraph.runDFS(startVertex);//Run DFS on new graph
             for (Vertex u: vertices) {
-                if(!visited.contains(u)){
+                if(!newGraph.visited.contains(u)){
                     numberOfComponents++;
-                    runDFS(u);
+                    if(goal != u) newGraph.runDFS(u);//Only Run DFS on new graph if it is not trying to on the goalcell we removed.
                 }
             }
-            for (Edge e:tmp) {
+            //Insert the edges that were removed as Java points to the same object even when copying the verticies and edges
+            for (Edge e: newGraph.tmp) {
                 edges.get(e.getFrom()).add(e);
             }
-            System.out.println(numberOfComponents);
+            System.err.println("Removing goal: " + goal.getGoalCell().getLetter() +" will make graph have "+ numberOfComponents +" components");
         }
     }
 
@@ -76,9 +83,7 @@ public class Graph {
                 visited.add(v2);
                 runDFS(v2);
             }
-
         }
-
     }
     public HashSet<Vertex> getVertices() {
         return vertices;
@@ -111,6 +116,7 @@ public class Graph {
     public void setBoxVerticies(List<Vertex> boxVerticies) {
         this.boxVerticies = boxVerticies;
     }
+
     private void removeVertex(Vertex v){
         vertices.remove(v);
         HashSet<Edge> v1Edges = edges.get(v);
@@ -118,10 +124,9 @@ public class Graph {
             Vertex v2 = ed.getTo();
             HashSet<Edge> v2Edges = edges.get(v2);
             Edge v2v1 = new Edge(v2,v);
-            v2Edges.remove(v2v1);
+            v2Edges.remove(v2v1);//Remove the edge from v2 -> v
             tmp.add(v2v1);
-            //v2.getEdges().remove(v2v1);
         }
-        edges.remove(v);
+        edges.remove(v);//Remove all edges from v -> ...
     }
 }

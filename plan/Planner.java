@@ -35,7 +35,7 @@ public class Planner {
         HashSet<CharCell> charCells = this.level.getAllCharCells();
         for (CharCell cc: charCells) {
             HashSet<Box> goalBoxes = this.level.getBoxesByChar(Character.toUpperCase(cc.getLetter()));
-
+            if(goalBoxes==null); //TODO There is no solution
             Box closest = cc.getClosestBox(goalBoxes);
 
             cc.setAssignedBox(closest);

@@ -13,7 +13,6 @@ import java.util.List;
 public class Vertex {
     private int row;
     private int col;
-    private HashSet<Edge> edges = new HashSet<>();
     private boolean satisfied;
     private CharCell goalCell = null;
     private Box box = null;
@@ -22,12 +21,6 @@ public class Vertex {
         this.row = row;
         this.col = col;
     }
-
-
-    //public HashSet<Edge>  getEdges() {
-      //  return edges;
-    //}
-
     public int getRow() {
         return row;
     }
@@ -42,11 +35,6 @@ public class Vertex {
 
     public void setCol(int col) {
         this.col = col;
-    }
-
-    public void addEdge(Vertex to){
-        Edge e = new Edge(this, to);
-        edges.add(e);
     }
     public boolean isSatisfied(){
         return satisfied;

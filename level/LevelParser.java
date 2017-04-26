@@ -26,7 +26,7 @@ public class LevelParser {
         if(this.debug){
             //For Debugging
             FileInputStream fis = null;
-            fis = new FileInputStream("C:\\Users\\salik\\Documents\\02285-MASters-prog_proj\\levels\\MAsimple3.lvl");
+            fis = new FileInputStream("levels/MAsimple.lvl");
             in = new BufferedReader(new InputStreamReader(fis));
         }else{
             in = new BufferedReader(new InputStreamReader(System.in));
