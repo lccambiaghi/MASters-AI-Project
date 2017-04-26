@@ -1,9 +1,8 @@
 package graph;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import level.CharCell;
+
+import java.util.*;
 
 /**
  * Created by salik on 25-04-2017.
@@ -49,11 +48,10 @@ public class Graph {
 
 
     public void analyzeGraph(){
-
-        for (Vertex goal : goalVerticies) {
+        for (Vertex goalVertex : goalVerticies) {
             int numberOfComponents = 0;//Start on zero as goalcell is counted as single component!
             Graph newGraph = this.getCopy();
-            newGraph.removeVertex(goal);
+            newGraph.removeVertex(goalVertex);
             newGraph.visited = new HashSet<>();
             Vertex startVertex = null;
             for (Vertex v: newGraph.getVertices()) {
@@ -64,14 +62,16 @@ public class Graph {
             for (Vertex u: vertices) {
                 if(!newGraph.visited.contains(u)){
                     numberOfComponents++;
-                    if(goal != u) newGraph.runDFS(u);//Only Run DFS on new graph if it is not trying to on the goalcell we removed.
+                    if(goalVertex != u) newGraph.runDFS(u);//Only Run DFS on new graph if it is not trying to on the goalcell we removed.
                 }
             }
             //Insert the edges that were removed as Java points to the same object even when copying the verticies and edges
             for (Edge e: newGraph.tmp) {
                 edges.get(e.getFrom()).add(e);
             }
-            System.err.println("Removing goal: " + goal.getGoalCell().getLetter() +" will make graph have "+ numberOfComponents +" components");
+            CharCell goalCell = goalVertex.getGoalCell();
+            goalCell.setGraphComponentsIfFulfilled(numberOfComponents);
+            System.err.println("Removing goal: " + goalVertex.getGoalCell().getLetter() +" will make graph have "+ numberOfComponents +" components");
         }
     }
 

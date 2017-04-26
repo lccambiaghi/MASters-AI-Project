@@ -15,6 +15,7 @@ public class CharCell {
     private char letter;
     private Box assignedBox;
     private int priority = 0;
+    private int graphComponentsIfFulfilled = 1;
     private int numWalls = 0;
     private boolean corner = false;
     private boolean deadEnd = false;
@@ -25,6 +26,14 @@ public class CharCell {
 //        this.goalType = goalType;
 //    }
 
+    public int getGraphComponentsIfFulfilled() {
+        return graphComponentsIfFulfilled;
+    }
+
+    public void setGraphComponentsIfFulfilled(int graphComponentsIfFulfilled) {
+        this.graphComponentsIfFulfilled = graphComponentsIfFulfilled;
+    }
+
     public int getPriority() {
         return priority;
     }
@@ -32,7 +41,7 @@ public class CharCell {
     public void setPriority(int priority) {
         this.priority = priority;
     }
-    public void calculatePriority(){
+    public void calculatePriority(){//TODO include graphComponentsIfFulfilled
         priority += numWalls;
         if(corner) priority++;//if corner give higher priority
         if (deadEnd) priority +=2;//If deadend give higher priority
