@@ -15,7 +15,13 @@ public class Graph {
     private List<Vertex> boxVerticies = new ArrayList<>();
     private HashSet<Vertex> visited = new HashSet<>();
     private List<Edge> tmp = new ArrayList<>();
-    private List<Vertex> limitedRessources = new ArrayList<>();
+    private List<Vertex> limitedResources = new ArrayList<>();
+    private List<Vertex> nonLimitedResources = new ArrayList<>();
+
+    public List<Vertex> getNonLimitedResources() {
+        return nonLimitedResources;
+    }
+
     public void addVertex(Vertex vertex){
         vertices.add(vertex);
     }
@@ -47,8 +53,8 @@ public class Graph {
         }
     }
 
-    public List<Vertex> getLimitedRessources() {
-        return limitedRessources;
+    public List<Vertex> getLimitedResources() {
+        return limitedResources;
     }
 
     /**
@@ -84,8 +90,8 @@ public class Graph {
                 System.err.println("Removing goal: " + vertex.getGoalCell().getLetter() +" will make graph have "+ numberOfComponents +" components");
             }
             vertex.setGraphComponentsIfRemoved(numberOfComponents);
-            if(numberOfComponents > 1) limitedRessources.add(vertex);
-
+            if(numberOfComponents > 1) limitedResources.add(vertex);
+            else nonLimitedResources.add(vertex);
         }
     }
 

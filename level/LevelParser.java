@@ -127,9 +127,13 @@ public class LevelParser {
                 row++;
             }
         }
+        // The following is just for testing that the graph analyzis works :-)
         graph.createGraph();
         graph.analyzeGraph();
-        List<Vertex> limited = graph.getLimitedRessources();
+        List<Vertex> limited = graph.getLimitedResources();
+        List<Vertex> nonLimited = graph.getNonLimitedResources();
+
+        
         System.err.println("*--------------------------------------*");
 
     }
