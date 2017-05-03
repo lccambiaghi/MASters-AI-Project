@@ -1,15 +1,23 @@
 package level;
 
+import communicationclient.Agent;
+import goal.Goal;
+import goal.GoalBoxToChar;
 import heuristic.CharCellComparator;
+import heuristic.GoalComparator;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.PriorityQueue;
 
 /**
  * Created by salik on 19-04-2017.
  */
 public class LevelAnalyzer {
+    private Level level;
+    private PriorityQueue<CharCell> charCellsPriorityQueue = new PriorityQueue<>(new CharCellComparator());
+    private PriorityQueue<Goal> goalPriorityQueue = new PriorityQueue<Goal>(new GoalComparator());
 
     private ArrayList<CharCell> deadEnds = new ArrayList<>();
     private ArrayList<CharCell> corners = new ArrayList<>();
@@ -17,16 +25,18 @@ public class LevelAnalyzer {
     private ArrayList<CharCell> twoWalls = new ArrayList<>();
     private ArrayList<CharCell> noWalls = new ArrayList<>();
     private ArrayList<CharCell> allWalls = new ArrayList<>();
-    private PriorityQueue<CharCell> cellPriorityQueue = new PriorityQueue<>(new CharCellComparator());
+
+    public LevelAnalyzer () {
+        this.level = Level.getInstance();
+    }
 
     /**
      * Method that analyzes how many walls are around the goals in a level
-     * @param level level to analyze
      */
-    public PriorityQueue<CharCell> analyze(Level level){
-        HashSet<CharCell> goalCells = level.getAllCharCells();
+    public void analyzeWalls(){
+        HashSet<CharCell> goalCells = this.level.getAllCharCells();
 
-        boolean[][] walls = level.getWalls();
+        boolean[][] walls = this.level.getWalls();
         for (CharCell c:goalCells) {
             int row = c.getRow();
             int col = c.getCol();
@@ -69,8 +79,41 @@ public class LevelAnalyzer {
                     break;
             }
             c.calculatePriority();//Calculate priority of goalcell
-            cellPriorityQueue.add(c);//Add to priorityqueue
+            charCellsPriorityQueue.add(c);//Add to priorityqueue
         }
-        return cellPriorityQueue;
+        //return charCellsPriorityQueue;
     }
+
+    public void assignBoxesToCells() {
+        // assign a box to each charCell
+        HashSet<CharCell> charCells = this.level.getAllCharCells();
+        for (CharCell cc: charCells) {
+            HashSet<Box> goalBoxes = this.level.getBoxesByChar(Character.toUpperCase(cc.getLetter()));
+
+            Box closest = cc.getClosestBox(goalBoxes);
+            cc.setAssignedBox(closest);
+
+            List<Agent> agentPriorityQueue = this.level.getAgentsByColorMap().get(closest.getBoxColor());
+            for (Agent a: agentPriorityQueue) {
+                closest.setAssignedAgent(a); //Will override and the closest agent will get the box
+            }
+
+            closest.setDestination(cc);
+        }
+    }
+
+    public PriorityQueue<Goal> createInitialGoals() {
+        for (CharCell cell : charCellsPriorityQueue){
+            Box assigned = cell.getAssignedBox();
+            Goal boxToChar = new GoalBoxToChar(assigned, cell);
+
+            int priority = cell.getPriority();
+            boxToChar.setPriority(priority);
+
+            goalPriorityQueue.add(boxToChar);
+        }
+
+        return goalPriorityQueue;
+    }
+
 }

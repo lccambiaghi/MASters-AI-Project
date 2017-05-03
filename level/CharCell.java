@@ -11,7 +11,6 @@ import java.util.HashSet;
 public class CharCell {
     private int col;
     private int row;
-    //private GoalType goalType;
     private char letter;
     private Box assignedBox;
     private int priority = 0;
@@ -19,19 +18,6 @@ public class CharCell {
     private boolean corner = false;
     private boolean deadEnd = false;
 
-//    public CharCell(int col, int row, GoalType goalType){
-//        this.col = col;
-//        this.row = row;
-//        this.goalType = goalType;
-//    }
-
-    public int getPriority() {
-        return priority;
-    }
-
-    public void setPriority(int priority) {
-        this.priority = priority;
-    }
     public void calculatePriority(){
         priority += numWalls;
         if(corner) priority++;//if corner give higher priority
@@ -108,6 +94,10 @@ public class CharCell {
 
     public int getCol() {
         return col;
+    }
+
+    public int getPriority() {
+        return priority;
     }
 
     @Override

@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.*;
 
 import communication.MsgHub;
+import goal.Goal;
 import heuristic.Heuristic;
 import level.*;
 import plan.Planner;
@@ -12,17 +13,15 @@ public class CommunicationClient {
     private BufferedReader in;
     private LevelParser levelParser;
     private Planner planner;
+    private LevelAnalyzer levelAnalyzer;
 
-    public CommunicationClient() throws IOException {
+    private CommunicationClient() throws IOException {
         in = new BufferedReader(new InputStreamReader(System.in));
     }
 
+    private void solve() throws IOException {
 
-    public boolean run() throws IOException {
-
-        planner.analysisPhase();
-
-        planner.planningPhase();
+        planner.refineInitialGoals();
 
         planner.searchingPhase();
 
@@ -53,7 +52,6 @@ public class CommunicationClient {
             response = in.readLine();
         }
         System.err.format("Server responded with %s to the inapplicable action: %s\n", response, jointAction);
-        return false;
     }
 
 
@@ -70,19 +68,20 @@ public class CommunicationClient {
             Heuristic heuristic = new Heuristic.WeightedAStar(5);
             Strategy strategy = new StrategyBestFirst(heuristic);
 
-            client.levelParser = new LevelParser(strategy,false);
-            LevelAnalyzer analyzer = new LevelAnalyzer();
+            client.levelParser = new LevelParser(strategy,true);
             client.levelParser.readMap();
-            PriorityQueue<CharCell> priorityQueue = analyzer.analyze(Level.getInstance());
 
-            client.planner = new Planner(priorityQueue);
-            client.planner.setStrategy(strategy);
+            client.levelAnalyzer = new LevelAnalyzer();
+            client.levelAnalyzer.analyzeWalls();
+            client.levelAnalyzer.assignBoxesToCells();
+            PriorityQueue<Goal> priorityGoals = client.levelAnalyzer.createInitialGoals();
+
+            client.planner = new Planner(priorityGoals);
 
             MsgHub.createInstance(Level.getInstance());
 
-            // when update returns false, we need to re plan
-            // TODO update beliefs
-            client.run();
+            client.solve();
+
         } catch (IOException ex) {
             System.err.println("IOException thrown!");
         }

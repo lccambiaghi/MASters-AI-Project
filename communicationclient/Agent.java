@@ -19,14 +19,13 @@ public class Agent {
     private Color color;
     private int agentRow;
     private int agentCol;
-    private int numberOfGoals;
+
     private Strategy strategy;
     private Node initialState;
 
+    private int numberOfGoals;
     private LinkedList<Node> combinedSolution;
     private ArrayDeque<Goal> subGoals;
-
-
 
     public Agent(char id, Strategy strategy, int row, int col) {
         this.subGoals = new ArrayDeque<>();
@@ -38,110 +37,18 @@ public class Agent {
         this.agentCol = col;
     }
 
-    public void broadcastSolution(Message solutionAnnouncement) {
-        MsgHub msgHub = MsgHub.getInstance();
-        msgHub.broadcast(solutionAnnouncement);
-    }
-
-    public void evaluateRequests(Message solutionAnnouncement) {
-        MsgHub msgHub = MsgHub.getInstance();
-        Queue<Message> requests = msgHub.getResponses(solutionAnnouncement);
-
-        for(Message request : requests)
-            if (request.getType() == MsgType.request){
-                LinkedList<Node> requestedSolution = request.getContent();
-
-                combinedSolution = requestedSolution;
-
-                Message response = new Message(MsgType.agree, null, id);
-
-                sendResponse(request, response);
-
-            }
-
-    }
-
-    private void sendResponse(Message request, Message response) {
-        MsgHub msgHub = MsgHub.getInstance();
-        msgHub.broadcast(response);
-    }
-
-    public void receiveAnnouncement(Message announcement){
-        MsgHub msgHub = MsgHub.getInstance();
-
-        switch (announcement.getType()){
-            case inform: // for now: announcement of solution
-                // check if there is a conflict
-                // if yes, send back request
-
-                LinkedList<Node> otherAgentSolution = announcement.getContent();
-
-                int conflictTime = checkForConflicts(otherAgentSolution);
-
-                if (conflictTime > -1){
-                    LinkedList<Node> newSolution = makeOtherAgentWait(otherAgentSolution);
-                    Message requestedSolution = new Message(MsgType.request, newSolution, id);
-                    msgHub.reply(announcement, requestedSolution);
-                }
-
-        }
-
-    }
-
-    private int checkForConflicts(LinkedList<Node> otherAgentSolution) {
-
-        if(combinedSolution == null)
-            return 0;
-
-        ConflictDetector cd = new ConflictDetector();
-
-        cd.addPlan(combinedSolution);
-
-        return cd.checkPlan(otherAgentSolution);
-
-    }
-
-    private LinkedList<Node> makeOtherAgentWait(LinkedList<Node> oldSolution){
-
-        ConflictDetector cd = new ConflictDetector();
-
-        cd.addPlan(combinedSolution);
-
-        int conflictTime = cd.checkPlan(oldSolution);
-
-        LinkedList<Node> newSolution = new LinkedList<>(oldSolution);
-
-        while (conflictTime > -1){
-            System.err.println("Conflict found at "+conflictTime);
-
-            Node n = oldSolution.getFirst();
-            Node noOp = new Node(null);
-            noOp.setBoxes(n.getBoxesCopy());
-            noOp.agentRow = n.agentRow;
-            noOp.agentCol = n.agentCol;
-            noOp.action= new Command(Command.Type.NoOp, n.action.dir1,n.action.dir2);
-            newSolution.addFirst(noOp);
-            conflictTime = cd.checkPlan(newSolution);
-        }
-
-        return newSolution;
-
-    }
-
-    public ArrayDeque<Goal> plan(CharCell goalCell){
+    public void refineBoxToChar(GoalBoxToChar goal){
         System.err.println("Agent " + this.id + " started planning");
 
-        Box goalBox = goalCell.getAssignedBox();
+        Box goalBox = goal.getBox();
         if (goalBox.getDestination() != null) { // if box has a goal assigned
-            GoalBoxToChar goal = new GoalBoxToChar(goalBox, goalBox.getDestination());
-            // TODO add to a list of goals
             goal.refine();
             for(Goal subgoal : goal.getSubgoals()){
-                addSubGoal(subgoal);
+                this.subGoals.addLast(subgoal);
             }
         }
         System.err.println("Agent " + this.id + " planned " + subGoals.size() + "subgoals");
-        return subGoals;
+        //return subGoals;
     }
 
     public LinkedList<Node> search() {
@@ -211,8 +118,90 @@ public class Agent {
         return this.combinedSolution;
     }
 
-    public void addSubGoal(Goal subgoal){
-        this.subGoals.addLast(subgoal);
+    public void broadcastSolution(Message solutionAnnouncement) {
+        MsgHub.getInstance().broadcast(solutionAnnouncement);
+    }
+
+    public void evaluateRequests(Message solutionAnnouncement) {
+        Queue<Message> requests = MsgHub.getInstance().getResponses(solutionAnnouncement);
+
+        for(Message request : requests)
+            if (request.getType() == MsgType.request){
+
+                combinedSolution = request.getContent();
+
+                Message response = new Message(MsgType.agree, null, id);
+
+                sendResponse(request, response);
+
+            }
+
+    }
+
+    private void sendResponse(Message request, Message response) {
+        MsgHub.getInstance().broadcast(response);
+    }
+
+    public void receiveAnnouncement(Message announcement){
+        MsgHub msgHub = MsgHub.getInstance();
+
+        switch (announcement.getType()){
+            case inform: // for now: announcement of solution
+                // check if there is a conflict
+                // if yes, send back request
+
+                LinkedList<Node> otherAgentSolution = announcement.getContent();
+
+                int conflictTime = checkForConflicts(otherAgentSolution);
+
+                if (conflictTime > -1){
+                    LinkedList<Node> newSolution = makeOtherAgentWait(otherAgentSolution);
+                    Message requestedSolution = new Message(MsgType.request, newSolution, id);
+                    msgHub.reply(announcement, requestedSolution);
+                }
+
+        }
+
+    }
+
+    private int checkForConflicts(LinkedList<Node> otherAgentSolution) {
+
+        if(combinedSolution == null)
+            return 0;
+
+        ConflictDetector cd = new ConflictDetector();
+
+        cd.addPlan(combinedSolution);
+
+        return cd.checkPlan(otherAgentSolution);
+
+    }
+
+    private LinkedList<Node> makeOtherAgentWait(LinkedList<Node> oldSolution){
+
+        ConflictDetector cd = new ConflictDetector();
+
+        cd.addPlan(combinedSolution);
+
+        int conflictTime = cd.checkPlan(oldSolution);
+
+        LinkedList<Node> newSolution = new LinkedList<>(oldSolution);
+
+        while (conflictTime > -1){
+            System.err.println("Conflict found at "+conflictTime);
+
+            Node n = oldSolution.getFirst();
+            Node noOp = new Node(null);
+            noOp.setBoxes(n.getBoxesCopy());
+            noOp.agentRow = n.agentRow;
+            noOp.agentCol = n.agentCol;
+            noOp.action= new Command(Command.Type.NoOp, n.action.dir1,n.action.dir2);
+            newSolution.addFirst(noOp);
+            conflictTime = cd.checkPlan(newSolution);
+        }
+
+        return newSolution;
+
     }
 
     public LinkedList<Node> getCombinedSolution() {
@@ -261,5 +250,9 @@ public class Agent {
 
     public void setNumberOfGoals(int numberOfGoals) {
         this.numberOfGoals = numberOfGoals;
+    }
+
+    public Strategy getStrategy() {
+        return strategy;
     }
 }

@@ -9,6 +9,8 @@ public abstract class Goal {
 
     protected LinkedList<Goal> subgoals;
 
+    protected int priority;
+
     public abstract boolean isGoalSatisfied(Node node);
 
     abstract void refine();
@@ -21,5 +23,13 @@ public abstract class Goal {
     public Integer calculateHeuristic(Node n) {
         //throw new NotImplementedException();
         return 0;
+    }
+
+    public int getPriority() {
+        return priority;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
     }
 }

@@ -10,7 +10,7 @@ import java.util.LinkedList;
  * Class to detect conflicts between agents plans
  */
 public class ConflictDetector {
-    //Map of where agents are at a time in their plan
+    //Map of where agents are at a time in their refineBoxToChar
     private HashMap<Integer, HashMap<AgentPoint, Node>> timeMap;
 
     public ConflictDetector(){

@@ -11,7 +11,7 @@ import java.util.LinkedList;
  */
 public class GoalBoxToChar extends Goal {
 
-    // inherits subgoals
+    // inherits | LinkedList<Goal> subgoals | from Goal
 
     protected Box box;
     protected CharCell destination;
@@ -42,4 +42,9 @@ public class GoalBoxToChar extends Goal {
     public boolean isGoalSatisfied(Node node) {
         return toChar.isGoalSatisfied(node);
     }
+
+    public Box getBox() {
+        return box;
+    }
+
 }

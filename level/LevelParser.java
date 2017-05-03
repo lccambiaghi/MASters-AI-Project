@@ -18,7 +18,6 @@ public class LevelParser {
     private BufferedReader in;
     private Strategy strategy;
     private boolean debug;
-    private Level level;
 
     public LevelParser(Strategy strategy, boolean debug) throws FileNotFoundException {
         this.strategy = strategy;
@@ -26,7 +25,7 @@ public class LevelParser {
         if(this.debug){
             //For Debugging
             FileInputStream fis = null;
-            fis = new FileInputStream("levels/MAsimple4.lvl");
+            fis = new FileInputStream("levels/MAsimple2.lvl");
             in = new BufferedReader(new InputStreamReader(fis));
         }else{
             in = new BufferedReader(new InputStreamReader(System.in));
@@ -64,7 +63,7 @@ public class LevelParser {
             }
         }
 
-        this.level = Level.createInstance(MAX_ROW, MAX_COL);
+        Level level = Level.createInstance(MAX_ROW, MAX_COL);
 
         System.err.println(" ");
         System.err.println("Printing scanned map");
@@ -91,17 +90,17 @@ public class LevelParser {
                 for (int col = 0; col < lineInMap.length(); col++) {
                     char chr = lineInMap.charAt(col);
                     if (chr == '+') { // Wall.
-                        this.level.setWall(true, row, col);
+                        level.setWall(true, row, col);
                     } else if ('A' <= chr && chr <= 'Z') { // Box.
                         Box box = new Box(col, row, chr, Color.blue);
                         if(colorLevel) {
                             Color boxColor = colors.get(chr);
                             box.setColor(boxColor);
                         }
-                        this.level.addBox(box);
+                        level.addBox(box);
                     } else if ('a' <= chr && chr <= 'z') { // CharCell.
                         CharCell charCell = new CharCell(col, row, chr);
-                        this.level.addCharCell(charCell);
+                        level.addCharCell(charCell);
                     } else if (chr == ' ') {
                         // Free space.
                     }else if ('0' <= chr && chr <= '9') {
@@ -109,7 +108,7 @@ public class LevelParser {
                         if(colorLevel) {
                             newAgent.setColor(colors.get(chr));
                         }
-                        this.level.setAgentInColorMap(newAgent);
+                        level.setAgentInColorMap(newAgent);
                         System.err.println("Agent " + newAgent.getId() + " created, Color is " + newAgent.getColor().toString());
                     }
                 }

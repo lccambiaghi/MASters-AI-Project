@@ -14,5 +14,3 @@ public class CharCellComparator implements Comparator<CharCell>{
         return o2.getPriority() - o1.getPriority();//Higher priority are put on top/front
     }
 }
-
-
