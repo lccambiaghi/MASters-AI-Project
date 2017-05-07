@@ -1,5 +1,6 @@
 package goal;
 
+import communicationclient.Agent;
 import communicationclient.Node;
 //import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -8,12 +9,13 @@ import java.util.LinkedList;
 public abstract class Goal {
 
     protected LinkedList<Goal> subgoals;
+    protected Agent agent;
 
     protected int priority;
 
     public abstract boolean isGoalSatisfied(Node node);
 
-    abstract void refine();
+    public abstract void refine();
 
     public LinkedList<Goal> getSubgoals() {
         return subgoals;
@@ -25,6 +27,8 @@ public abstract class Goal {
         return 0;
     }
 
+    public abstract Agent getAgent();
+    public abstract void setAgent(Agent agent);
     public int getPriority() {
         return priority;
     }

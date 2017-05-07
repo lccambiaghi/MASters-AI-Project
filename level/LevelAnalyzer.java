@@ -106,7 +106,8 @@ public class LevelAnalyzer {
         for (CharCell cell : charCellsPriorityQueue){
             Box assigned = cell.getAssignedBox();
             Goal boxToChar = new GoalBoxToChar(assigned, cell);
-
+            //Assign agent to goal...
+            boxToChar.setAgent(assigned.getAssignedAgent());
             int priority = cell.getPriority();
             boxToChar.setPriority(priority);
 

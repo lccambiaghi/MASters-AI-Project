@@ -21,7 +21,7 @@ public class CommunicationClient {
 
     private void solve() throws IOException {
 
-        planner.refineInitialGoals();
+//        planner.refineInitialGoals();
 
         planner.searchingPhase();
 

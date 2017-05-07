@@ -1,5 +1,6 @@
 package goal;
 
+import communicationclient.Agent;
 import communicationclient.Node;
 import level.Box;
 import level.CharCell;
@@ -36,6 +37,16 @@ public class GoalBoxToChar extends Goal {
         toChar = new SubGoalPushBox(this.box, this.destination);
         subgoals.add(toBox);
         subgoals.add(toChar);
+    }
+
+    @Override
+    public Agent getAgent() {
+        return agent;
+    }
+
+    @Override
+    public void setAgent(Agent agent) {
+        super.agent = agent;
     }
 
     @Override

@@ -10,6 +10,7 @@ import plan.ConflictDetector;
 
 import java.util.*;
 
+
 /**
  * Created by salik on 31-03-2017.
  */
@@ -50,72 +51,77 @@ public class Agent {
         System.err.println("Agent " + this.id + " planned " + subGoals.size() + "subgoals");
         //return subGoals;
     }
+    public LinkedList<Node> searchGoal(Goal goal){
+        this.combinedSolution = new LinkedList<>();
+        goal.refine();
+        LinkedList<Goal> subgoals = goal.getSubgoals();
+        for(Goal subgoal : subgoals){
+            LinkedList<Node> solution = searchSubGoal(subgoal);
+            this.combinedSolution.addAll(solution);
+        }
+        return this.combinedSolution;
+    }
 
-    public LinkedList<Node> search() {
-        System.err.println("Agent " + getId() + " started search with strategy " + this.strategy.toString());
-        Goal firstSub = this.subGoals.peekFirst();
-        Node initialNode = new Node(firstSub, this);
+    public LinkedList<Node> searchSubGoal(Goal subGoal) {
+        System.err.println("Agent " + getId() + " started searchSubGoal with strategy " + this.strategy.toString());
+        Node initialNode = new Node(subGoal, this);
+        //TODO make sure position is updated
         HashSet<Box> allBoxes = Level.getInstance().getAllBoxes();
-        
-        for (Box b: allBoxes) {
+        for (Box b : allBoxes) {
             initialNode.addBox(b);
         }
 
         initialNode.agentRow = this.agentRow;
         initialNode.agentCol = this.agentCol;
-        setInitialState(initialNode);
 
-        // TODO review loop
-        while(!this.subGoals.isEmpty()){
-            this.subGoals.pollFirst();
-            this.strategy.clearFrontier();
-            this.strategy.addToFrontier(getInitialState());
-            int iterations = 0;
+        this.strategy.clearFrontier();
+        this.strategy.addToFrontier(initialNode);
 
-            while (true) {
-                if (iterations == 1000) {
-                    System.err.println(this.strategy.searchStatus());
-                    iterations = 0;
-                }
+        int iterations = 0;
+        LinkedList<Node> plan;
+        while (true) {
+            if (iterations == 1000) {
+                System.err.println(this.strategy.searchStatus());
+                iterations = 0;
+            }
+            if (this.strategy.frontierIsEmpty()) {
+                return null;
+            }
+            Node leafNode = this.strategy.getAndRemoveLeaf();
+            if (leafNode.isGoalState()) {
+                plan = leafNode.extractPlan();
+                if (plan.size() > 0) {
+                    Node goalState = plan.getLast();
+                    this.agentRow = goalState.agentRow;
+                    this.agentCol = goalState.agentCol;
+                    boolean boxMoved = Arrays.deepEquals(goalState.boxes, plan.getFirst().boxes);
+                    if (boxMoved) {
+                        for (int row = 0; row < Level.getInstance().MAX_ROW; row++) {
+                            for (int col = 0; col < Level.getInstance().MAX_COL; col++) {
+                                if (goalState.boxes[row][col] != null) {
+                                    Box box = goalState.boxes[row][col];
+                                    if (plan.getFirst().boxes[row][col] == null) {
+                                        //Update position of box
+                                        box.setRow(row);
+                                        box.setCol(col);
+                                    }
+                                }
 
-                if (this.strategy.frontierIsEmpty()) {
-                    return null;
-                }
-                
-                Node leafNode = this.strategy.getAndRemoveLeaf();
-
-                if (leafNode.isGoalState()) {
-                    LinkedList<Node> plan = leafNode.extractPlan();
-                    if (plan.size() > 0){
-                        Node goalState = plan.getLast();
-                        this.agentRow = goalState.agentRow;
-                        this.agentCol = goalState.agentCol;
-                        Node newStart = new Node(subGoals.peekFirst(), this);
-                        newStart.setBoxes(goalState.getBoxesCopy());
-                        newStart.agentCol = goalState.agentCol;
-                        newStart.agentRow = goalState.agentRow;
-                        setInitialState(newStart);//Update initial state to where we end after this subgoal.
-                    }else{
-                        Node newStart = new Node(subGoals.peekFirst(), this);
-                        newStart.agentRow = this.agentRow;
-                        newStart.agentCol = this.agentCol;
-                        newStart.setBoxes(leafNode.getBoxesCopy());
-                        setInitialState(newStart);//Update initial state to where we end after this subgoal.
+                            }
+                        }
                     }
-                    this.combinedSolution.addAll(plan);
                     break;
                 }
-
-                this.strategy.addToExplored(leafNode);
-                for (Node n : leafNode.getExpandedNodes()) { // The list of expanded nodes is shuffled randomly; see Node.java.
-                    if (!this.strategy.isExplored(n) && !this.strategy.inFrontier(n)) {
-                        this.strategy.addToFrontier(n);
-                    }
-                    iterations++;
+            }
+            this.strategy.addToExplored(leafNode);
+            for (Node n : leafNode.getExpandedNodes()) { // The list of expanded nodes is shuffled randomly; see Node.java.
+                if (!this.strategy.isExplored(n) && !this.strategy.inFrontier(n)) {
+                    this.strategy.addToFrontier(n);
                 }
+                iterations++;
             }
         }
-        return this.combinedSolution;
+        return plan;
     }
 
     public void broadcastSolution(Message solutionAnnouncement) {
@@ -203,7 +209,9 @@ public class Agent {
         return newSolution;
 
     }
-
+    public boolean hasMoreSubgoals(){
+        return this.subGoals.size() > 0;
+    }
     public LinkedList<Node> getCombinedSolution() {
         return combinedSolution;
     }

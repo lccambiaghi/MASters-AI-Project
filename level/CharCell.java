@@ -11,14 +11,37 @@ import java.util.HashSet;
 public class CharCell {
     private int col;
     private int row;
+    //private GoalType goalType;
     private char letter;
     private Box assignedBox;
     private int priority = 0;
+    private int graphComponentsIfFulfilled = 1;
     private int numWalls = 0;
     private boolean corner = false;
     private boolean deadEnd = false;
 
-    public void calculatePriority(){
+//    public CharCell(int col, int row, GoalType goalType){
+//        this.col = col;
+//        this.row = row;
+//        this.goalType = goalType;
+//    }
+
+    public int getGraphComponentsIfFulfilled() {
+        return graphComponentsIfFulfilled;
+    }
+
+    public void setGraphComponentsIfFulfilled(int graphComponentsIfFulfilled) {
+        this.graphComponentsIfFulfilled = graphComponentsIfFulfilled;
+    }
+
+    public int getPriority() {
+        return priority;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
+    }
+    public void calculatePriority(){//TODO include graphComponentsIfFulfilled
         priority += numWalls;
         if(corner) priority++;//if corner give higher priority
         if (deadEnd) priority +=2;//If deadend give higher priority
@@ -94,10 +117,6 @@ public class CharCell {
 
     public int getCol() {
         return col;
-    }
-
-    public int getPriority() {
-        return priority;
     }
 
     @Override
