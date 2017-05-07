@@ -22,7 +22,6 @@ public class Agent {
     private int agentCol;
 
     private Strategy strategy;
-    private Node initialState;
 
     private int numberOfGoals;
     private LinkedList<Node> combinedSolution;
@@ -57,7 +56,11 @@ public class Agent {
         LinkedList<Goal> subgoals = goal.getSubgoals();
         for(Goal subgoal : subgoals){
             LinkedList<Node> solution = searchSubGoal(subgoal);
-            this.combinedSolution.addAll(solution);
+            if (solution!=null){
+                this.combinedSolution.addAll(solution);
+            }else{
+                //TODO agent is stuck
+            }
         }
         return this.combinedSolution;
     }
@@ -209,23 +212,12 @@ public class Agent {
         return newSolution;
 
     }
-    public boolean hasMoreSubgoals(){
-        return this.subGoals.size() > 0;
-    }
     public LinkedList<Node> getCombinedSolution() {
         return combinedSolution;
     }
 
     public char getId() {
         return this.id;
-    }
-
-    private Node getInitialState() {
-        return this.initialState;
-    }
-
-    private void setInitialState(Node state) {
-        this.initialState = state;
     }
 
     public Color getColor() {

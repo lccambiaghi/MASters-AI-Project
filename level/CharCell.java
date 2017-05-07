@@ -83,7 +83,7 @@ public class CharCell {
     }
 
     public Box getClosestBox(HashSet<Box> boxes) {
-
+        if(boxes==null) System.exit(-1);
         int oldDistance = Integer.MAX_VALUE;
 
         if(this.assignedBox !=null){

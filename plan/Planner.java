@@ -36,15 +36,12 @@ public class Planner {
 
     public void searchingPhase() {
         this.solutions = new HashMap<>();
-//        HashSet<Agent> hasSearched = new HashSet<>();
-
         while(!goalQueue.isEmpty()){
             Goal goal = goalQueue.poll();
             Agent agent = goal.getAgent();
-//            if (hasSearched.contains(agent)) continue;
-//            hasSearched.add(agent);
             LinkedList<Node> agentSolution = agent.searchGoal(goal);
-            if (agentSolution == null) {
+
+            if (agentSolution == null) {//Is checked in agent.searchGoal
                 // TODO agent is stuck
 
                 System.err.println(agent.getStrategy().searchStatus());
@@ -86,15 +83,5 @@ public class Planner {
             solutions.add(solution);
         }
         return solutions;
-    }
-    private boolean agentsHasMoreSubgoals(){
-        HashMap<Color, List<Agent>> agentsMap = Level.getInstance().getAgentsByColorMap();
-        Collection<List<Agent>> agentLists = agentsMap.values();
-        for (List<Agent> agentList: agentLists) {
-            for (Agent agent: agentList) {
-                if (agent.hasMoreSubgoals()) return true;
-            }
-        }
-        return false;
     }
 }

@@ -2,12 +2,13 @@ package level;
 
 import communicationclient.Agent;
 import communicationclient.Strategy;
+import graph.Graph;
+import graph.Vertex;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.PriorityQueue;
 
 /**
  * Created by salik on 07-04-2017.
@@ -18,6 +19,7 @@ public class LevelParser {
     private BufferedReader in;
     private Strategy strategy;
     private boolean debug;
+    private Level level;
 
     public LevelParser(Strategy strategy, boolean debug) throws FileNotFoundException {
         this.strategy = strategy;
@@ -25,7 +27,7 @@ public class LevelParser {
         if(this.debug){
             //For Debugging
             FileInputStream fis = null;
-            fis = new FileInputStream("levels/MAsimple2.lvl");
+            fis = new FileInputStream("levels/MAsimple3.lvl");
             in = new BufferedReader(new InputStreamReader(fis));
         }else{
             in = new BufferedReader(new InputStreamReader(System.in));
@@ -63,7 +65,7 @@ public class LevelParser {
             }
         }
 
-        Level level = Level.createInstance(MAX_ROW, MAX_COL);
+        this.level = Level.createInstance(MAX_ROW, MAX_COL);
 
         System.err.println(" ");
         System.err.println("Printing scanned map");
@@ -76,7 +78,7 @@ public class LevelParser {
 
         row = 0;
         boolean colorLevel = false;
-
+        Graph graph = new Graph();
         for (String lineInMap: map) {
             // if line is a color declaration, MA level -> colors get mapped
             if (lineInMap.matches("^[a-z]+:\\s*[0-9A-Z](,\\s*[0-9A-Z])*\\s*$")) {
@@ -90,32 +92,48 @@ public class LevelParser {
                 for (int col = 0; col < lineInMap.length(); col++) {
                     char chr = lineInMap.charAt(col);
                     if (chr == '+') { // Wall.
-                        level.setWall(true, row, col);
+                        this.level.setWall(true, row, col);
                     } else if ('A' <= chr && chr <= 'Z') { // Box.
+                        Vertex v = new Vertex(row,col);
                         Box box = new Box(col, row, chr, Color.blue);
+                        v.setBox(box);
+                        graph.addVertex(v);
                         if(colorLevel) {
                             Color boxColor = colors.get(chr);
                             box.setColor(boxColor);
                         }
-                        level.addBox(box);
+                        this.level.addBox(box);
                     } else if ('a' <= chr && chr <= 'z') { // CharCell.
                         CharCell charCell = new CharCell(col, row, chr);
-                        level.addCharCell(charCell);
+                        Vertex v = new Vertex(row,col);
+                        this.level.addCharCell(charCell);
+                        v.setGoalCell(charCell);
+                        graph.addVertex(v);
                     } else if (chr == ' ') {
                         // Free space.
+                        Vertex v = new Vertex(row,col);
+                        graph.addVertex(v);
                     }else if ('0' <= chr && chr <= '9') {
+                        Vertex v = new Vertex(row,col);
                         Agent newAgent = new Agent(chr, this.strategy, row, col);
                         if(colorLevel) {
                             newAgent.setColor(colors.get(chr));
                         }
-                        level.setAgentInColorMap(newAgent);
+                        this.level.setAgentInColorMap(newAgent);
+                        graph.addVertex(v);
                         System.err.println("Agent " + newAgent.getId() + " created, Color is " + newAgent.getColor().toString());
                     }
                 }
                 row++;
             }
         }
+        // The following is just for testing that the graph analyzis works :-)
+        graph.createGraph();
+        graph.analyzeGraph();
+        List<Vertex> limited = graph.getLimitedResources();
+        List<Vertex> nonLimited = graph.getNonLimitedResources();
 
+        
         System.err.println("*--------------------------------------*");
 
     }
