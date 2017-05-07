@@ -19,14 +19,13 @@ public class Agent {
     private Color color;
     private int agentRow;
     private int agentCol;
-    private int numberOfGoals;
+
     private Strategy strategy;
     private Node initialState;
 
+    private int numberOfGoals;
     private LinkedList<Node> combinedSolution;
     private ArrayDeque<Goal> subGoals;
-
-
 
     public Agent(char id, Strategy strategy, int row, int col) {
         this.subGoals = new ArrayDeque<>();
@@ -38,20 +37,98 @@ public class Agent {
         this.agentCol = col;
     }
 
+    public void refineBoxToChar(GoalBoxToChar goal){
+        System.err.println("Agent " + this.id + " started planning");
+
+        Box goalBox = goal.getBox();
+        if (goalBox.getDestination() != null) { // if box has a goal assigned
+            goal.refine();
+            for(Goal subgoal : goal.getSubgoals()){
+                this.subGoals.addLast(subgoal);
+            }
+        }
+        System.err.println("Agent " + this.id + " planned " + subGoals.size() + "subgoals");
+        //return subGoals;
+    }
+
+    public LinkedList<Node> search() {
+        System.err.println("Agent " + getId() + " started search with strategy " + this.strategy.toString());
+        Goal firstSub = this.subGoals.peekFirst();
+        Node initialNode = new Node(firstSub, this);
+        HashSet<Box> allBoxes = Level.getInstance().getAllBoxes();
+        
+        for (Box b: allBoxes) {
+            initialNode.addBox(b);
+        }
+
+        initialNode.agentRow = this.agentRow;
+        initialNode.agentCol = this.agentCol;
+        setInitialState(initialNode);
+
+        // TODO review loop
+        while(!this.subGoals.isEmpty()){
+            this.subGoals.pollFirst();
+            this.strategy.clearFrontier();
+            this.strategy.addToFrontier(getInitialState());
+            int iterations = 0;
+
+            while (true) {
+                if (iterations == 1000) {
+                    System.err.println(this.strategy.searchStatus());
+                    iterations = 0;
+                }
+
+                if (this.strategy.frontierIsEmpty()) {
+                    return null;
+                }
+                
+                Node leafNode = this.strategy.getAndRemoveLeaf();
+
+                if (leafNode.isGoalState()) {
+                    LinkedList<Node> plan = leafNode.extractPlan();
+                    if (plan.size() > 0){
+                        Node goalState = plan.getLast();
+                        this.agentRow = goalState.agentRow;
+                        this.agentCol = goalState.agentCol;
+                        Node newStart = new Node(subGoals.peekFirst(), this);
+                        newStart.setBoxes(goalState.getBoxesCopy());
+                        newStart.agentCol = goalState.agentCol;
+                        newStart.agentRow = goalState.agentRow;
+                        setInitialState(newStart);//Update initial state to where we end after this subgoal.
+                    }else{
+                        Node newStart = new Node(subGoals.peekFirst(), this);
+                        newStart.agentRow = this.agentRow;
+                        newStart.agentCol = this.agentCol;
+                        newStart.setBoxes(leafNode.getBoxesCopy());
+                        setInitialState(newStart);//Update initial state to where we end after this subgoal.
+                    }
+                    this.combinedSolution.addAll(plan);
+                    break;
+                }
+
+                this.strategy.addToExplored(leafNode);
+                for (Node n : leafNode.getExpandedNodes()) { // The list of expanded nodes is shuffled randomly; see Node.java.
+                    if (!this.strategy.isExplored(n) && !this.strategy.inFrontier(n)) {
+                        this.strategy.addToFrontier(n);
+                    }
+                    iterations++;
+                }
+            }
+        }
+        return this.combinedSolution;
+    }
+
     public void broadcastSolution(Message solutionAnnouncement) {
-        MsgHub msgHub = MsgHub.getInstance();
-        msgHub.broadcast(solutionAnnouncement);
+        MsgHub.getInstance().broadcast(solutionAnnouncement);
     }
 
     public void evaluateRequests(Message solutionAnnouncement) {
-        MsgHub msgHub = MsgHub.getInstance();
-        Queue<Message> requests = msgHub.getResponses(solutionAnnouncement);
+        Queue<Message> requests = MsgHub.getInstance().getResponses(solutionAnnouncement);
 
         for(Message request : requests)
             if (request.getType() == MsgType.request){
-                LinkedList<Node> requestedSolution = request.getContent();
 
-                combinedSolution = requestedSolution;
+                combinedSolution = request.getContent();
 
                 Message response = new Message(MsgType.agree, null, id);
 
@@ -62,8 +139,7 @@ public class Agent {
     }
 
     private void sendResponse(Message request, Message response) {
-        MsgHub msgHub = MsgHub.getInstance();
-        msgHub.broadcast(response);
+        MsgHub.getInstance().broadcast(response);
     }
 
     public void receiveAnnouncement(Message announcement){
@@ -128,93 +204,6 @@ public class Agent {
 
     }
 
-    public ArrayDeque<Goal> plan(CharCell goalCell){
-        System.err.println("Agent " + this.id + " started planning");
-
-        Box goalBox = goalCell.getAssignedBox();
-        if (goalBox.getDestination() != null) { // if box has a goal assigned
-            GoalBoxToChar goal = new GoalBoxToChar(goalBox, goalBox.getDestination());
-            // TODO add to a list of goals
-            goal.refine();
-            for(Goal subgoal : goal.getSubgoals()){
-                addSubGoal(subgoal);
-            }
-        }
-        System.err.println("Agent " + this.id + " planned " + subGoals.size() + "subgoals");
-        return subGoals;
-    }
-
-    public LinkedList<Node> search() {
-        System.err.println("Agent " + getId() + " started search with strategy " + this.strategy.toString());
-        Goal firstSub = this.subGoals.peekFirst();
-        Node initialNode = new Node(firstSub, this);
-        HashSet<Box> allBoxes = Level.getInstance().getAllBoxes();
-        
-        for (Box b: allBoxes) {
-            initialNode.addBox(b);
-        }
-
-        initialNode.agentRow = this.agentRow;
-        initialNode.agentCol = this.agentCol;
-        setInitialState(initialNode);
-
-        // TODO review loop
-        while(!this.subGoals.isEmpty()){
-            this.subGoals.pollFirst();
-            this.strategy.clearFrontier();
-            this.strategy.addToFrontier(getInitialState());
-            int iterations = 0;
-
-            while (true) {
-                if (iterations == 1000) {
-                    System.err.println(this.strategy.searchStatus());
-                    iterations = 0;
-                }
-
-                if (this.strategy.frontierIsEmpty()) {
-                    return null;
-                }
-                
-                Node leafNode = this.strategy.getAndRemoveLeaf();
-
-                if (leafNode.isGoalState()) {
-                    LinkedList<Node> plan = leafNode.extractPlan();
-                    if (plan.size() > 0){
-                        Node goalState = plan.getLast();
-                        this.agentRow = goalState.agentRow;
-                        this.agentCol = goalState.agentCol;
-                        Node newStart = new Node(subGoals.peekFirst(), this);
-                        newStart.setBoxes(goalState.getBoxesCopy());
-                        newStart.agentCol = goalState.agentCol;
-                        newStart.agentRow = goalState.agentRow;
-                        setInitialState(newStart);//Update initial state to where we end after this subgoal.
-                    }else{
-                        Node newStart = new Node(subGoals.peekFirst(), this);
-                        newStart.agentRow = this.agentRow;
-                        newStart.agentCol = this.agentCol;
-                        newStart.setBoxes(leafNode.getBoxesCopy());
-                        setInitialState(newStart);//Update initial state to where we end after this subgoal.
-                    }
-                    this.combinedSolution.addAll(plan);
-                    break;
-                }
-
-                this.strategy.addToExplored(leafNode);
-                for (Node n : leafNode.getExpandedNodes()) { // The list of expanded nodes is shuffled randomly; see Vertex.java.
-                    if (!this.strategy.isExplored(n) && !this.strategy.inFrontier(n)) {
-                        this.strategy.addToFrontier(n);
-                    }
-                    iterations++;
-                }
-            }
-        }
-        return this.combinedSolution;
-    }
-
-    public void addSubGoal(Goal subgoal){
-        this.subGoals.addLast(subgoal);
-    }
-
     public LinkedList<Node> getCombinedSolution() {
         return combinedSolution;
     }
@@ -261,5 +250,9 @@ public class Agent {
 
     public void setNumberOfGoals(int numberOfGoals) {
         this.numberOfGoals = numberOfGoals;
+    }
+
+    public Strategy getStrategy() {
+        return strategy;
     }
 }
