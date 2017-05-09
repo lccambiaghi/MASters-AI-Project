@@ -7,6 +7,7 @@ import communication.GoalMessage;
 import goal.Goal;
 import goal.GoalBoxToCell;
 import goal.GoalFreeAgent;
+import goal.SubGoalMoveBoxOutTheWay;
 import level.*;
 import plan.ConflictDetector;
 
@@ -91,6 +92,10 @@ public class Agent {
             }else{
                 this.removedBoxes.add(b);
             }
+        }
+        if(subGoal instanceof SubGoalMoveBoxOutTheWay){
+            SubGoalMoveBoxOutTheWay sub = (SubGoalMoveBoxOutTheWay) subGoal;
+            initialNode.walls[sub.getAgentToFree().agentRow][sub.getAgentToFree().agentCol] = true;
         }
 
         initialNode.agentRow = this.agentRow;
