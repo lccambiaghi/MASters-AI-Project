@@ -26,6 +26,8 @@ public class Agent {
     private int numberOfGoals;
     private LinkedList<Node> combinedSolution;
     private ArrayDeque<Goal> subGoals;
+    private ArrayList<Box> potentialBoxes = new ArrayList<>();
+    private HashSet<Box> removedBoxes = new HashSet<>();
 
     public Agent(char id, Strategy strategy, int row, int col) {
         this.subGoals = new ArrayDeque<>();
@@ -53,13 +55,19 @@ public class Agent {
     public LinkedList<Node> searchGoal(Goal goal){
         this.combinedSolution = new LinkedList<>();
         goal.refine();
+        int agentStuck = 0;
         LinkedList<Goal> subgoals = goal.getSubgoals();
         for(Goal subgoal : subgoals){
             LinkedList<Node> solution = searchSubGoal(subgoal);
             if (solution!=null){
                 this.combinedSolution.addAll(solution);
             }else{
-                //TODO agent is stuck
+                while(solution==null){
+                    agentStuck++;
+                    solution = searchSubGoal(subgoal);
+                }
+                this.combinedSolution.addAll(solution);
+                return null;
             }
         }
         return this.combinedSolution;
@@ -71,7 +79,12 @@ public class Agent {
         //TODO make sure position is updated
         HashSet<Box> allBoxes = Level.getInstance().getAllBoxes();
         for (Box b : allBoxes) {
-            initialNode.addBox(b);
+            Box firstPotential = this.potentialBoxes.isEmpty() ? null : this.potentialBoxes.get(0);
+            if (this.potentialBoxes.isEmpty() || !firstPotential.equals(b)){
+                initialNode.addBox(b);
+            }else{
+                this.removedBoxes.add(b);
+            }
         }
 
         initialNode.agentRow = this.agentRow;
@@ -82,15 +95,17 @@ public class Agent {
 
         int iterations = 0;
         LinkedList<Node> plan;
+        Node leafNode = null;
         while (true) {
             if (iterations == 1000) {
                 System.err.println(this.strategy.searchStatus());
                 iterations = 0;
             }
             if (this.strategy.frontierIsEmpty()) {
+                this.potentialBoxes=leafNode.getPotentialBoxes();
                 return null;
             }
-            Node leafNode = this.strategy.getAndRemoveLeaf();
+            leafNode = this.strategy.getAndRemoveLeaf();
             if (leafNode.isGoalState()) {
                 plan = leafNode.extractPlan();
                 if (plan.size() > 0) {
@@ -127,8 +142,8 @@ public class Agent {
         return plan;
     }
 
-    public void broadcastSolution(Message solutionAnnouncement) {
-        MsgHub.getInstance().broadcast(solutionAnnouncement);
+    public void broadcastMessage(Message message) {
+        MsgHub.getInstance().broadcast(message);
     }
 
     public void evaluateRequests(Message solutionAnnouncement) {
@@ -168,7 +183,10 @@ public class Agent {
                     Message requestedSolution = new Message(MsgType.request, newSolution, id);
                     msgHub.reply(announcement, requestedSolution);
                 }
-
+                break;
+            case request:
+                System.err.println("Request received");
+                break;
         }
 
     }
@@ -254,5 +272,9 @@ public class Agent {
 
     public Strategy getStrategy() {
         return strategy;
+    }
+
+    public HashSet<Box> getRemovedBoxes() {
+        return removedBoxes;
     }
 }

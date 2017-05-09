@@ -2,13 +2,13 @@ package plan;
 
 import communication.Message;
 import communication.MsgType;
+import communication.RequestMessage;
 import communicationclient.Agent;
 import communicationclient.Node;
 import goal.Goal;
 import goal.GoalBoxToChar;
 import heuristic.GoalComparator;
-import level.Color;
-import level.Level;
+import level.Box;
 
 import java.util.*;
 
@@ -43,7 +43,12 @@ public class Planner {
 
             if (agentSolution == null) {//Is checked in agent.searchGoal
                 // TODO agent is stuck
+                goalQueue.add(goal);//Add goal again
+                for (Box b:agent.getRemovedBoxes()) {
+                    Message moveBoxRequest = new RequestMessage(MsgType.request,b, agent.getCombinedSolution(),agent.getId());
+                    agent.broadcastMessage(moveBoxRequest);
 
+                }
                 System.err.println(agent.getStrategy().searchStatus());
                 System.err.println("Agent " + agent.getId() + " is unable to complete his subgoals.");
             } else {
@@ -55,7 +60,7 @@ public class Planner {
                 // agentSolution found
                 Message solutionAnnouncement = new Message(MsgType.inform, agentSolution, agent.getId());
 
-                agent.broadcastSolution(solutionAnnouncement);
+                agent.broadcastMessage(solutionAnnouncement);
 
                 agent.evaluateRequests(solutionAnnouncement);
 
