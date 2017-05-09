@@ -3,8 +3,10 @@ package communicationclient;
 import communication.Message;
 import communication.MsgHub;
 import communication.MsgType;
+import communication.GoalMessage;
 import goal.Goal;
-import goal.GoalBoxToChar;
+import goal.GoalBoxToCell;
+import goal.GoalFreeAgent;
 import level.*;
 import plan.ConflictDetector;
 
@@ -39,7 +41,7 @@ public class Agent {
         this.agentCol = col;
     }
 
-    public void refineBoxToChar(GoalBoxToChar goal){
+    public void refineBoxToChar(GoalBoxToCell goal){
         System.err.println("Agent " + this.id + " started planning");
 
         Box goalBox = goal.getBox();
@@ -54,6 +56,7 @@ public class Agent {
     }
     public LinkedList<Node> searchGoal(Goal goal){
         this.combinedSolution = new LinkedList<>();
+        this.potentialBoxes = new ArrayList<>();
         goal.refine();
         int agentStuck = 0;
         LinkedList<Goal> subgoals = goal.getSubgoals();
@@ -67,6 +70,9 @@ public class Agent {
                     solution = searchSubGoal(subgoal);
                 }
                 this.combinedSolution.addAll(solution);
+                //Reset agent position to start
+                this.agentRow = solution.getFirst().parent.agentRow;
+                this.agentCol = solution.getFirst().parent.agentCol;
                 return null;
             }
         }
@@ -112,17 +118,13 @@ public class Agent {
                     Node goalState = plan.getLast();
                     this.agentRow = goalState.agentRow;
                     this.agentCol = goalState.agentCol;
-                    boolean boxMoved = Arrays.deepEquals(goalState.boxes, plan.getFirst().boxes);
-                    if (boxMoved) {
                         for (int row = 0; row < Level.getInstance().MAX_ROW; row++) {
                             for (int col = 0; col < Level.getInstance().MAX_COL; col++) {
                                 if (goalState.boxes[row][col] != null) {
                                     Box box = goalState.boxes[row][col];
-                                    if (plan.getFirst().boxes[row][col] == null) {
-                                        //Update position of box
-                                        box.setRow(row);
-                                        box.setCol(col);
-                                    }
+                                    box.setRow(row);
+                                    box.setCol(col);
+
                                 }
 
                             }
@@ -130,7 +132,6 @@ public class Agent {
                     }
                     break;
                 }
-            }
             this.strategy.addToExplored(leafNode);
             for (Node n : leafNode.getExpandedNodes()) { // The list of expanded nodes is shuffled randomly; see Node.java.
                 if (!this.strategy.isExplored(n) && !this.strategy.inFrontier(n)) {
@@ -146,24 +147,38 @@ public class Agent {
         MsgHub.getInstance().broadcast(message);
     }
 
-    public void evaluateRequests(Message solutionAnnouncement) {
-        Queue<Message> requests = MsgHub.getInstance().getResponses(solutionAnnouncement);
-
+    public void evaluateMessage(Message message) {
+        Queue<Message> requests = MsgHub.getInstance().getResponses(message);
+        boolean proposalAccepted = false;
+        Message response;
         for(Message request : requests)
-            if (request.getType() == MsgType.request){
-
-                combinedSolution = request.getContent();
-
-                Message response = new Message(MsgType.agree, null, id);
-
-                sendResponse(request, response);
-
+            switch (request.getType()){
+                case request://Another agent request to change solution of this agent
+                    combinedSolution = request.getContent();
+                    response = new Message(MsgType.agree, null, id);
+                    sendResponse(request, response);
+                    break;
+                case propose://Another agent propose to free this agent
+                    if(!proposalAccepted){
+                        GoalMessage msg = (GoalMessage) request;
+                        GoalFreeAgent goal = (GoalFreeAgent)msg.getGoal();
+                        response = new GoalMessage(MsgType.acceptProposal,goal, null, id);
+                        sendResponse(request.getSender(),response);
+                        proposalAccepted = true;
+                    }else{
+                        response = new Message(MsgType.rejectProposal, null, id);
+                        sendResponse(request.getSender(),response);
+                    }
+                    break;
             }
 
     }
 
     private void sendResponse(Message request, Message response) {
         MsgHub.getInstance().broadcast(response);
+    }
+    private void sendResponse(char receiver, Message response){
+        MsgHub.getInstance().sendMessage(receiver,response);
     }
 
     public void receiveAnnouncement(Message announcement){
@@ -185,7 +200,22 @@ public class Agent {
                 }
                 break;
             case request:
-                System.err.println("Request received");
+                GoalMessage msg = (GoalMessage) announcement;
+                GoalFreeAgent goal = (GoalFreeAgent)msg.getGoal();
+                if(goal.getBox().getBoxColor()==this.color){
+                    //TODO maybe search for solution!
+                    LinkedList<Node> proposedSolution = new LinkedList<>();
+                    Message proposeMessage = new GoalMessage(MsgType.propose,goal,proposedSolution ,id);
+                    msgHub.reply(announcement, proposeMessage);
+                }
+                break;
+            case acceptProposal:
+                GoalMessage goalMessage = (GoalMessage) announcement;
+                GoalFreeAgent freeAgent = (GoalFreeAgent)goalMessage.getGoal();
+                freeAgent.setAgent(this);
+                break;
+            case rejectProposal:
+
                 break;
         }
 
@@ -232,6 +262,10 @@ public class Agent {
     }
     public LinkedList<Node> getCombinedSolution() {
         return combinedSolution;
+    }
+
+    public void setCombinedSolution(LinkedList<Node> combinedSolution) {
+        this.combinedSolution = combinedSolution;
     }
 
     public char getId() {

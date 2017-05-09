@@ -8,9 +8,9 @@ import java.util.HashSet;
 /**
  * Created by salik on 31-03-2017.
  */
-public class CharCell {
-    private int col;
-    private int row;
+public class CharCell extends Cell{
+//    private int col;
+//    private int row;
     //private GoalType goalType;
     private char letter;
     private Box assignedBox;
@@ -72,8 +72,9 @@ public class CharCell {
     }
 
     public CharCell(int col, int row, char letter){
-        this.col = col;
-        this.row = row;
+        super(row, col);
+//        this.col = col;
+//        this.row = row;
         //this.goalType = GoalType.PushBox;
         this.letter = letter;
     }

@@ -7,32 +7,21 @@ import level.Cell;
 import level.CharCell;
 
 /**
- * Created by lucacambiaghi on 17/04/2017.
+ * Created by arhjo on 09/05/2017.
  */
-public class SubGoalPushBox extends GoalBoxToCell {
-
-    // inherits box and destination
-
-    public SubGoalPushBox(Box box, Cell destination){
-        this.box = box;
-        this.destination = destination;
+public class SubGoalMoveBoxOutTheWay extends GoalFreeAgent {
+    public SubGoalMoveBoxOutTheWay(Box box, Cell destination) {
+        super(box, destination);
     }
-
     @Override
     public boolean isGoalSatisfied(Node node) {
         int goalCharRow = destination.getRow();
         int goalCharCol = destination.getCol();
-        CharCell goalCharCell = (CharCell)destination;
-        char goalChar = goalCharCell.getLetter();
-
         Box[][] boxes = node.getBoxes();
 
         Box box = boxes[goalCharRow][goalCharCol];
         if (box!=null){
-            char b = Character.toLowerCase(box.getBoxChar());
-            if (b == goalChar) {
-                return true;
-            }
+            return this.box == box;
         }
         return false;
     }
