@@ -7,7 +7,7 @@ import level.Box;
 /**
  * Created by lucacambiaghi on 17/04/2017.
  */
-public class SubGoalMoveToBox extends GoalBoxToChar{
+public class SubGoalMoveToBox extends GoalBoxToCell {
 
     //inherits box and destination
 

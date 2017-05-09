@@ -2,7 +2,7 @@ package level;
 
 import communicationclient.Agent;
 import goal.Goal;
-import goal.GoalBoxToChar;
+import goal.GoalBoxToCell;
 import heuristic.CharCellComparator;
 import heuristic.GoalComparator;
 
@@ -105,7 +105,7 @@ public class LevelAnalyzer {
     public PriorityQueue<Goal> createInitialGoals() {
         for (CharCell cell : charCellsPriorityQueue){
             Box assigned = cell.getAssignedBox();
-            Goal boxToChar = new GoalBoxToChar(assigned, cell);
+            Goal boxToChar = new GoalBoxToCell(assigned, cell);
             //Assign agent to goal...
             boxToChar.setAgent(assigned.getAssignedAgent());
             int priority = cell.getPriority();

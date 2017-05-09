@@ -2,13 +2,15 @@ package plan;
 
 import communication.Message;
 import communication.MsgType;
+import communication.GoalMessage;
 import communicationclient.Agent;
 import communicationclient.Node;
 import goal.Goal;
-import goal.GoalBoxToChar;
+import goal.GoalBoxToCell;
+import goal.GoalFreeAgent;
 import heuristic.GoalComparator;
-import level.Color;
-import level.Level;
+import level.Box;
+import level.Cell;
 
 import java.util.*;
 
@@ -23,7 +25,7 @@ public class Planner {
     public void refineInitialGoals(){
         PriorityQueue<Goal> tmp = new PriorityQueue<>(new GoalComparator());
         while(!goalQueue.isEmpty()){
-            GoalBoxToChar goal = (GoalBoxToChar) goalQueue.poll();
+            GoalBoxToCell goal = (GoalBoxToCell) goalQueue.poll();
             Agent agent = goal.getBox().getAssignedAgent();
             agent.setNumberOfGoals(agent.getNumberOfGoals()+1);
 
@@ -43,7 +45,20 @@ public class Planner {
 
             if (agentSolution == null) {//Is checked in agent.searchGoal
                 // TODO agent is stuck
+                goalQueue.add(goal);//Add goal again
+                for (Box b:agent.getRemovedBoxes()) {
+                    LinkedList<Node> agentRequestCells = agent.getCombinedSolution();
+                    //Search for free space
+                    //Cell destination = new Cell(5,10);
+                    Goal freeAgent = new GoalFreeAgent(b,agentRequestCells, agent);
+                    freeAgent.setPriority(1000);//High priority
 
+                    Message moveBoxRequest = new GoalMessage(MsgType.request,freeAgent, agentRequestCells,agent.getId());
+                    agent.broadcastMessage(moveBoxRequest);
+                    agent.evaluateMessage(moveBoxRequest);
+                    goalQueue.add(freeAgent);
+                    agent.setCombinedSolution(new LinkedList<>());//Forget Solution
+                }
                 System.err.println(agent.getStrategy().searchStatus());
                 System.err.println("Agent " + agent.getId() + " is unable to complete his subgoals.");
             } else {
@@ -55,9 +70,9 @@ public class Planner {
                 // agentSolution found
                 Message solutionAnnouncement = new Message(MsgType.inform, agentSolution, agent.getId());
 
-                agent.broadcastSolution(solutionAnnouncement);
+                agent.broadcastMessage(solutionAnnouncement);
 
-                agent.evaluateRequests(solutionAnnouncement);
+                agent.evaluateMessage(solutionAnnouncement);
 
                 agentSolution = agent.getCombinedSolution(); // solution is updated after negotiation
 

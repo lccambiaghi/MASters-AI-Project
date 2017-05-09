@@ -7,5 +7,5 @@ package communication;
 public enum MsgType {
     queryif, inform,
     request, agree, refuse, failure,
-    cfp, propose, acceptproposal, rejectProposal;
+    cfp, propose, acceptProposal, rejectProposal;
 }

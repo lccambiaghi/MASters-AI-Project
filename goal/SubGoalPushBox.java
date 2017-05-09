@@ -3,17 +3,17 @@ package goal;
 import communicationclient.Node;
 import heuristic.HeuristicHelper;
 import level.Box;
+import level.Cell;
 import level.CharCell;
-import level.Level;
 
 /**
  * Created by lucacambiaghi on 17/04/2017.
  */
-public class SubGoalPushBox extends GoalBoxToChar{
+public class SubGoalPushBox extends GoalBoxToCell {
 
     // inherits box and destination
 
-    public SubGoalPushBox(Box box, CharCell destination){
+    public SubGoalPushBox(Box box, Cell destination){
         this.box = box;
         this.destination = destination;
     }
@@ -22,7 +22,8 @@ public class SubGoalPushBox extends GoalBoxToChar{
     public boolean isGoalSatisfied(Node node) {
         int goalCharRow = destination.getRow();
         int goalCharCol = destination.getCol();
-        char goalChar = destination.getLetter();
+        CharCell goalCharCell = (CharCell)destination;
+        char goalChar = goalCharCell.getLetter();
 
         Box[][] boxes = node.getBoxes();
 
@@ -38,6 +39,7 @@ public class SubGoalPushBox extends GoalBoxToChar{
 
     @Override
     public Integer calculateHeuristic(Node n){
+        //TODO change box to node boxes
         int boxRow = box.getRow();
         int boxCol = box.getCol();
         int goalCharRow = destination.getRow();

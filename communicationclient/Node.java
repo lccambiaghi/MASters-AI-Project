@@ -24,6 +24,9 @@ public class Node {
 	public Node parent;
 	public Command action;
 
+	public ArrayList<Box> potentialBoxes = new ArrayList<>();
+	public HashSet<Box> potentialBoxesAdded = new HashSet<>();
+
 	private int g;
 
 	private int _hash = 0;
@@ -149,13 +152,23 @@ public class Node {
 	private boolean boxAt(int row, int col) {
 		Box box = this.boxes[row][col];
 		if(box!=null){
-			return box.getBoxColor() == agentColor;
+			if( box.getBoxColor() == agentColor){
+				return  true;
+			}else{
+				if(!potentialBoxesAdded.contains(box)){
+					potentialBoxes.add(box);
+					potentialBoxesAdded.add(box);
+				}
+
+			}
 		}
+
 		return false;
 	}
 
 	private Node ChildNode() {
 		Node copy = new Node(this);
+		copy.potentialBoxes = this.potentialBoxes;
 		for (int row = 0; row < MAX_ROW; row++) {
 			System.arraycopy(this.boxes[row], 0, copy.boxes[row], 0, MAX_COL);
 		}
@@ -172,6 +185,9 @@ public class Node {
 		return plan;
 	}
 
+	public ArrayList<Box> getPotentialBoxes() {
+		return potentialBoxes;
+	}
 
 	public int getAgentRow() {
 		return agentRow;

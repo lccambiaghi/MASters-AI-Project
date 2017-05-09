@@ -31,6 +31,16 @@ public class MsgHub {
         messageMap = new HashMap<>();
     }
 
+    public void sendMessage(char receiver, Message message){
+        Queue<Message> responses = new ArrayDeque<>();
+        messageMap.put(message, responses);
+        for (List<Agent> agentList : this.agents.values()) {
+            for (Agent agent : agentList) {
+                if (agent.getId() == receiver)
+                    agent.receiveAnnouncement(message);
+            }
+        }
+    }
     public void broadcast(Message announcement) {
         Queue<Message> responses = new ArrayDeque<>();
 

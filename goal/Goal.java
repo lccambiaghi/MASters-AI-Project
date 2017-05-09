@@ -10,6 +10,7 @@ public abstract class Goal {
 
     protected LinkedList<Goal> subgoals;
     protected Agent agent;
+    boolean isRefined;
 
     protected int priority;
 
