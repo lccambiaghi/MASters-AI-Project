@@ -27,7 +27,7 @@ public class LevelParser {
         if(this.debug){
             //For Debugging
             FileInputStream fis = null;
-            fis = new FileInputStream("levels/MAsimple3.lvl");
+            fis = new FileInputStream("levels/MAbispebjerg.lvl");
             in = new BufferedReader(new InputStreamReader(fis));
         }else{
             in = new BufferedReader(new InputStreamReader(System.in));
@@ -80,6 +80,7 @@ public class LevelParser {
         boolean colorLevel = false;
         Graph graph = new Graph();
         for (String lineInMap: map) {
+            boolean hasMetWall = false;
             // if line is a color declaration, MA level -> colors get mapped
             if (lineInMap.matches("^[a-z]+:\\s*[0-9A-Z](,\\s*[0-9A-Z])*\\s*$")) {
                 colorLevel = true;
@@ -92,6 +93,9 @@ public class LevelParser {
                 for (int col = 0; col < lineInMap.length(); col++) {
                     char chr = lineInMap.charAt(col);
                     if (chr == '+') { // Wall.
+                        if(col>0 && lineInMap.charAt(col-1) == '+'){
+                            hasMetWall = true;
+                        }else hasMetWall = !hasMetWall;//Alternate walls
                         this.level.setWall(true, row, col);
                     } else if ('A' <= chr && chr <= 'Z') { // Box.
                         Vertex v = new Vertex(row,col);
@@ -111,8 +115,10 @@ public class LevelParser {
                         graph.addVertex(v);
                     } else if (chr == ' ') {
                         // Free space.
-                        Vertex v = new Vertex(row,col);
-                        graph.addVertex(v);
+                        if(hasMetWall){
+                            Vertex v = new Vertex(row,col);
+                            graph.addVertex(v);
+                        }
                     }else if ('0' <= chr && chr <= '9') {
                         Vertex v = new Vertex(row,col);
                         Agent newAgent = new Agent(chr, this.strategy, row, col);
