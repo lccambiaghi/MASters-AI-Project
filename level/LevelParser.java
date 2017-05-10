@@ -4,6 +4,7 @@ import communicationclient.Agent;
 import communicationclient.Strategy;
 import graph.Graph;
 import graph.Vertex;
+import plan.ConflictDetector;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -20,10 +21,12 @@ public class LevelParser {
     private Strategy strategy;
     private boolean debug;
     private Level level;
+    private ConflictDetector cd;
 
     public LevelParser(Strategy strategy, boolean debug) throws FileNotFoundException {
         this.strategy = strategy;
         this.debug = debug;
+        this.cd = new ConflictDetector();
         if(this.debug){
             //For Debugging
             FileInputStream fis = null;
@@ -115,7 +118,7 @@ public class LevelParser {
                         graph.addVertex(v);
                     }else if ('0' <= chr && chr <= '9') {
                         Vertex v = new Vertex(row,col);
-                        Agent newAgent = new Agent(chr, this.strategy, row, col);
+                        Agent newAgent = new Agent(chr, this.strategy, row, col, this.cd);
                         if(colorLevel) {
                             newAgent.setColor(colors.get(chr));
                         }

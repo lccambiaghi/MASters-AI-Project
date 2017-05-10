@@ -3,9 +3,6 @@ package level;
 import communicationclient.Agent;
 import heuristic.HeuristicHelper;
 
-/**
- * Created by salik on 31-03-2017.
- */
 public class Box {
     private int col;
     private int row;

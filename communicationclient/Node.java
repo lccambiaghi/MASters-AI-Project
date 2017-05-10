@@ -146,7 +146,7 @@ public class Node {
 	}
 
 	private boolean cellIsFree(int row, int col) {
-		return !this.walls[row][col] && this.boxes[row][col] == null;//TODO Maybe do something here about agent is stuck
+		return !this.walls[row][col] && this.boxes[row][col] == null;
 	}
 
 	private boolean boxAt(int row, int col) {
