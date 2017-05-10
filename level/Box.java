@@ -78,7 +78,6 @@ public class Box {
         }
 
         if (newDistance < oldDistance) this.assignedAgent = assignedAgent;
-        this.assignedAgent = assignedAgent;
     }
 
     public CharCell getDestination() {
