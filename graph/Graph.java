@@ -19,7 +19,7 @@ public class Graph {
     private List<Edge> tmp = new ArrayList<>();
     private List<Vertex> limitedResources = new ArrayList<>();
     private List<Vertex> nonLimitedResources = new ArrayList<>();
-
+    int numberOfComponents = 0;
     public List<Vertex> getNonLimitedResources() {
         return nonLimitedResources;
     }
@@ -53,6 +53,15 @@ public class Graph {
                 }
             }
         }
+        //Run DFS from all goalVerticies to see which part of the graph is connected to any goal.
+        for (Vertex goalVertex: goalVerticies) {
+            if (!visited.contains(goalVertex)){
+                numberOfComponents++;
+                runDFS(goalVertex);
+            }
+        }
+        //Remove all verticies that can't be visited from any goalcell.
+        vertices.retainAll(visited);
     }
 
     public List<Vertex> getLimitedResources() {
@@ -78,7 +87,6 @@ public class Graph {
             newGraph.runDFS(startVertex);//Run DFS on new graph
 
             for (Vertex u: vertices) {
-
                 if(!newGraph.visited.contains(u)){
                     Graph newComponent = new Graph();
                     for (Vertex v : newGraph.componentVisited){
@@ -99,10 +107,10 @@ public class Graph {
             if(goalVerticies.contains(vertex)){
                 CharCell goalCell = vertex.getGoalCell();
                 goalCell.setGraphComponentsIfFulfilled(numberOfComponents);
-                System.err.println("Removing goal: " + vertex.getGoalCell().getLetter() +" will make graph have "+ numberOfComponents +" components");
+//                System.err.println("Removing goal: " + vertex.getGoalCell().getLetter() +" will make graph have "+ numberOfComponents +" components");
             }
             vertex.setGraphComponentsIfRemoved(numberOfComponents);
-            if(numberOfComponents > 1 && componentsAreImportant(components)) limitedResources.add(vertex); //TODO: numberofcomponents > 1 and bothComponentsAreImportant(components)
+            if(numberOfComponents > this.numberOfComponents && componentsAreImportant(components)) limitedResources.add(vertex); //TODO: numberofcomponents > 1 and bothComponentsAreImportant(components)
             else nonLimitedResources.add(vertex);
         }
     }
