@@ -74,6 +74,10 @@ public class Node {
 		this.agentId = agent.getId();
 	}
 
+	public Color getAgentColor() {
+		return agentColor;
+	}
+
 	public int g() {
 		return this.g;
 	}
@@ -152,7 +156,7 @@ public class Node {
 	private boolean boxAt(int row, int col) {
 		Box box = this.boxes[row][col];
 		if(box!=null){
-			if( box.getBoxColor() == agentColor){
+			if( box.getBoxColor() == this.agentColor){
 				return  true;
 			}else{
 				if(!potentialBoxesAdded.contains(box)){
