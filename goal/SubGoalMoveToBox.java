@@ -40,7 +40,7 @@ public class SubGoalMoveToBox extends GoalBoxToCell {
 
         Integer h;
         h = HeuristicHelper.manhattanDistance(agentRow,agentCol, boxRow, boxCol);
-        h += HeuristicHelper.goalCount(n);
+//        h += HeuristicHelper.goalCount(n);
         return h;
     }
 

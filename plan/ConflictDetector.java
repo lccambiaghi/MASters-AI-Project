@@ -40,14 +40,10 @@ public class ConflictDetector {
                     if(thisAgentPointBefore.equals(otherAgentPoint)){ // if there was an agent in the cell I now want to reach
                         conflictPoint = i+solutionStart;
                         return conflictPoint;
-
                     }
-
                 }
-
             }
         }
-
         return conflictPoint;
     }
 
