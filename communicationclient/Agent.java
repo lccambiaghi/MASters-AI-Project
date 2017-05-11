@@ -158,11 +158,15 @@ public class Agent {
         Queue<Message> requests = MsgHub.getInstance().getResponses(message);
         boolean proposalAccepted = false;
         Message response;
+        int tempLength = 0;
         for(Message request : requests)
             switch (request.getType()){
-                case request://Another agent request to change solution of this agent
-
-                    this.goalSolution = request.getContent();
+                case request://Another agent request to change solution of this agent or sends the same plan back
+                    if(request.getContent().size() > tempLength){ /* TODO: Does not work if we do anything else than padding with NOOP*/
+                        this.goalSolution = request.getContent();
+                        this.allGoalSolution.addAll(this.goalSolution);
+                        tempLength = request.getContent().size();
+                    }
                     response = new Message(MsgType.agree, null, id);
                     sendResponse(request, response);
                     break;
@@ -206,6 +210,9 @@ public class Agent {
                     LinkedList<Node> newSolution = makeOtherAgentWait(otherAgentSolution, solutionStart);
                     Message requestedSolution = new Message(MsgType.request, newSolution, id);
                     msgHub.reply(announcement, requestedSolution);
+                }else{
+                    Message solutionAccepted = new Message(MsgType.request, otherAgentSolution, id);
+                    msgHub.reply(announcement, solutionAccepted);
                 }
                 break;
             case request:

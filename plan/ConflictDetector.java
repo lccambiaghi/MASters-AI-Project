@@ -29,16 +29,15 @@ public class ConflictDetector {
                 AgentPoint otherAgentPoint = new AgentPoint(n.agentRow,n.agentCol, n.agentId, n.action);
                 AgentPoint thisAgentPoint = new AgentPoint(agentNodeCurrent.agentRow,agentNodeCurrent.agentCol,agentNodeCurrent.agentId,agentNodeCurrent.action);
                 // Has another agent planned to move to the same point?
-                if(otherAgentPoint==thisAgentPoint){
+                if(otherAgentPoint.equals(thisAgentPoint)){
                     conflictPoint = i+solutionStart;
                     return conflictPoint;
                 }
-
                 // Was another agent at t-1 in the cell I now want to reach?
                 if(i > 0){
                     Node thisAgentNodeBefore = timeMap.get(i+solutionStart-1);
                     AgentPoint thisAgentPointBefore = new AgentPoint(thisAgentNodeBefore.agentRow,thisAgentNodeBefore.agentCol,thisAgentNodeBefore.agentId,thisAgentNodeBefore.action);
-                    if(thisAgentPointBefore == otherAgentPoint){ // if there was an agent in the cell I now want to reach
+                    if(thisAgentPointBefore.equals(otherAgentPoint)){ // if there was an agent in the cell I now want to reach
                         conflictPoint = i+solutionStart;
                         return conflictPoint;
 
