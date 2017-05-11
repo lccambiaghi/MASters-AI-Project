@@ -76,6 +76,10 @@ public class Node {
 		this.agentId = agent.getId();
 	}
 
+	public Color getAgentColor() {
+		return agentColor;
+	}
+
 	public int g() {
 		return this.g;
 	}
@@ -154,13 +158,13 @@ public class Node {
 	}
 
 	private boolean cellIsFree(int row, int col) {
-		return !this.walls[row][col] && this.boxes[row][col] == null;//TODO Maybe do something here about agent is stuck
+		return !this.walls[row][col] && this.boxes[row][col] == null;
 	}
 
 	private boolean boxAt(int row, int col) {
 		Box box = this.boxes[row][col];
 		if(box!=null){
-			if( box.getBoxColor() == agentColor){
+			if( box.getBoxColor() == this.agentColor){
 				return  true;
 			}else{
 				if(!potentialBoxesAdded.contains(box)){
