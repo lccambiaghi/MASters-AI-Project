@@ -80,7 +80,7 @@ public class ConflictDetector {
         for(int i = 0; i < boxes.length; i++){
             for(int j = 0; j < boxes[i].length; j++){
                 if (boxes[i][j] != null){
-                    Box box = new Box(i, j, boxes[i][j].getBoxChar(), boxes[i][j].getBoxColor());
+                    Box box = new Box(j, i, boxes[i][j].getBoxChar(), boxes[i][j].getBoxColor());
                     boxList.add(box);
                 }
             }
