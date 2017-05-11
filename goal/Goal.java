@@ -6,6 +6,14 @@ import communicationclient.Node;
 
 import java.util.LinkedList;
 
+/**
+ * Goal is composed by a LinkedList of Goals
+ * Goal is assigned to an agent
+ * Goal gets created and then refined in subgoals.
+ *
+ * Every different Goal (e.g. GoalBoxToCell) extends this class,
+ * inherits the protected attributes and overrides refine() and isGoalSatisfied()
+ */
 public abstract class Goal {
 
     protected LinkedList<Goal> subgoals;

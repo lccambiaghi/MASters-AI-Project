@@ -1,7 +1,3 @@
-/**
- * Shared msghub for all agents to post and
- * recive msgs from.
- */
 package communication;
 
 import communicationclient.Agent;
@@ -10,12 +6,9 @@ import level.*;
 import java.util.*;
 
 /**
- * An agent broadcasts his plan -> All other agents receive the plan
- * If they find conflicts, they reply with a request containing a solution enriched with NoOp to fix the conflict
+ * MsgHub is where agents post messages and see if they have any responses.
  *
- * After broadcasting, the agent checks for requests
- * If found, it replaces his solution with the enriched one
- *
+ * Agents can invoke sendMessage(), broadcast(), getResponses()
  */
 public class MsgHub {
 
