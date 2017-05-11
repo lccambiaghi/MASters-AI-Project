@@ -39,4 +39,9 @@ public class GoalMoveOutTheWay extends Goal {
     public void setAgent(Agent agent) {
         super.agent = agent;
     }
+
+    @Override
+    public String toString() {
+        return null;
+    }
 }

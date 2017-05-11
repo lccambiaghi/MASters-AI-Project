@@ -2,6 +2,7 @@ package goal;
 
 import communicationclient.Command;
 import communicationclient.Node;
+import heuristic.Heuristic;
 import heuristic.HeuristicHelper;
 import level.Box;
 import level.Cell;
@@ -67,6 +68,8 @@ public class SubGoalPushBox extends GoalBoxToCell {
                 if(pulledBox.equals(this.box)){
                     h = HeuristicHelper.manhattanDistance(newBoxRow, newBoxCol, goalCharRow, goalCharCol);
                     h += HeuristicHelper.goalCount(n);
+                    h += HeuristicHelper.keepRight(n);
+
                 }else{
                     h = 1000;
                 }
@@ -78,6 +81,7 @@ public class SubGoalPushBox extends GoalBoxToCell {
                 if(pushedBox.equals(this.box)){
                     h = HeuristicHelper.manhattanDistance(newBoxRow, newBoxCol, goalCharRow, goalCharCol);
                     h += HeuristicHelper.goalCount(n);
+                    h += HeuristicHelper.keepRight(n);
                 }
                 else{
                     h=1000;//Punish wrong box
@@ -86,5 +90,9 @@ public class SubGoalPushBox extends GoalBoxToCell {
                 break;
         }
         return h;
+    }
+    @Override
+    public String toString() {
+        return "SubGoalPushBox: "+ this.box.getBoxChar();
     }
 }

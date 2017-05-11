@@ -83,7 +83,7 @@ public class Agent {
     }
 
     public LinkedList<Node> searchSubGoal(Goal subGoal) {
-        System.err.println("Agent " + getId() + " started searchSubGoal with strategy " + this.strategy.toString());
+        System.err.println("Agent " + getId() + " started search for subgoal: "+subGoal.toString()+" with strategy " + this.strategy.toString());
         Node initialNode = new Node(subGoal, this);
         //TODO make sure position is updated
         HashSet<Box> allBoxes = Level.getInstance().getAllBoxes();
@@ -144,8 +144,8 @@ public class Agent {
                 if (!this.strategy.isExplored(n) && !this.strategy.inFrontier(n)) {
                     this.strategy.addToFrontier(n);
                 }
-                iterations++;
             }
+            iterations++;
         }
         return plan;
     }

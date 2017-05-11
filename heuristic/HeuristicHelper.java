@@ -31,7 +31,26 @@ public class HeuristicHelper {
                 }
             }
         }
-        return val;
+        return val*5;
+    }
+
+    public static int keepRight(Node n){
+        if(n.action==null) return 0;
+        switch (n.action.dir1){
+            case W:
+                if(n.walls[n.agentRow-1][n.agentCol]) return 0;
+                break;
+            case S:
+                if(n.walls[n.agentRow][n.agentCol-1]) return 0;
+                break;
+            case E:
+                if(n.walls[n.agentRow+1][n.agentCol]) return 0;
+                break;
+            case N:
+                if(n.walls[n.agentRow][n.agentCol+1]) return 0;
+                break;
+        }
+        return 2;
     }
 
 }

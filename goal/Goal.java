@@ -37,4 +37,7 @@ public abstract class Goal {
     public void setPriority(int priority) {
         this.priority = priority;
     }
+
+    @Override
+    public abstract String toString();
 }

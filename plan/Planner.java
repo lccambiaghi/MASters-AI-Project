@@ -10,6 +10,7 @@ import goal.GoalBoxToCell;
 import goal.GoalFreeAgent;
 import heuristic.GoalComparator;
 import level.Box;
+import level.Level;
 
 import java.util.*;
 
@@ -37,6 +38,12 @@ public class Planner {
 
     public void searchingPhase() {
         this.solutions = new HashMap<>();
+        for (List<Agent> agentList: Level.getInstance().getAgentsByColorMap().values()) {
+            for (Agent a: agentList) {
+                this.solutions.put(Character.getNumericValue(a.getId()), new LinkedList<>());
+            }
+
+        }
         while(!goalQueue.isEmpty()){
             Goal goal = goalQueue.poll();
             Agent agent = goal.getAgent();

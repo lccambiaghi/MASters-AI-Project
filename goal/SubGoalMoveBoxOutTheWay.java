@@ -49,4 +49,8 @@ public class SubGoalMoveBoxOutTheWay extends GoalFreeAgent {
 
         return h;
     }
+    @Override
+    public String toString() {
+        return "SubGoalMoveBoxOutTheWay: "+this.box.getBoxChar();
+    }
 }
