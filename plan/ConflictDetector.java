@@ -31,15 +31,15 @@ public class ConflictDetector {
                 tmp.agentRow = owner.getAgentRow();
                 tmp.agentCol = owner.getAgentCol();
                 if(!timeMap.isEmpty()) tmp = timeMap.get(timeMap.lastKey());
-                AgentPoint otherAgentPoint = new AgentPoint(n.agentRow,n.agentCol, n.agentId, n.action);
-                AgentPoint thisAgentPoint = new AgentPoint(tmp.agentRow,tmp.agentCol,tmp.agentId,tmp.action);
+                Point otherAgentPoint = new Point(n.agentRow,n.agentCol);
+                Point thisAgentPoint = new Point(tmp.agentRow,tmp.agentCol);
                 // Has another agent planned to move to the same point?
                 if(otherAgentPoint.equals(thisAgentPoint)){
                     conflictPoint = timeStep+solutionStart;
                     return conflictPoint;
                 }
             }else{
-                AgentPoint otherAgentPoint = new AgentPoint(n.agentRow, n.agentCol, n.agentId, n.action);
+                Point otherAgentPoint = new Point(n.agentRow, n.agentCol);
 
                 if(collisionWithAgent(timeStep, solutionStart, n)){
                     conflictPoint = timeStep + solutionStart;
@@ -54,7 +54,7 @@ public class ConflictDetector {
                 // Was another agent at t-1 in the cell I now want to reach?
                 if(timeStep > 0){
                     Node thisAgentNodeBefore = timeMap.get(timeStep + solutionStart - 1);
-                    AgentPoint thisAgentPointBefore = new AgentPoint(thisAgentNodeBefore.agentRow, thisAgentNodeBefore.agentCol, thisAgentNodeBefore.agentId, thisAgentNodeBefore.action);
+                    Point thisAgentPointBefore = new Point(thisAgentNodeBefore.agentRow, thisAgentNodeBefore.agentCol);
                     if(thisAgentPointBefore.equals(otherAgentPoint)){ // if there was an agent in the cell I now want to reach
                         conflictPoint = timeStep+solutionStart;
                         return conflictPoint;
@@ -67,19 +67,19 @@ public class ConflictDetector {
 
     private boolean collisionWithAgent(Integer timeStep, Integer solutionStart, Node node){
         Node agentNodeCurrent = timeMap.get(timeStep + solutionStart); // gets the map of agent points at that that time
-        AgentPoint otherAgentPoint = new AgentPoint(node.agentRow, node.agentCol, node.agentId, node.action);
-        AgentPoint thisAgentPoint = new AgentPoint(agentNodeCurrent.agentRow, agentNodeCurrent.agentCol, agentNodeCurrent.agentId, agentNodeCurrent.action);
+        Point otherAgentPoint = new Point(node.agentRow, node.agentCol);
+        Point thisAgentPoint = new Point(agentNodeCurrent.agentRow, agentNodeCurrent.agentCol);
 
         return otherAgentPoint.equals(thisAgentPoint);
     }
 
     private boolean collisionWithBox(Integer timeStep, Integer solutionStart, Node node){
         LinkedList<Box> boxList = this.boxMap.get(timeStep + solutionStart);
-        AgentPoint agentPoint = new AgentPoint(node.agentRow, node.agentCol, node.agentId, node.action);
+        Point agentPoint = new Point(node.agentRow, node.agentCol);
+
         for (Box box : boxList) {
             if (agentPoint.getAgentCol() == box.getCol() &&
-                agentPoint.getAgentRow() == box.getRow() &&
-                node.getAgentColor() != box.getBoxColor()) {
+                agentPoint.getAgentRow() == box.getRow()) {
                     return true;
             }
         }
@@ -88,12 +88,15 @@ public class ConflictDetector {
 
     private void updateBoxMap(Box[][] boxes){
         LinkedList<Box> boxList = new LinkedList<>();
-        for(Box[] row : boxes) {
-            for(Box box : row) {
-                if (box != null)
+        for(int i = 0; i < boxes.length; i++){
+            for(int j = 0; j < boxes[i].length; j++){
+                if (boxes[i][j] != null){
+                    Box box = new Box(j, i, boxes[i][j].getBoxChar(), boxes[i][j].getBoxColor());
                     boxList.add(box);
+                }
             }
         }
+
         this.boxMap.put(this.boxMap.size(), boxList);
     }
 
