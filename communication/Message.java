@@ -11,6 +11,7 @@ public class Message {
 
     private MsgType type;
 
+    private int contentStart;
     private LinkedList<Node> content;
 
     private char sender;
@@ -31,5 +32,13 @@ public class Message {
 
     public MsgType getType() {
         return type;
+    }
+
+    public int getContentStart() {
+        return contentStart;
+    }
+
+    public void setContentStart(int contentStart) {
+        this.contentStart = contentStart;
     }
 }

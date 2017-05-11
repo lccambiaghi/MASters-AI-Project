@@ -11,48 +11,35 @@ import java.util.LinkedList;
  */
 public class ConflictDetector {
     //Map of where agents are at a time in their refineBoxToChar
-    private HashMap<Integer, HashMap<AgentPoint, Node>> timeMap;
+    private HashMap<Integer,Node> timeMap;
 
     public ConflictDetector(){
         timeMap = new HashMap<>();
     }
 
     // return time of first occurring conflict
-    public int checkPlan(LinkedList<Node> agentPlan){//TODO need to check for boxes as well in order to complete MAsimple4
+    public int checkPlan(LinkedList<Node> otherAgentPlan, int solutionStart){//TODO need to check for boxes as well in order to complete MAsimple4
         int conflictPoint = -1;
-        for (int i=0; i < agentPlan.size();i++) {
-            Node n = agentPlan.get(i);
-            if(!timeMap.containsKey(i)){
-                HashMap<AgentPoint, Node> agentPoints = new HashMap<>();
-                AgentPoint agentPoint = new AgentPoint(n.agentRow,n.agentCol, n.agentId, n.action);
-                agentPoints.put(agentPoint, n);
-                timeMap.put(i,agentPoints);
+        for (int i=0; i < otherAgentPlan.size();i++) {
+            Node n = otherAgentPlan.get(i);
+            if(!timeMap.containsKey(i+solutionStart)){//Check from solutionstart in global plan
+                return -1;//No conflict as agentPlan is not as long as otherAgentPlan
             }else{
-                HashMap<AgentPoint, Node> agentPointsCurrent = timeMap.get(i); // gets the map of agent points at that that time
-                AgentPoint agentPoint = new AgentPoint(n.agentRow,n.agentCol, n.agentId, n.action);
-
+                Node agentNodeCurrent = timeMap.get(i+solutionStart); // gets the map of agent points at that that time
+                AgentPoint otherAgentPoint = new AgentPoint(n.agentRow,n.agentCol, n.agentId, n.action);
+                AgentPoint thisAgentPoint = new AgentPoint(agentNodeCurrent.agentRow,agentNodeCurrent.agentCol,agentNodeCurrent.agentId,agentNodeCurrent.action);
                 // Has another agent planned to move to the same point?
-                if(agentPointsCurrent.containsKey(agentPoint)){
-                    conflictPoint = i;
+                if(otherAgentPoint==thisAgentPoint){
+                    conflictPoint = i+solutionStart;
                     return conflictPoint;
                 }
 
                 // Was another agent at t-1 in the cell I now want to reach?
                 if(i > 0){
-                    HashMap<AgentPoint, Node> agentPointsBefore = timeMap.get(i-1);
-                    Node before = agentPointsBefore.get(agentPoint);
-
-                    if(before !=null){ // if there was an agent in the cell I now want to reach
-                        // Has he moved out of the cell?
-                        // If yes, it is not a conflict
-                        // TODO
-
-                        //Is he going to bump into me?
-                        //if(Command.isOpposite(before.action.dir1,n.action.dir1)){
-                        // TODO
-                        //}
-
-                        conflictPoint = i;
+                    Node thisAgentNodeBefore = timeMap.get(i+solutionStart-1);
+                    AgentPoint thisAgentPointBefore = new AgentPoint(thisAgentNodeBefore.agentRow,thisAgentNodeBefore.agentCol,thisAgentNodeBefore.agentId,thisAgentNodeBefore.action);
+                    if(thisAgentPointBefore == otherAgentPoint){ // if there was an agent in the cell I now want to reach
+                        conflictPoint = i+solutionStart;
                         return conflictPoint;
 
                     }
@@ -68,16 +55,7 @@ public class ConflictDetector {
     public void addPlan(LinkedList<Node> agentPlan){
         for (int i=0;i < agentPlan.size();i++) {
             Node n = agentPlan.get(i);
-            if(!timeMap.containsKey(i)){
-                HashMap<AgentPoint, Node> agentPoints = new HashMap<>();
-                AgentPoint agentPoint = new AgentPoint(n.agentRow,n.agentCol, n.agentId, n.action);
-                agentPoints.put(agentPoint, n);
-                timeMap.put(i,agentPoints);
-            }else{
-                HashMap<AgentPoint, Node> agentPointsCurrent = timeMap.get(i);
-                AgentPoint agentPoint = new AgentPoint(n.agentRow,n.agentCol, n.agentId, n.action);
-                agentPointsCurrent.put(agentPoint,n);
-            }
+            timeMap.put(i,n);
         }
     }
 }

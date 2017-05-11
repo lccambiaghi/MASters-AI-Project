@@ -10,7 +10,6 @@ import goal.GoalBoxToCell;
 import goal.GoalFreeAgent;
 import heuristic.GoalComparator;
 import level.Box;
-import level.Cell;
 
 import java.util.*;
 
@@ -47,7 +46,7 @@ public class Planner {
                 // TODO agent is stuck
                 goalQueue.add(goal);//Add goal again
                 for (Box b:agent.getRemovedBoxes()) {
-                    LinkedList<Node> agentRequestCells = agent.getCombinedSolution();
+                    LinkedList<Node> agentRequestCells = agent.getGoalSolution();
                     //Search for free space
                     //Cell destination = new Cell(5,10);
                     Goal freeAgent = new GoalFreeAgent(b,agentRequestCells, agent);
@@ -57,7 +56,7 @@ public class Planner {
                     agent.broadcastMessage(moveBoxRequest);
                     agent.evaluateMessage(moveBoxRequest);
                     goalQueue.add(freeAgent);
-                    agent.setCombinedSolution(new LinkedList<>());//Forget Solution
+                    agent.setGoalSolution(new LinkedList<>());//Forget Solution
                 }
                 System.err.println(agent.getStrategy().searchStatus());
                 System.err.println("Agent " + agent.getId() + " is unable to complete his subgoals.");
@@ -69,12 +68,13 @@ public class Planner {
 
                 // agentSolution found
                 Message solutionAnnouncement = new Message(MsgType.inform, agentSolution, agent.getId());
+                solutionAnnouncement.setContentStart(agent.getAllGoalSolution().size());
 
                 agent.broadcastMessage(solutionAnnouncement);
 
                 agent.evaluateMessage(solutionAnnouncement);
 
-                agentSolution = agent.getCombinedSolution(); // solution is updated after negotiation
+                agentSolution = agent.getGoalSolution(); // solution is updated after negotiation
 
                 if(this.solutions.get(Character.getNumericValue(agent.getId()))!=null){
                     LinkedList<Node> agentCombinedSolution = this.solutions.get(Character.getNumericValue(agent.getId()));
