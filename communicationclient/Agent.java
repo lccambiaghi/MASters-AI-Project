@@ -247,7 +247,7 @@ public class Agent {
     private LinkedList<Node> makeOtherAgentWait(LinkedList<Node> oldSolution, int solutionStart){
 
         ConflictDetector cd = new ConflictDetector();
-        cd.addPlan(allGoalSolution);
+        cd.addPlan(this.allGoalSolution);
         int conflictTime = cd.checkPlan(oldSolution, solutionStart);
         LinkedList<Node> newSolution = new LinkedList<>(oldSolution);
 
@@ -265,7 +265,6 @@ public class Agent {
         }
 
         return newSolution;
-
     }
     public LinkedList<Node> getGoalSolution() {
         return goalSolution;

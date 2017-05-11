@@ -25,17 +25,14 @@ public class ConflictDetector {
             if(!timeMap.containsKey(timeStep + solutionStart)){//Check from solutionstart in global plan
                 return -1;//No conflict as agentPlan is not as long as otherAgentPlan
             }else{
-                Node agentNodeCurrent = timeMap.get(timeStep + solutionStart); // gets the map of agent points at that that time
                 AgentPoint otherAgentPoint = new AgentPoint(n.agentRow, n.agentCol, n.agentId, n.action);
-                AgentPoint thisAgentPoint = new AgentPoint(agentNodeCurrent.agentRow, agentNodeCurrent.agentCol, agentNodeCurrent.agentId, agentNodeCurrent.action);
-                // Has another agent planned to move to the same point?
-                if(otherAgentPoint.equals(thisAgentPoint)){
+
+                if(collisionWithAgent(timeStep, solutionStart, n)){
                     conflictPoint = timeStep + solutionStart;
                     return conflictPoint;
                 }
 
-                if(collisionWithBox(thisAgentPoint, timeStep, n)) {
-                    System.err.println("Conflict with box detected");
+                if(collisionWithBox(timeStep, solutionStart, n)) {
                     conflictPoint = timeStep + solutionStart;
                     return conflictPoint;
                 }
@@ -55,8 +52,25 @@ public class ConflictDetector {
         return conflictPoint;
     }
 
-    private void createTimeMap(){
+    private boolean collisionWithAgent(Integer timeStep, Integer solutionStart, Node node){
+        Node agentNodeCurrent = timeMap.get(timeStep + solutionStart); // gets the map of agent points at that that time
+        AgentPoint otherAgentPoint = new AgentPoint(node.agentRow, node.agentCol, node.agentId, node.action);
+        AgentPoint thisAgentPoint = new AgentPoint(agentNodeCurrent.agentRow, agentNodeCurrent.agentCol, agentNodeCurrent.agentId, agentNodeCurrent.action);
 
+        return otherAgentPoint.equals(thisAgentPoint);
+    }
+
+    private boolean collisionWithBox(Integer timeStep, Integer solutionStart, Node node){
+        LinkedList<Box> boxList = this.boxMap.get(timeStep + solutionStart);
+        AgentPoint agentPoint = new AgentPoint(node.agentRow, node.agentCol, node.agentId, node.action);
+        for (Box box : boxList) {
+            if (agentPoint.getAgentCol() == box.getCol() &&
+                agentPoint.getAgentRow() == box.getRow() &&
+                node.getAgentColor() != box.getBoxColor()) {
+                    return true;
+            }
+        }
+        return false;
     }
 
     private void updateBoxMap(Box[][] boxes){
@@ -68,18 +82,6 @@ public class ConflictDetector {
             }
         }
         this.boxMap.put(this.boxMap.size(), boxList);
-    }
-
-    private boolean collisionWithBox(AgentPoint agentPoint, Integer timeStep, Node node){
-        LinkedList<Box> boxList = this.boxMap.get(timeStep);
-        for (Box box : boxList) {
-            if (agentPoint.getAgentCol() == box.getCol() &&
-                agentPoint.getAgentRow() == box.getRow() &&
-                node.getAgentColor() != box.getBoxColor())
-                System.err.println("Collision with box detected");
-                return false;
-        }
-        return false;
     }
 
     public void addPlan(LinkedList<Node> agentPlan){
