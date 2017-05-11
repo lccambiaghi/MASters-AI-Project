@@ -68,4 +68,7 @@ public class GoalBoxToCell extends Goal {
         return box;
     }
 
+    public Cell getDestination() {
+        return destination;
+    }
 }

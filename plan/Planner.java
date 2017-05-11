@@ -10,6 +10,7 @@ import goal.GoalBoxToCell;
 import goal.GoalFreeAgent;
 import heuristic.GoalComparator;
 import level.Box;
+import level.CharCell;
 import level.Level;
 
 import java.util.*;
@@ -80,7 +81,13 @@ public class Planner {
                 agent.broadcastMessage(solutionAnnouncement);
 
                 agent.evaluateMessage(solutionAnnouncement);
+                if(goal instanceof GoalBoxToCell){
+                    CharCell goalCell = (CharCell) ((GoalBoxToCell) goal).getDestination();
+                    if(goalCell.isDeadEnd()||goalCell.isCorner()){
+                        //TODO Maybe add in walls[][] and recalculate??
+                    }
 
+                }
                 /*Stuff below is outcommented. In the getSolutions() method, we fetch the global plans from the Agents.*/
 //                agentSolution = agent.getGoalSolution(); // solution is updated after negotiation
 
