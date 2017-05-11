@@ -42,9 +42,10 @@ public class CharCell extends Cell{
         this.priority = priority;
     }
     public void calculatePriority(){//TODO include graphComponentsIfFulfilled
-        priority += numWalls;
-        if(corner) priority++;//if corner give higher priority
-        if (deadEnd) priority +=2;//If deadend give higher priority
+        priority = 100;
+        priority -= numWalls;
+        if(corner) priority--;//if corner give higher priority
+        if (deadEnd) priority -=2;//If deadend give higher priority
     }
 
     public int getNumWalls() {

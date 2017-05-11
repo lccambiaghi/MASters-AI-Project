@@ -23,7 +23,7 @@ public class ConflictDetector {
 
     // return time of first occurring conflict
     public int checkPlan(LinkedList<Node> otherAgentPlan, int solutionStart){
-        int conflictPoint = -1;
+        int conflictPoint;
         for (int timeStep=0; timeStep < otherAgentPlan.size();timeStep++) {
             Node n = otherAgentPlan.get(timeStep);
             conflictPoint = timeStep+solutionStart;
@@ -37,7 +37,7 @@ public class ConflictDetector {
                 Point thisAgentPoint = new Point(tmp.agentRow,tmp.agentCol);
                 // Has another agent planned to move to the same point?
                 if(otherAgentPoint.equals(thisAgentPoint)){
-                    return conflictPoint;
+                    return conflictPoint;//TODO This agents is standing still in the way!
                 }
             }else{
                 Point otherAgentPoint = new Point(n.agentRow, n.agentCol);
@@ -55,7 +55,7 @@ public class ConflictDetector {
                     LinkedList<Box> boxListBefore = this.boxMap.get(timeStep + solutionStart - 1);
                     Point thisAgentPointBefore = new Point(thisAgentNodeBefore.agentRow, thisAgentNodeBefore.agentCol);
                     if(thisAgentPointBefore.equals(otherAgentPoint)){ // if there was an agent in the cell I now want to reach
-                        return conflictPoint;
+                        return conflictPoint;//other agent moves into cell this agent was in
                     }
                     //Is other agent pushing box into thisAgent
                     if(n.action.actionType == Command.Type.Push){
@@ -92,8 +92,6 @@ public class ConflictDetector {
     private boolean collisionWithBox(Integer timeStep, Integer solutionStart, Node node){
         LinkedList<Box> boxList = this.boxMap.get(timeStep + solutionStart);
         Point agentPoint = new Point(node.agentRow, node.agentCol);
-        Node thisAgentNode = this.timeMap.get(timeStep + solutionStart);
-
         if(node.action.actionType == Command.Type.Push){
             Point boxPoint = new Point(node.boxMovedRow, node.boxMovedCol);
             if(boxPoint.equals(agentPoint)) return true;

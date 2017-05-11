@@ -57,7 +57,7 @@ public class Planner {
                     //Search for free space
                     //Cell destination = new Cell(5,10);
                     Goal freeAgent = new GoalFreeAgent(b,agentRequestCells, agent);
-                    freeAgent.setPriority(1000);//High priority
+                    freeAgent.setPriority(0);//High priority
 
                     Message moveBoxRequest = new GoalMessage(MsgType.request,freeAgent, agentRequestCells,agent.getId());
                     agent.broadcastMessage(moveBoxRequest);
