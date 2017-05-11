@@ -280,12 +280,12 @@ public class Agent {
         while (conflictTime > -1){
             System.err.println("Conflict found at " + conflictTime);
 
-            Node n = oldSolution.getFirst();
+            Node n = oldSolution.getFirst().parent;
             Node noOp = new Node(null);
             noOp.setBoxes(n.getBoxesCopy());
             noOp.agentRow = n.agentRow;
             noOp.agentCol = n.agentCol;
-            noOp.action= new Command(Command.Type.NoOp, n.action.dir1,n.action.dir2);
+            noOp.action= new Command(Command.Type.NoOp, null,null);
             newSolution.addFirst(noOp);
             conflictTime = cd.checkPlan(newSolution, solutionStart);
         }
