@@ -13,28 +13,25 @@ import plan.ConflictDetector;
 
 import java.util.*;
 
-
-/**
- * Created by salik on 31-03-2017.
- */
 public class Agent {
 
     private char id;
     private Color color;
     private int agentRow;
     private int agentCol;
-
     private Strategy strategy;
 
     private int numberOfGoals;
-    private LinkedList<Node> combinedSolution;
+    private LinkedList<Node> allGoalSolution;
+    private LinkedList<Node> goalSolution;
     private ArrayDeque<Goal> subGoals;
     private ArrayList<Box> potentialBoxes = new ArrayList<>();
     private HashSet<Box> removedBoxes = new HashSet<>();
 
     public Agent(char id, Strategy strategy, int row, int col) {
         this.subGoals = new ArrayDeque<>();
-        this.combinedSolution = new LinkedList<>();
+        this.allGoalSolution = new LinkedList<>();
+        this.goalSolution = new LinkedList<>();
         this.color = Color.blue;
         this.id = id;
         this.strategy = strategy;
@@ -56,7 +53,7 @@ public class Agent {
         //return subGoals;
     }
     public LinkedList<Node> searchGoal(Goal goal){
-        this.combinedSolution = new LinkedList<>();
+        this.goalSolution = new LinkedList<>();
         this.potentialBoxes = new ArrayList<>();
         goal.refine();
         int agentStuck = 0;
@@ -64,24 +61,24 @@ public class Agent {
         for(Goal subgoal : subgoals){
             LinkedList<Node> solution = searchSubGoal(subgoal);
             if (solution!=null){
-                this.combinedSolution.addAll(solution);
+                this.goalSolution.addAll(solution);
             }else{
                 while(solution==null){
                     agentStuck++;
                     solution = searchSubGoal(subgoal);
                 }
-                this.combinedSolution.addAll(solution);
+                this.goalSolution.addAll(solution);
                 //Reset agent position to start
                 this.agentRow = solution.getFirst().parent.agentRow;
                 this.agentCol = solution.getFirst().parent.agentCol;
                 return null;
             }
         }
-        return this.combinedSolution;
+        return this.goalSolution;
     }
 
     public LinkedList<Node> searchSubGoal(Goal subGoal) {
-        System.err.println("Agent " + getId() + " started searchSubGoal with strategy " + this.strategy.toString());
+        System.err.println("Agent " + getId() + " started search for subgoal: "+subGoal.toString()+" with strategy " + this.strategy.toString());
         Node initialNode = new Node(subGoal, this);
         //TODO make sure position is updated
         HashSet<Box> allBoxes = Level.getInstance().getAllBoxes();
@@ -142,8 +139,8 @@ public class Agent {
                 if (!this.strategy.isExplored(n) && !this.strategy.inFrontier(n)) {
                     this.strategy.addToFrontier(n);
                 }
-                iterations++;
             }
+            iterations++;
         }
         return plan;
     }
@@ -156,10 +153,15 @@ public class Agent {
         Queue<Message> requests = MsgHub.getInstance().getResponses(message);
         boolean proposalAccepted = false;
         Message response;
+        int tempLength = 0;
         for(Message request : requests)
             switch (request.getType()){
-                case request://Another agent request to change solution of this agent
-                    combinedSolution = request.getContent();
+                case request://Another agent request to change solution of this agent or sends the same plan back
+                    if(request.getContent().size() > tempLength){ /* TODO: Does not work if we do anything else than padding with NOOP*/
+                        this.goalSolution = request.getContent();
+                        this.allGoalSolution.addAll(this.goalSolution);
+                        tempLength = request.getContent().size();
+                    }
                     response = new Message(MsgType.agree, null, id);
                     sendResponse(request, response);
                     break;
@@ -195,13 +197,17 @@ public class Agent {
                 // if yes, send back request
 
                 LinkedList<Node> otherAgentSolution = announcement.getContent();
+                int solutionStart = announcement.getContentStart();
 
-                int conflictTime = checkForConflicts(otherAgentSolution);
+                int conflictTime = checkForConflicts(otherAgentSolution,solutionStart);
 
                 if (conflictTime > -1){
-                    LinkedList<Node> newSolution = makeOtherAgentWait(otherAgentSolution);
+                    LinkedList<Node> newSolution = makeOtherAgentWait(otherAgentSolution, solutionStart);
                     Message requestedSolution = new Message(MsgType.request, newSolution, id);
                     msgHub.reply(announcement, requestedSolution);
+                }else{
+                    Message solutionAccepted = new Message(MsgType.request, otherAgentSolution, id);
+                    msgHub.reply(announcement, solutionAccepted);
                 }
                 break;
             case request:
@@ -226,31 +232,27 @@ public class Agent {
 
     }
 
-    private int checkForConflicts(LinkedList<Node> otherAgentSolution) {
+    private int checkForConflicts(LinkedList<Node> otherAgentSolution, int solutionStart) {
 
-        if(combinedSolution == null)
-            return 0;
+        if(this.allGoalSolution.size() == 0)
+            return -1;
 
         ConflictDetector cd = new ConflictDetector();
 
-        cd.addPlan(combinedSolution);
+        cd.addPlan(this.allGoalSolution);
 
-        return cd.checkPlan(otherAgentSolution);
-
+        return cd.checkPlan(otherAgentSolution, solutionStart);
     }
 
-    private LinkedList<Node> makeOtherAgentWait(LinkedList<Node> oldSolution){
+    private LinkedList<Node> makeOtherAgentWait(LinkedList<Node> oldSolution, int solutionStart){
 
         ConflictDetector cd = new ConflictDetector();
-
-        cd.addPlan(combinedSolution);
-
-        int conflictTime = cd.checkPlan(oldSolution);
-
+        cd.addPlan(this.allGoalSolution);
+        int conflictTime = cd.checkPlan(oldSolution, solutionStart);
         LinkedList<Node> newSolution = new LinkedList<>(oldSolution);
 
         while (conflictTime > -1){
-            System.err.println("Conflict found at "+conflictTime);
+            System.err.println("Conflict found at " + conflictTime);
 
             Node n = oldSolution.getFirst();
             Node noOp = new Node(null);
@@ -259,18 +261,17 @@ public class Agent {
             noOp.agentCol = n.agentCol;
             noOp.action= new Command(Command.Type.NoOp, n.action.dir1,n.action.dir2);
             newSolution.addFirst(noOp);
-            conflictTime = cd.checkPlan(newSolution);
+            conflictTime = cd.checkPlan(newSolution, solutionStart);
         }
 
         return newSolution;
-
     }
-    public LinkedList<Node> getCombinedSolution() {
-        return combinedSolution;
+    public LinkedList<Node> getGoalSolution() {
+        return goalSolution;
     }
 
-    public void setCombinedSolution(LinkedList<Node> combinedSolution) {
-        this.combinedSolution = combinedSolution;
+    public void setGoalSolution(LinkedList<Node> goalSolution) {
+        this.goalSolution = goalSolution;
     }
 
     public char getId() {
@@ -315,5 +316,9 @@ public class Agent {
 
     public HashSet<Box> getRemovedBoxes() {
         return removedBoxes;
+    }
+
+    public LinkedList<Node> getAllGoalSolution() {
+        return allGoalSolution;
     }
 }

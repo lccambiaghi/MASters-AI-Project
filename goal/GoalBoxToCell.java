@@ -55,6 +55,11 @@ public class GoalBoxToCell extends Goal {
     }
 
     @Override
+    public String toString() {
+        return null;
+    }
+
+    @Override
     public boolean isGoalSatisfied(Node node) {
         return toChar.isGoalSatisfied(node);
     }

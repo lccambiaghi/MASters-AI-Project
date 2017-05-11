@@ -20,9 +20,6 @@ public class CommunicationClient {
     }
 
     private void solve() throws IOException {
-
-//        planner.refineInitialGoals();
-
         planner.searchingPhase();
 
         List<LinkedList<Node>> solutions = planner.getSolutions();

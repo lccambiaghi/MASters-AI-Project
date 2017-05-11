@@ -52,6 +52,11 @@ public class GoalFreeAgent extends Goal{
         super.agent = agent;
     }
 
+    @Override
+    public String toString() {
+        return null;
+    }
+
     public Box getBox() {
         return box;
     }

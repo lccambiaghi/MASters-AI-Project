@@ -1,5 +1,6 @@
 package goal;
 
+import communicationclient.Command;
 import communicationclient.Node;
 import heuristic.HeuristicHelper;
 import level.Box;
@@ -41,7 +42,13 @@ public class SubGoalMoveToBox extends GoalBoxToCell {
         Integer h;
         h = HeuristicHelper.manhattanDistance(agentRow,agentCol, boxRow, boxCol);
         h += HeuristicHelper.goalCount(n);
+//        h += HeuristicHelper.keepRight(n);
+        if(n.action !=null && (n.action.actionType== Command.Type.Pull||n.action.actionType== Command.Type.Push)) h += 10;//Penalize a push when trying to move to a box
         return h;
+    }
+    @Override
+    public String toString() {
+        return "SubGoalMoveToBox: "+this.box.getBoxChar();
     }
 
 }

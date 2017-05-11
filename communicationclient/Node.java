@@ -42,7 +42,9 @@ public class Node {
 	public boolean[][] walls = Level.getInstance().getWalls();
 
 	public Box[][] boxes = new Box[MAX_ROW][MAX_COL];
-
+	public Box boxMoved;
+	public int boxMovedRow;
+	public int boxMovedCol;
 	public Box[][] getBoxesCopy() {
 		Box[][] copy = new Box[MAX_ROW][MAX_COL];
 		for (int row = 0; row < MAX_ROW; row++) {
@@ -72,6 +74,10 @@ public class Node {
 		this.subGoal = subGoal;
 		this.agentColor = agent.getColor();
 		this.agentId = agent.getId();
+	}
+
+	public Color getAgentColor() {
+		return agentColor;
 	}
 
 	public int g() {
@@ -119,6 +125,9 @@ public class Node {
 						n.agentRow = newAgentRow;
 						n.agentCol = newAgentCol;
 						n.boxes[newBoxRow][newBoxCol] = this.boxes[newAgentRow][newAgentCol];
+						n.boxMoved = n.boxes[newBoxRow][newBoxCol];
+						n.boxMovedRow = newBoxRow;
+						n.boxMovedCol = newBoxCol;
 						n.boxes[newAgentRow][newAgentCol] = null;
 						expandedNodes.add(n);
 					}
@@ -135,6 +144,9 @@ public class Node {
 						n.agentRow = newAgentRow;
 						n.agentCol = newAgentCol;
 						n.boxes[this.agentRow][this.agentCol] = this.boxes[boxRow][boxCol];
+						n.boxMoved = n.boxes[this.agentRow][this.agentCol];
+						n.boxMovedRow = this.agentRow;
+						n.boxMovedCol = this.agentCol;
 						n.boxes[boxRow][boxCol] = null;
 						expandedNodes.add(n);
 					}
@@ -146,13 +158,13 @@ public class Node {
 	}
 
 	private boolean cellIsFree(int row, int col) {
-		return !this.walls[row][col] && this.boxes[row][col] == null;//TODO Maybe do something here about agent is stuck
+		return !this.walls[row][col] && this.boxes[row][col] == null;
 	}
 
 	private boolean boxAt(int row, int col) {
 		Box box = this.boxes[row][col];
 		if(box!=null){
-			if( box.getBoxColor() == agentColor){
+			if( box.getBoxColor() == this.agentColor){
 				return  true;
 			}else{
 				if(!potentialBoxesAdded.contains(box)){

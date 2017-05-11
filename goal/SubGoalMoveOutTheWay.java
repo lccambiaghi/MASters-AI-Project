@@ -34,4 +34,8 @@ public class SubGoalMoveOutTheWay extends GoalMoveOutTheWay {
         Integer h=0;//BFS
         return h;
     }
+    @Override
+    public String toString() {
+        return "SubGoalMoveOutTheWay";
+    }
 }
