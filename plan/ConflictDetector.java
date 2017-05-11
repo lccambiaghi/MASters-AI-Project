@@ -4,35 +4,28 @@ import communicationclient.Agent;
 import communicationclient.Node;
 import level.Box;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.TreeMap;
 
 public class ConflictDetector {
     //Map of where agents are at a time in their refineBoxToChar
-<<<<<<< HEAD
     private TreeMap<Integer,Node> timeMap;
     private Agent owner;
+    private HashMap<Integer, LinkedList<Box>> boxMap;
 
     public ConflictDetector(Agent owner){
         this.owner = owner;
         timeMap = new TreeMap<>();
-=======
-    private HashMap<Integer, LinkedList<Box>> boxMap;
-    private HashMap<Integer, Node> timeMap;
-
-    public ConflictDetector(){
         boxMap = new HashMap<>();
-        timeMap = new HashMap<>();
->>>>>>> 5f72b8dff3efa0dcaa0dc8035c433c42fb3cf1ee
     }
 
     // return time of first occurring conflict
     public int checkPlan(LinkedList<Node> otherAgentPlan, int solutionStart){
         int conflictPoint = -1;
-<<<<<<< HEAD
-        for (int i=0; i < otherAgentPlan.size();i++) {
-            Node n = otherAgentPlan.get(i);
-            if(!timeMap.containsKey(i+solutionStart)){//Check from solutionstart in global plan
+        for (int timeStep=0; timeStep < otherAgentPlan.size();timeStep++) {
+            Node n = otherAgentPlan.get(timeStep);
+            if(!timeMap.containsKey(timeStep+solutionStart)){//Check from solutionstart in global plan
                 //Assumue last position of this agent
                 Node tmp = new Node(null);
                 tmp.agentRow = owner.getAgentRow();
@@ -42,15 +35,9 @@ public class ConflictDetector {
                 AgentPoint thisAgentPoint = new AgentPoint(tmp.agentRow,tmp.agentCol,tmp.agentId,tmp.action);
                 // Has another agent planned to move to the same point?
                 if(otherAgentPoint.equals(thisAgentPoint)){
-                    conflictPoint = i+solutionStart;
+                    conflictPoint = timeStep+solutionStart;
                     return conflictPoint;
                 }
-=======
-        for (int timeStep = 0; timeStep < otherAgentPlan.size(); timeStep++) {
-            Node n = otherAgentPlan.get(timeStep);
-            if(!timeMap.containsKey(timeStep + solutionStart)){//Check from solutionstart in global plan
-                return -1;//No conflict as agentPlan is not as long as otherAgentPlan
->>>>>>> 5f72b8dff3efa0dcaa0dc8035c433c42fb3cf1ee
             }else{
                 AgentPoint otherAgentPoint = new AgentPoint(n.agentRow, n.agentCol, n.agentId, n.action);
 

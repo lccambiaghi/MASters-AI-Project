@@ -21,12 +21,12 @@ public class LevelParser {
     private Strategy strategy;
     private boolean debug;
     private Level level;
-    private ConflictDetector cd;
+//    private ConflictDetector cd;
 
     public LevelParser(Strategy strategy, boolean debug) throws FileNotFoundException {
         this.strategy = strategy;
         this.debug = debug;
-        this.cd = new ConflictDetector();
+//        this.cd = new ConflictDetector();
         if(this.debug){
             //For Debugging
             FileInputStream fis = null;
