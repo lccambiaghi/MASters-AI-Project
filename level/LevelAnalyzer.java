@@ -108,6 +108,7 @@ public class LevelAnalyzer {
             Goal boxToChar = new GoalBoxToCell(assigned, cell);
             //Assign agent to goal...
             boxToChar.setAgent(assigned.getAssignedAgent());
+            //TODO Priority should be optimized. Maybe recalculate priority once a goal is fullfilled(Deadend == wall?) or look at graph and use that to prioritize
             int priority = cell.getPriority();
             if(cell.isCorner() || cell.isDeadEnd()){
             }else priority += HeuristicHelper.manhattanDistance(assigned.getRow(), assigned.getCol(), assigned.getAssignedAgent().getAgentRow(), assigned.getAssignedAgent().getAgentCol());//take closest box
