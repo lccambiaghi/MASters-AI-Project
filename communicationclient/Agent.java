@@ -203,7 +203,7 @@ public class Agent {
                         //TODO GoalMoveOutTheWay Should we broadcast this ?
                         Goal moveOutTheWay = new GoalMoveOutTheWay(otherAgentSolution);
                         LinkedList<Node> moveOut = searchGoal(moveOutTheWay);
-                      this.allGoalSolution.addAll(moveOut);
+                        this.allGoalSolution.addAll(moveOut);
 //                              NEDENSTÅENDE ER MIT UDKAST TIL AT INDSÆTTE LØSNINGEN TIL MOVEOUTTHEWAY til den rigtige tid.
 //                            if(this.allGoalSolution.isEmpty()){
 //                            for(int i = 0; i < conflictTime; i++){
@@ -259,11 +259,7 @@ public class Agent {
 
     private int checkForConflicts(LinkedList<Node> otherAgentSolution, int solutionStart) {
 
-//        if(this.allGoalSolution.size() == 0)
-//            return -1;
-
         ConflictDetector cd = new ConflictDetector(this);
-
         cd.addPlan(this.allGoalSolution);
 
         return cd.checkPlan(otherAgentSolution, solutionStart);

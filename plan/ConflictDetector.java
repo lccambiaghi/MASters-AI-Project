@@ -75,7 +75,7 @@ public class ConflictDetector {
                 }
             }
         }
-        return conflictPoint;//No Conflict
+        return -1;//No Conflict
     }
 
     private boolean collisionWithAgent(Integer timeStep, Integer solutionStart, Node node){
