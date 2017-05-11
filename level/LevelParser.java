@@ -123,7 +123,7 @@ public class LevelParser {
                         graph.addVertex(v);
                     }else if ('0' <= chr && chr <= '9') {
                         Vertex v = new Vertex(row,col);
-                        Agent newAgent = new Agent(chr, this.strategy, row, col, this.cd);
+                        Agent newAgent = new Agent(chr, this.strategy, row, col);
                         if(colorLevel) {
                             newAgent.setColor(colors.get(chr));
                         }

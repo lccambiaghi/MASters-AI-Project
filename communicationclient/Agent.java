@@ -13,17 +13,12 @@ import plan.ConflictDetector;
 
 import java.util.*;
 
-
-/**
- * Created by salik on 31-03-2017.
- */
 public class Agent {
 
     private char id;
     private Color color;
     private int agentRow;
     private int agentCol;
-    private ConflictDetector conflictDetector;
     private Strategy strategy;
 
     private int numberOfGoals;
@@ -33,7 +28,7 @@ public class Agent {
     private ArrayList<Box> potentialBoxes = new ArrayList<>();
     private HashSet<Box> removedBoxes = new HashSet<>();
 
-    public Agent(char id, Strategy strategy, int row, int col, ConflictDetector conflictDetector) {
+    public Agent(char id, Strategy strategy, int row, int col) {
         this.subGoals = new ArrayDeque<>();
         this.allGoalSolution = new LinkedList<>();
         this.goalSolution = new LinkedList<>();
@@ -42,7 +37,6 @@ public class Agent {
         this.strategy = strategy;
         this.agentRow = row;
         this.agentCol = col;
-        this.conflictDetector = conflictDetector;
     }
 
     public void refineBoxToChar(GoalBoxToCell goal){
@@ -245,12 +239,15 @@ public class Agent {
 
         ConflictDetector cd = new ConflictDetector();
 
+        cd.addPlan(this.allGoalSolution);
+
         return cd.checkPlan(otherAgentSolution, solutionStart);
     }
 
     private LinkedList<Node> makeOtherAgentWait(LinkedList<Node> oldSolution, int solutionStart){
 
         ConflictDetector cd = new ConflictDetector();
+        cd.addPlan(allGoalSolution);
         int conflictTime = cd.checkPlan(oldSolution, solutionStart);
         LinkedList<Node> newSolution = new LinkedList<>(oldSolution);
 

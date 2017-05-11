@@ -35,7 +35,9 @@ public class ConflictDetector {
                 }
 
                 if(collisionWithBox(thisAgentPoint, timeStep, n)) {
-                    return timeStep;
+                    System.err.println("Conflict with box detected");
+                    conflictPoint = timeStep + solutionStart;
+                    return conflictPoint;
                 }
 
                 // Was another agent at t-1 in the cell I now want to reach?
@@ -49,7 +51,7 @@ public class ConflictDetector {
                 }
             }
         }
-        addPlan(otherAgentPlan);
+
         return conflictPoint;
     }
 
@@ -80,7 +82,7 @@ public class ConflictDetector {
         return false;
     }
 
-    private void addPlan(LinkedList<Node> agentPlan){
+    public void addPlan(LinkedList<Node> agentPlan){
         for (int i = 0; i < agentPlan.size(); i++) {
             Node n = agentPlan.get(i);
             timeMap.put(i, n);
