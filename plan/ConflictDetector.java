@@ -67,11 +67,10 @@ public class ConflictDetector {
                     //Is other agent trying to move into box
                     for (Box box : boxListBefore) {
                         if (n.getAgentCol() == box.getCol() &&
-                                n.getAgentRow() == box.getRow()) {
+                            n.getAgentRow() == box.getRow()) {
                             return conflictPoint;
                         }
                     }
-
                 }
             }
         }
