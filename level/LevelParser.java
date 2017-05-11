@@ -4,6 +4,7 @@ import communicationclient.Agent;
 import communicationclient.Strategy;
 import graph.Graph;
 import graph.Vertex;
+import plan.ConflictDetector;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -20,14 +21,16 @@ public class LevelParser {
     private Strategy strategy;
     private boolean debug;
     private Level level;
+    private ConflictDetector cd;
 
     public LevelParser(Strategy strategy, boolean debug) throws FileNotFoundException {
         this.strategy = strategy;
         this.debug = debug;
+        this.cd = new ConflictDetector();
         if(this.debug){
             //For Debugging
             FileInputStream fis = null;
-            fis = new FileInputStream("levels/MAbispebjerg.lvl");
+            fis = new FileInputStream("levels/MAsimple3.lvl");
             in = new BufferedReader(new InputStreamReader(fis));
         }else{
             in = new BufferedReader(new InputStreamReader(System.in));

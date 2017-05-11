@@ -10,17 +10,12 @@ import plan.ConflictDetector;
 
 import java.util.*;
 
-
-/**
- * Created by salik on 31-03-2017.
- */
 public class Agent {
 
     private char id;
     private Color color;
     private int agentRow;
     private int agentCol;
-
     private Strategy strategy;
 
     private int numberOfGoals;
@@ -272,21 +267,24 @@ public class Agent {
         cd.addPlan(this.allGoalSolution);
 
         return cd.checkPlan(otherAgentSolution, solutionStart);
-
     }
 
     private LinkedList<Node> makeOtherAgentWait(LinkedList<Node> oldSolution, int solutionStart){
 
+<<<<<<< HEAD
         ConflictDetector cd = new ConflictDetector(this);
 
         cd.addPlan(allGoalSolution);
 
+=======
+        ConflictDetector cd = new ConflictDetector();
+        cd.addPlan(this.allGoalSolution);
+>>>>>>> 5f72b8dff3efa0dcaa0dc8035c433c42fb3cf1ee
         int conflictTime = cd.checkPlan(oldSolution, solutionStart);
-
         LinkedList<Node> newSolution = new LinkedList<>(oldSolution);
 
         while (conflictTime > -1){
-            System.err.println("Conflict found at "+conflictTime);
+            System.err.println("Conflict found at " + conflictTime);
 
             Node n = oldSolution.getFirst();
             Node noOp = new Node(null);
@@ -299,7 +297,6 @@ public class Agent {
         }
 
         return newSolution;
-
     }
     public LinkedList<Node> getGoalSolution() {
         return goalSolution;

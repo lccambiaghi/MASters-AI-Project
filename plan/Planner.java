@@ -81,7 +81,8 @@ public class Planner {
 
                 agent.evaluateMessage(solutionAnnouncement);
 
-                agentSolution = agent.getGoalSolution(); // solution is updated after negotiation
+                /*Stuff below is outcommented. In the getSolutions() method, we fetch the global plans from the Agents.*/
+//                agentSolution = agent.getGoalSolution(); // solution is updated after negotiation
 
 //                if(this.solutions.get(Character.getNumericValue(agent.getId()))!=null){
 //                    LinkedList<Node> agentCombinedSolution = this.solutions.get(Character.getNumericValue(agent.getId()));
