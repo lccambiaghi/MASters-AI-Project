@@ -12,8 +12,10 @@ public class GoalMoveOutTheWay extends Goal {
 
     protected LinkedList<Node> requestedCells;
     private Goal toCell;
+
     public GoalMoveOutTheWay(LinkedList<Node> requestedCells){
         this.requestedCells = requestedCells;
+        subgoals = new LinkedList<>();
     }
     @Override
     public boolean isGoalSatisfied(Node node) {
@@ -42,6 +44,6 @@ public class GoalMoveOutTheWay extends Goal {
 
     @Override
     public String toString() {
-        return null;
+        return "GoalMoveOutTheWay";
     }
 }

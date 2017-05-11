@@ -5,6 +5,7 @@ import goal.Goal;
 import goal.GoalBoxToCell;
 import heuristic.CharCellComparator;
 import heuristic.GoalComparator;
+import heuristic.HeuristicHelper;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -97,7 +98,6 @@ public class LevelAnalyzer {
             for (Agent a: agentPriorityQueue) {
                 closest.setAssignedAgent(a); //Will override and the closest agent will get the box
             }
-
             closest.setDestination(cc);
         }
     }
@@ -108,9 +108,11 @@ public class LevelAnalyzer {
             Goal boxToChar = new GoalBoxToCell(assigned, cell);
             //Assign agent to goal...
             boxToChar.setAgent(assigned.getAssignedAgent());
+            //TODO Priority should be optimized. Maybe recalculate priority once a goal is fullfilled(Deadend == wall?) or look at graph and use that to prioritize
             int priority = cell.getPriority();
+            if(cell.isCorner() || cell.isDeadEnd()){
+            }else priority += HeuristicHelper.manhattanDistance(assigned.getRow(), assigned.getCol(), assigned.getAssignedAgent().getAgentRow(), assigned.getAssignedAgent().getAgentCol());//take closest box
             boxToChar.setPriority(priority);
-
             goalPriorityQueue.add(boxToChar);
         }
 

@@ -10,6 +10,7 @@ import goal.GoalBoxToCell;
 import goal.GoalFreeAgent;
 import heuristic.GoalComparator;
 import level.Box;
+import level.CharCell;
 import level.Level;
 
 import java.util.*;
@@ -57,7 +58,7 @@ public class Planner {
                     //Search for free space
                     //Cell destination = new Cell(5,10);
                     Goal freeAgent = new GoalFreeAgent(b,agentRequestCells, agent);
-                    freeAgent.setPriority(1000);//High priority
+                    freeAgent.setPriority(0);//High priority
 
                     Message moveBoxRequest = new GoalMessage(MsgType.request,freeAgent, agentRequestCells,agent.getId());
                     agent.broadcastMessage(moveBoxRequest);
@@ -80,30 +81,41 @@ public class Planner {
                 agent.broadcastMessage(solutionAnnouncement);
 
                 agent.evaluateMessage(solutionAnnouncement);
+                if(goal instanceof GoalBoxToCell){
+                    CharCell goalCell = (CharCell) ((GoalBoxToCell) goal).getDestination();
+                    if(goalCell.isDeadEnd()||goalCell.isCorner()){
+                        //TODO Maybe add in walls[][] and recalculate??
+                    }
 
-                agentSolution = agent.getGoalSolution(); // solution is updated after negotiation
-
-                if(this.solutions.get(Character.getNumericValue(agent.getId()))!=null){
-                    LinkedList<Node> agentCombinedSolution = this.solutions.get(Character.getNumericValue(agent.getId()));
-                    agentCombinedSolution.addAll(agentSolution);
-                    this.solutions.put(Character.getNumericValue(agent.getId()), agentCombinedSolution);
-                }else{
-                    LinkedList<Node> agentCombinedSolution = new LinkedList<>();
-                    agentCombinedSolution.addAll(agentSolution);
-                    this.solutions.put(Character.getNumericValue(agent.getId()), agentCombinedSolution);
                 }
+                /*Stuff below is outcommented. In the getSolutions() method, we fetch the global plans from the Agents.*/
+//                agentSolution = agent.getGoalSolution(); // solution is updated after negotiation
+
+//                if(this.solutions.get(Character.getNumericValue(agent.getId()))!=null){
+//                    LinkedList<Node> agentCombinedSolution = this.solutions.get(Character.getNumericValue(agent.getId()));
+//                    agentCombinedSolution.addAll(agentSolution);
+//                    this.solutions.put(Character.getNumericValue(agent.getId()), agentCombinedSolution);
+//                }else{
+//                    LinkedList<Node> agentCombinedSolution = new LinkedList<>();
+//                    agentCombinedSolution.addAll(agentSolution);
+//                    this.solutions.put(Character.getNumericValue(agent.getId()), agentCombinedSolution);
+//                }
 
             }
         }
     }
 
     public List<LinkedList<Node>> getSolutions() {
-        List<LinkedList<Node>> solutions = new LinkedList<>();
-        Map<Integer, LinkedList<Node>> treeMap = new TreeMap<>(this.solutions);
+        this.solutions = new HashMap<>();
+        for (List<Agent> agentList: Level.getInstance().getAgentsByColorMap().values()) {
+            for (Agent a: agentList) {
+                this.solutions.put(Character.getNumericValue(a.getId()), a.getAllGoalSolution());
+            }
 
-        for (LinkedList<Node> solution : treeMap.values()) {
-            solutions.add(solution);
         }
+        Map<Integer, LinkedList<Node>> treeMap = new TreeMap<>(this.solutions);
+        List<LinkedList<Node>> solutions = new LinkedList<>();
+        solutions.addAll(treeMap.values());
         return solutions;
     }
 }

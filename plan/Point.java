@@ -5,18 +5,13 @@ import communicationclient.Command;
 /**
  * Created by salik on 07-04-2017.
  */
-public class AgentPoint {
+public class Point {
     private int agentRow;
     private int agentCol;
-    private int agentId;
-    private Command action;
-    public AgentPoint(int agentRow, int agentCol, int agentId, Command action){
+    public Point(int agentRow, int agentCol){
         this.agentRow=agentRow;
         this.agentCol=agentCol;
-        this.agentId = agentId;
-        this.action = action;
     }
-
     public int getAgentRow() {
         return agentRow;
     }
@@ -25,16 +20,12 @@ public class AgentPoint {
         return agentCol;
     }
 
-    public int getAgentId() {
-        return agentId;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        AgentPoint that = (AgentPoint) o;
+        Point that = (Point) o;
 
         if (agentRow != that.agentRow) return false;
         return agentCol == that.agentCol;
