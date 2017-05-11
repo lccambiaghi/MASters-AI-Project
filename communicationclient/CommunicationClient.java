@@ -62,7 +62,8 @@ public class CommunicationClient {
         System.err.println("*--------------------------------------*");
         try {
             CommunicationClient client = new CommunicationClient();
-            Heuristic heuristic = new Heuristic.WeightedAStar(5);
+            Heuristic heuristic = new Heuristic.Greedy();
+//            Heuristic heuristic = new Heuristic.WeightedAStar(5);
             Strategy strategy = new StrategyBestFirst(heuristic);
 
             client.levelParser = new LevelParser(strategy,true);

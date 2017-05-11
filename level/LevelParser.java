@@ -70,19 +70,24 @@ public class LevelParser {
 
         this.level = Level.createInstance(MAX_ROW, MAX_COL);
 
-        System.err.println(" ");
-        System.err.println("Printing scanned map");
+        if(this.debug){
+            System.err.println(" ");
+            System.err.println("Printing scanned map");
 
-        for (String lineInMap: map) {
-            System.err.println(lineInMap);
+            for (String lineInMap: map) {
+                System.err.println(lineInMap);
+            }
+
+            System.err.println(" ");
         }
 
-        System.err.println(" ");
 
         row = 0;
         boolean colorLevel = false;
         Graph graph = new Graph();
         for (String lineInMap: map) {
+            lineInMap = lineInMap.replaceFirst("\\s++$", "");//Remove trailing whitespaces
+            boolean hasMetWall = false;
             // if line is a color declaration, MA level -> colors get mapped
             if (lineInMap.matches("^[a-z]+:\\s*[0-9A-Z](,\\s*[0-9A-Z])*\\s*$")) {
                 colorLevel = true;

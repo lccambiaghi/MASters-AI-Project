@@ -4,8 +4,8 @@ import communicationclient.Agent;
 import communicationclient.Node;
 import level.Box;
 import level.Cell;
-import level.CharCell;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 /**
@@ -13,14 +13,16 @@ import java.util.LinkedList;
  */
 public class GoalFreeAgent extends Goal{
     protected Box box;
-    protected Cell destination;
+    protected LinkedList<Node> requestedCells;
+    protected Agent agentToFree;
 
     private Goal toBox;
     private Goal toCell;
 
-    public GoalFreeAgent(Box box, Cell destination){
+    public GoalFreeAgent(Box box, LinkedList<Node> requestedCells, Agent agentToFree){
         this.box=box;
-        this.destination=destination;
+        this.requestedCells = requestedCells;
+        this.agentToFree = agentToFree;
         subgoals = new LinkedList<>();
     }
     @Override
@@ -32,7 +34,7 @@ public class GoalFreeAgent extends Goal{
     public void refine() {
         if (!isRefined){
             toBox = new SubGoalMoveToBox(this.box);
-            toCell = new SubGoalMoveBoxOutTheWay(this.box, this.destination);
+            toCell = new SubGoalMoveBoxOutTheWay(this.box, this.requestedCells, agentToFree);
             subgoals.add(toBox);
             subgoals.add(toCell);
         }
@@ -52,5 +54,9 @@ public class GoalFreeAgent extends Goal{
 
     public Box getBox() {
         return box;
+    }
+
+    public Agent getAgentToFree() {
+        return agentToFree;
     }
 }

@@ -9,8 +9,8 @@ import java.util.LinkedList;
 
 public class ConflictDetector {
     //Map of where agents are at a time in their refineBoxToChar
-    private HashMap<Integer, HashMap<AgentPoint, Node>> timeMap;
     private HashMap<Integer, LinkedList<Box>> boxMap;
+    private HashMap<Integer, Node> timeMap;
 
     public ConflictDetector(){
         boxMap = new HashMap<>();
@@ -18,54 +18,38 @@ public class ConflictDetector {
     }
 
     // return time of first occurring conflict
-    public int checkPlan(LinkedList<Node> agentPlan){
+    public int checkPlan(LinkedList<Node> otherAgentPlan, int solutionStart){
         int conflictPoint = -1;
-        for (int timeStep = 0; timeStep < agentPlan.size(); timeStep++) {
-            Node n = agentPlan.get(timeStep);
-            if(!timeMap.containsKey(timeStep)){
-                HashMap<AgentPoint, Node> agentPoints = new HashMap<>();
-                AgentPoint agentPoint = new AgentPoint(n.agentRow, n.agentCol, n.agentId, n.action);
-                agentPoints.put(agentPoint, n);
-                timeMap.put(timeStep, agentPoints);
-                updateBoxMap(n.getBoxes());
+        for (int timeStep = 0; timeStep < otherAgentPlan.size(); timeStep++) {
+            Node n = otherAgentPlan.get(timeStep);
+            if(!timeMap.containsKey(timeStep + solutionStart)){//Check from solutionstart in global plan
+                return -1;//No conflict as agentPlan is not as long as otherAgentPlan
             }else{
-                HashMap<AgentPoint, Node> agentPointsCurrent = timeMap.get(timeStep); // gets the map of agent points at that that time
-                AgentPoint agentPoint = new AgentPoint(n.agentRow, n.agentCol, n.agentId, n.action);
-
-                // Two agents colliding
-                if(agentPointsCurrent.containsKey(agentPoint)){
-                    conflictPoint = timeStep;
+                Node agentNodeCurrent = timeMap.get(timeStep + solutionStart); // gets the map of agent points at that that time
+                AgentPoint otherAgentPoint = new AgentPoint(n.agentRow, n.agentCol, n.agentId, n.action);
+                AgentPoint thisAgentPoint = new AgentPoint(agentNodeCurrent.agentRow, agentNodeCurrent.agentCol, agentNodeCurrent.agentId, agentNodeCurrent.action);
+                // Has another agent planned to move to the same point?
+                if(otherAgentPoint.equals(thisAgentPoint)){
+                    conflictPoint = timeStep + solutionStart;
                     return conflictPoint;
                 }
 
-                if(collisionWithBox(agentPoint, timeStep, n)) {
+                if(collisionWithBox(thisAgentPoint, timeStep, n)) {
                     return timeStep;
                 }
 
                 // Was another agent at t-1 in the cell I now want to reach?
                 if(timeStep > 0){
-                    HashMap<AgentPoint, Node> agentPointsBefore = timeMap.get(timeStep-1);
-                    Node before = agentPointsBefore.get(agentPoint);
-
-                    if(before !=null){
-                        // if there was an agent in the cell I now want to reach
-                        // Has he moved out of the cell?
-                        // If yes, it is not a conflict
-                        // TODO
-
-                        //Is he going to bump into me?
-                        //if(Command.isOpposite(before.action.dir1,n.action.dir1)){
-                        // TODO
-                        //}
-
-                        conflictPoint = timeStep;
+                    Node thisAgentNodeBefore = timeMap.get(timeStep + solutionStart - 1);
+                    AgentPoint thisAgentPointBefore = new AgentPoint(thisAgentNodeBefore.agentRow, thisAgentNodeBefore.agentCol, thisAgentNodeBefore.agentId, thisAgentNodeBefore.action);
+                    if(thisAgentPointBefore.equals(otherAgentPoint)){ // if there was an agent in the cell I now want to reach
+                        conflictPoint = timeStep+solutionStart;
                         return conflictPoint;
                     }
                 }
             }
         }
-        addPlan(agentPlan);
-
+        addPlan(otherAgentPlan);
         return conflictPoint;
     }
 
@@ -97,18 +81,10 @@ public class ConflictDetector {
     }
 
     private void addPlan(LinkedList<Node> agentPlan){
-        for (int i=0;i < agentPlan.size();i++) {
+        for (int i = 0; i < agentPlan.size(); i++) {
             Node n = agentPlan.get(i);
-            if(!timeMap.containsKey(i)){
-                HashMap<AgentPoint, Node> agentPoints = new HashMap<>();
-                AgentPoint agentPoint = new AgentPoint(n.agentRow, n.agentCol, n.agentId, n.action);
-                agentPoints.put(agentPoint, n);
-                timeMap.put(i,agentPoints);
-            }else{
-                HashMap<AgentPoint, Node> agentPointsCurrent = timeMap.get(i);
-                AgentPoint agentPoint = new AgentPoint(n.agentRow, n.agentCol, n.agentId, n.action);
-                agentPointsCurrent.put(agentPoint, n);
-            }
+            timeMap.put(i, n);
+            updateBoxMap(n.getBoxes());
         }
     }
 }

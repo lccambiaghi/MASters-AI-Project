@@ -2,6 +2,7 @@ package graph;
 
 import level.CharCell;
 
+import java.lang.reflect.Array;
 import java.util.*;
 
 /**
@@ -14,10 +15,11 @@ public class Graph {
     private HashSet<Vertex> goalVerticies = new HashSet<>();
     private List<Vertex> boxVerticies = new ArrayList<>();
     private HashSet<Vertex> visited = new HashSet<>();
+    private HashSet<Vertex> componentVisited = new HashSet<>();
     private List<Edge> tmp = new ArrayList<>();
     private List<Vertex> limitedResources = new ArrayList<>();
     private List<Vertex> nonLimitedResources = new ArrayList<>();
-
+    int numberOfComponents = 0;
     public List<Vertex> getNonLimitedResources() {
         return nonLimitedResources;
     }
@@ -51,6 +53,15 @@ public class Graph {
                 }
             }
         }
+        //Run DFS from all goalVerticies to see which part of the graph is connected to any goal.
+        for (Vertex goalVertex: goalVerticies) {
+            if (!visited.contains(goalVertex)){
+                numberOfComponents++;
+                runDFS(goalVertex);
+            }
+        }
+        //Remove all verticies that can't be visited from any goalcell.
+        vertices.retainAll(visited);
     }
 
     public List<Vertex> getLimitedResources() {
@@ -61,20 +72,29 @@ public class Graph {
      * This method analyzes the graph and finds limited ressources
      */
     public void analyzeGraph(){
-
         for (Vertex vertex : vertices) {//Go through all verticies in the graph and find the ones that divide the graph when occupied.
             int numberOfComponents = 0;//Start on zero as goalcell is counted as single component!
+            ArrayList<Graph> components = new ArrayList<>();
             Graph newGraph = this.getCopy();
             newGraph.removeVertex(vertex);
             newGraph.visited = new HashSet<>();
+            newGraph.componentVisited = new HashSet<>();
             Vertex startVertex = null;
             for (Vertex v: newGraph.getVertices()) {
                 startVertex = v;
                 break;
             }
             newGraph.runDFS(startVertex);//Run DFS on new graph
+
             for (Vertex u: vertices) {
                 if(!newGraph.visited.contains(u)){
+                    Graph newComponent = new Graph();
+                    for (Vertex v : newGraph.componentVisited){
+                        newComponent.addVertex(v);
+                    }
+                    //TODO build graph
+                    components.add(newComponent);
+                    newGraph.componentVisited = new HashSet<>();
                     numberOfComponents++;
                     if(vertex != u) newGraph.runDFS(u);//Only Run DFS on new graph if it is not trying to on the goalcell we removed.
                 }
@@ -87,20 +107,35 @@ public class Graph {
             if(goalVerticies.contains(vertex)){
                 CharCell goalCell = vertex.getGoalCell();
                 goalCell.setGraphComponentsIfFulfilled(numberOfComponents);
-                System.err.println("Removing goal: " + vertex.getGoalCell().getLetter() +" will make graph have "+ numberOfComponents +" components");
+//                System.err.println("Removing goal: " + vertex.getGoalCell().getLetter() +" will make graph have "+ numberOfComponents +" components");
             }
             vertex.setGraphComponentsIfRemoved(numberOfComponents);
-            if(numberOfComponents > 1) limitedResources.add(vertex);
+            if(numberOfComponents > this.numberOfComponents && componentsAreImportant(components)) limitedResources.add(vertex); //TODO: numberofcomponents > 1 and bothComponentsAreImportant(components)
             else nonLimitedResources.add(vertex);
         }
     }
 
+    private boolean componentsAreImportant(ArrayList<Graph> components) {
+        int importantComponents = 0;
+        for (Graph g : components){
+            for(Vertex v : g.vertices){
+                if (v.getBox() != null || v.getGoalCell() != null) {
+                    importantComponents++;
+                    break;
+                }
+            }
+        }
+        return importantComponents > 1;
+    }
+
     private void runDFS(Vertex startVertex){
         visited.add(startVertex);
+        componentVisited.add(startVertex);
         for (Edge e: edges.get(startVertex)) {
             Vertex v2 = e.getTo();
             if(!visited.contains(v2)) {
                 visited.add(v2);
+                componentVisited.add(v2);
                 runDFS(v2);
             }
         }
