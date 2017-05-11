@@ -1,9 +1,10 @@
 package plan;
 
+import communicationclient.Agent;
 import communicationclient.Node;
 
-import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.TreeMap;
 
 /**
  * Created by salik on 07-04-2017.
@@ -11,10 +12,12 @@ import java.util.LinkedList;
  */
 public class ConflictDetector {
     //Map of where agents are at a time in their refineBoxToChar
-    private HashMap<Integer,Node> timeMap;
+    private TreeMap<Integer,Node> timeMap;
+    private Agent owner;
 
-    public ConflictDetector(){
-        timeMap = new HashMap<>();
+    public ConflictDetector(Agent owner){
+        this.owner = owner;
+        timeMap = new TreeMap<>();
     }
 
     // return time of first occurring conflict
@@ -23,7 +26,18 @@ public class ConflictDetector {
         for (int i=0; i < otherAgentPlan.size();i++) {
             Node n = otherAgentPlan.get(i);
             if(!timeMap.containsKey(i+solutionStart)){//Check from solutionstart in global plan
-                return -1;//No conflict as agentPlan is not as long as otherAgentPlan
+                //Assumue last position of this agent
+                Node tmp = new Node(null);
+                tmp.agentRow = owner.getAgentRow();
+                tmp.agentCol = owner.getAgentCol();
+                if(!timeMap.isEmpty()) tmp = timeMap.get(timeMap.lastKey());
+                AgentPoint otherAgentPoint = new AgentPoint(n.agentRow,n.agentCol, n.agentId, n.action);
+                AgentPoint thisAgentPoint = new AgentPoint(tmp.agentRow,tmp.agentCol,tmp.agentId,tmp.action);
+                // Has another agent planned to move to the same point?
+                if(otherAgentPoint.equals(thisAgentPoint)){
+                    conflictPoint = i+solutionStart;
+                    return conflictPoint;
+                }
             }else{
                 Node agentNodeCurrent = timeMap.get(i+solutionStart); // gets the map of agent points at that that time
                 AgentPoint otherAgentPoint = new AgentPoint(n.agentRow,n.agentCol, n.agentId, n.action);

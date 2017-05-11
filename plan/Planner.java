@@ -83,24 +83,32 @@ public class Planner {
 
                 agentSolution = agent.getGoalSolution(); // solution is updated after negotiation
 
-                if(this.solutions.get(Character.getNumericValue(agent.getId()))!=null){
-                    LinkedList<Node> agentCombinedSolution = this.solutions.get(Character.getNumericValue(agent.getId()));
-                    agentCombinedSolution.addAll(agentSolution);
-                    this.solutions.put(Character.getNumericValue(agent.getId()), agentCombinedSolution);
-                }else{
-                    LinkedList<Node> agentCombinedSolution = new LinkedList<>();
-                    agentCombinedSolution.addAll(agentSolution);
-                    this.solutions.put(Character.getNumericValue(agent.getId()), agentCombinedSolution);
-                }
+//                if(this.solutions.get(Character.getNumericValue(agent.getId()))!=null){
+//                    LinkedList<Node> agentCombinedSolution = this.solutions.get(Character.getNumericValue(agent.getId()));
+//                    agentCombinedSolution.addAll(agentSolution);
+//                    this.solutions.put(Character.getNumericValue(agent.getId()), agentCombinedSolution);
+//                }else{
+//                    LinkedList<Node> agentCombinedSolution = new LinkedList<>();
+//                    agentCombinedSolution.addAll(agentSolution);
+//                    this.solutions.put(Character.getNumericValue(agent.getId()), agentCombinedSolution);
+//                }
 
             }
         }
     }
 
     public List<LinkedList<Node>> getSolutions() {
-        List<LinkedList<Node>> solutions = new LinkedList<>();
+        this.solutions = new HashMap<>();
+        for (List<Agent> agentList: Level.getInstance().getAgentsByColorMap().values()) {
+            for (Agent a: agentList) {
+                this.solutions.put(Character.getNumericValue(a.getId()), a.getAllGoalSolution());
+            }
+
+        }
+
         Map<Integer, LinkedList<Node>> treeMap = new TreeMap<>(this.solutions);
 
+        List<LinkedList<Node>> solutions = new LinkedList<>();
         for (LinkedList<Node> solution : treeMap.values()) {
             solutions.add(solution);
         }

@@ -4,10 +4,7 @@ import communication.Message;
 import communication.MsgHub;
 import communication.MsgType;
 import communication.GoalMessage;
-import goal.Goal;
-import goal.GoalBoxToCell;
-import goal.GoalFreeAgent;
-import goal.SubGoalMoveBoxOutTheWay;
+import goal.*;
 import level.*;
 import plan.ConflictDetector;
 
@@ -207,9 +204,37 @@ public class Agent {
                 int conflictTime = checkForConflicts(otherAgentSolution,solutionStart);
 
                 if (conflictTime > -1){
-                    LinkedList<Node> newSolution = makeOtherAgentWait(otherAgentSolution, solutionStart);
-                    Message requestedSolution = new Message(MsgType.request, newSolution, id);
-                    msgHub.reply(announcement, requestedSolution);
+                    if (conflictTime >= allGoalSolution.size()){
+                        //TODO GoalMoveOutTheWay Should we broadcast this ?
+                        Goal moveOutTheWay = new GoalMoveOutTheWay(otherAgentSolution);
+                        LinkedList<Node> moveOut = searchGoal(moveOutTheWay);
+                      this.allGoalSolution.addAll(moveOut);
+//                              NEDENSTÅENDE ER MIT UDKAST TIL AT INDSÆTTE LØSNINGEN TIL MOVEOUTTHEWAY til den rigtige tid.
+//                            if(this.allGoalSolution.isEmpty()){
+//                            for(int i = 0; i < conflictTime; i++){
+//                                Node n = new Node(null);
+//                                n.agentRow = this.getAgentRow();
+//                                n.agentCol = this.getAgentCol();
+//                                this.allGoalSolution.add(n);
+//                            }
+//                            this.allGoalSolution.addAll(moveOut);
+//                        }else{
+//                            for(int i = this.allGoalSolution.size(); i < conflictTime; i++){
+//                                Node n = new Node(null);
+//                                n.agentCol = this.allGoalSolution.getLast().agentCol;
+//                                n.agentRow = this.allGoalSolution.getLast().agentRow;
+//                                this.allGoalSolution.add(n);
+//                            }
+//                            this.allGoalSolution.addAll(moveOut);
+//
+//                        }
+
+                    }else{
+                        LinkedList<Node> newSolution = makeOtherAgentWait(otherAgentSolution, solutionStart);
+                        Message requestedSolution = new Message(MsgType.request, newSolution, id);
+                        msgHub.reply(announcement, requestedSolution);
+                    }
+
                 }else{
                     Message solutionAccepted = new Message(MsgType.request, otherAgentSolution, id);
                     msgHub.reply(announcement, solutionAccepted);
@@ -239,10 +264,10 @@ public class Agent {
 
     private int checkForConflicts(LinkedList<Node> otherAgentSolution, int solutionStart) {
 
-        if(this.allGoalSolution.size() == 0)
-            return -1;
+//        if(this.allGoalSolution.size() == 0)
+//            return -1;
 
-        ConflictDetector cd = new ConflictDetector();
+        ConflictDetector cd = new ConflictDetector(this);
 
         cd.addPlan(this.allGoalSolution);
 
@@ -252,7 +277,7 @@ public class Agent {
 
     private LinkedList<Node> makeOtherAgentWait(LinkedList<Node> oldSolution, int solutionStart){
 
-        ConflictDetector cd = new ConflictDetector();
+        ConflictDetector cd = new ConflictDetector(this);
 
         cd.addPlan(allGoalSolution);
 
