@@ -106,13 +106,9 @@ public class Planner {
             }
 
         }
-
         Map<Integer, LinkedList<Node>> treeMap = new TreeMap<>(this.solutions);
-
         List<LinkedList<Node>> solutions = new LinkedList<>();
-        for (LinkedList<Node> solution : treeMap.values()) {
-            solutions.add(solution);
-        }
+        solutions.addAll(treeMap.values());
         return solutions;
     }
 }
