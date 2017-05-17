@@ -175,6 +175,10 @@ public class Agent {
 
     public void evaluateMessage(Message message) {
         Queue<Message> requests = MsgHub.getInstance().getResponses(message);
+        if (requests.isEmpty()){
+            this.allGoalSolution.addAll(this.goalSolution);
+        }
+
         boolean proposalAccepted = false;
         Message response;
         int tempLength = 0;
