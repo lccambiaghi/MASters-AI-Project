@@ -28,7 +28,7 @@ public class LevelParser {
         if(this.debug){
             //For Debugging
             FileInputStream fis = null;
-            fis = new FileInputStream("levels/MAsimple5.lvl");
+            fis = new FileInputStream("levels/MAcomCoordination.lvl");
             in = new BufferedReader(new InputStreamReader(fis));
         }else{
             in = new BufferedReader(new InputStreamReader(System.in));
@@ -138,6 +138,7 @@ public class LevelParser {
         graph.analyzeGraph();
         List<Vertex> limited = graph.getLimitedResources();
         List<Vertex> nonLimited = graph.getNonLimitedResources();
+
 
         
         System.err.println("*--------------------------------------*");
