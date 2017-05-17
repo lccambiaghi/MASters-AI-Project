@@ -20,15 +20,15 @@ public class LevelParser {
     private BufferedReader in;
     private Strategy strategy;
     private boolean debug;
-    private Level level;
 
     public LevelParser(Strategy strategy, boolean debug) throws FileNotFoundException {
         this.strategy = strategy;
         this.debug = debug;
+
+        // If debug==true, our client parses the level instead of receiving it from the server
         if(this.debug){
-            //For Debugging
             FileInputStream fis = null;
-            fis = new FileInputStream("levels/MAsimple5.lvl");
+            fis = new FileInputStream("levels/MAsimple2.lvl");
             in = new BufferedReader(new InputStreamReader(fis));
         }else{
             in = new BufferedReader(new InputStreamReader(System.in));
@@ -36,14 +36,26 @@ public class LevelParser {
     }
 
     /**
-     * Creates level, sets walls and boxes with colours
-     * Creates agents with colours
+     * Read lines of level
+     * Creates instance of level
+     *
+     * Creates agents, boxes, charcells
+     * It adds boxes and charcells to the level
+     * Sets agents in colorMap
+     *
+     * Create instance of graph
+     * For each cell, it creates a vertex
+     * If the cell contains boxes or charCells, it sets it on the vertex
+     * It adds vertex to graph
+     *
+     * Finally, it creates the real graph and analysis it??
      */
     public void readMap() throws IOException {
         HashMap<Character, Color> colors = new HashMap<>();
         Color color;
         int MAX_COL = 0;
         int MAX_ROW = 0;
+
         int row = 0;
         ArrayList<String> map = new ArrayList<>();
         String line = in.readLine();
@@ -66,11 +78,11 @@ public class LevelParser {
             }
         }
 
-        this.level = Level.createInstance(MAX_ROW, MAX_COL);
+        Level level = Level.createInstance(MAX_ROW, MAX_COL);
 
         if(this.debug){
             System.err.println(" ");
-            System.err.println("Printing scanned map");
+            System.err.println("Debug is ON. Printing scanned map");
 
             for (String lineInMap: map) {
                 System.err.println(lineInMap);
@@ -79,14 +91,13 @@ public class LevelParser {
             System.err.println(" ");
         }
 
-
         row = 0;
         boolean colorLevel = false;
         Graph graph = new Graph();
         for (String lineInMap: map) {
             lineInMap = lineInMap.replaceFirst("\\s++$", "");//Remove trailing whitespaces
-            boolean hasMetWall = false;
-            // if line is a color declaration, MA level -> colors get mapped
+
+            // if line is a color declaration, MA agent
             if (lineInMap.matches("^[a-z]+:\\s*[0-9A-Z](,\\s*[0-9A-Z])*\\s*$")) {
                 colorLevel = true;
                 lineInMap = lineInMap.replaceAll("\\s", "");
@@ -98,7 +109,7 @@ public class LevelParser {
                 for (int col = 0; col < lineInMap.length(); col++) {
                     char chr = lineInMap.charAt(col);
                     if (chr == '+') { // Wall.
-                        this.level.setWall(true, row, col);
+                        level.setWall(true, row, col);
                     } else if ('A' <= chr && chr <= 'Z') { // Box.
                         Vertex v = new Vertex(row,col);
                         Box box = new Box(col, row, chr, Color.blue);
@@ -108,24 +119,24 @@ public class LevelParser {
                             Color boxColor = colors.get(chr);
                             box.setColor(boxColor);
                         }
-                        this.level.addBox(box);
+                        level.addBox(box);
                     } else if ('a' <= chr && chr <= 'z') { // CharCell.
                         CharCell charCell = new CharCell(col, row, chr);
                         Vertex v = new Vertex(row,col);
-                        this.level.addCharCell(charCell);
+                        level.addCharCell(charCell);
                         v.setGoalCell(charCell);
                         graph.addVertex(v);
                     } else if (chr == ' ') {
                         // Free space.
                         Vertex v = new Vertex(row,col);
                         graph.addVertex(v);
-                    }else if ('0' <= chr && chr <= '9') {
+                    }else if ('0' <= chr && chr <= '9') { // Agent
                         Vertex v = new Vertex(row,col);
                         Agent newAgent = new Agent(chr, this.strategy, row, col);
                         if(colorLevel) {
                             newAgent.setColor(colors.get(chr));
                         }
-                        this.level.setAgentInColorMap(newAgent);
+                        level.setAgentInColorMap(newAgent);
                         graph.addVertex(v);
                         System.err.println("Agent " + newAgent.getId() + " created, Color is " + newAgent.getColor().toString());
                     }
@@ -134,11 +145,11 @@ public class LevelParser {
             }
         }
         // The following is just for testing that the graph analyzis works :-)
+        // TODO is it the right place? Move it in the LevelAnalyzer?
         graph.createGraph();
         graph.analyzeGraph();
         List<Vertex> limited = graph.getLimitedResources();
         List<Vertex> nonLimited = graph.getNonLimitedResources();
-
         
         System.err.println("*--------------------------------------*");
 

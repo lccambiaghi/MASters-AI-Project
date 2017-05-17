@@ -26,6 +26,10 @@ public class CommunicationClient {
 
         String jointAction = "";
         String response = "";
+
+        // If our plan succeeds, the server will output 'success' and terminate the client
+        // Else if we send an inapplicable action, its response will contain false and the server will wait for another line
+        // TODO: If our client wrongly believes that all goals are achieved, it will keep sending NoOps for all agents and the process will keep on forever.
         while(!response.contains("false")) {
             // build joint action and progress iterator of solutions
             jointAction = "[";
@@ -49,6 +53,7 @@ public class CommunicationClient {
             response = in.readLine();
         }
         System.err.format("Server responded with %s to the inapplicable action: %s\n", response, jointAction);
+        // Here we could react after the response contains 'false'. Now we kill the client.
     }
 
 
@@ -66,7 +71,7 @@ public class CommunicationClient {
 //            Heuristic heuristic = new Heuristic.WeightedAStar(5);
             Strategy strategy = new StrategyBestFirst(heuristic);
 
-            client.levelParser = new LevelParser(strategy,true);
+            client.levelParser = new LevelParser(strategy,false);
             client.levelParser.readMap();
 
             client.levelAnalyzer = new LevelAnalyzer();
