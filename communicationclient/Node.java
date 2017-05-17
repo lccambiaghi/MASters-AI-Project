@@ -39,7 +39,7 @@ public class Node {
 		this.subGoal = subGoal;
 	}
 
-	public boolean[][] walls = Level.getInstance().getWalls();
+	private boolean[][] walls;
 
 	public Box[][] boxes = new Box[MAX_ROW][MAX_COL];
 	public Box boxMoved;
@@ -58,6 +58,11 @@ public class Node {
 	}
 
 	public Node(Node parent) {
+		this.walls = new boolean[MAX_ROW][MAX_COL];
+		//System.arraycopy(Level.getInstance().getWalls(), 0, this.walls,0,Level.getInstance().getWalls().length);
+		for (int row = 0; row < MAX_ROW; row++) {
+			System.arraycopy(Level.getInstance().getWalls()[row], 0, this.walls[row], 0, MAX_COL);
+		}
 		this.parent = parent;
 		if (parent == null) {
 			this.g = 0;
@@ -69,11 +74,25 @@ public class Node {
 	}
 
 	public Node(Goal subGoal, Agent agent) {
+		this.walls = new boolean[MAX_ROW][MAX_COL];
+		//this.walls = Arrays.copyOf(Level.getInstance().getWalls(),Level.getInstance().getWalls().length);
+		for (int row = 0; row < MAX_ROW; row++) {
+			System.arraycopy(Level.getInstance().getWalls()[row], 0, this.walls[row], 0, MAX_COL);
+		}
+
 		this.parent = null;
 		this.g = 0;
 		this.subGoal = subGoal;
 		this.agentColor = agent.getColor();
 		this.agentId = agent.getId();
+	}
+
+	public boolean[][] getWalls() {
+		return walls;
+	}
+
+	public  void addWall(int row, int col){
+		this.walls[row][col] = true;
 	}
 
 	public Color getAgentColor() {

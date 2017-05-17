@@ -49,10 +49,11 @@ public class Planner {
             Goal goal = goalQueue.poll();
             Agent agent = goal.getAgent();
             LinkedList<Node> agentSolution = agent.searchGoal(goal);
-
             if (agentSolution == null) {//Is checked in agent.searchGoal
-                // TODO agent is stuck
+                // We add one to make sure that this goal will happen next when putting it back on the queue.
+                goal.setPriority(goal.getPriority()-1);
                 goalQueue.add(goal);//Add goal again
+
                 for (Box b:agent.getRemovedBoxes()) {
                     LinkedList<Node> agentRequestCells = agent.getGoalSolution();
                     //Search for free space
@@ -117,5 +118,9 @@ public class Planner {
         List<LinkedList<Node>> solutions = new LinkedList<>();
         solutions.addAll(treeMap.values());
         return solutions;
+    }
+
+    public void addGoal(Goal g){
+        goalQueue.add(g);
     }
 }

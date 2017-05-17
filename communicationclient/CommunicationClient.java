@@ -77,9 +77,18 @@ public class CommunicationClient {
             client.levelAnalyzer = new LevelAnalyzer();
             client.levelAnalyzer.analyzeWalls();
             client.levelAnalyzer.assignBoxesToCells();
+            //TODO Specify what comparator the queue should use.
+
             PriorityQueue<Goal> priorityGoals = client.levelAnalyzer.createInitialGoals();
 
             client.planner = new Planner(priorityGoals);
+
+            //TODO: This is a hotfix. We don't like that agents have a reference to the planner. They should might communicate to the planner instead.
+            for (List<Agent> agentList: Level.getInstance().getAgentsByColorMap().values()) {
+                for (Agent a: agentList) {
+                    a.setPlanner(client.planner);
+                }
+            }
 
             MsgHub.createInstance(Level.getInstance());
 
