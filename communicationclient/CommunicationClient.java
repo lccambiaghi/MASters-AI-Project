@@ -50,6 +50,9 @@ public class CommunicationClient {
             System.out.println(jointAction);
             // Flush buffer
             System.out.flush();
+            if(!jointAction.contains("Pull") || !jointAction.contains("Push") || !jointAction.contains("Move")){
+                jointAction = "";
+            }
             response = in.readLine();
         }
         System.err.format("Server responded with %s to the inapplicable action: %s\n", response, jointAction);
