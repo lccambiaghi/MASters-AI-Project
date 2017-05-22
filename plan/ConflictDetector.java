@@ -22,7 +22,7 @@ public class ConflictDetector {
     }
 
     // return time of first occurring conflict
-    public int checkPlan(LinkedList<Node> otherAgentPlan, int solutionStart){
+    public Conflict checkPlan(LinkedList<Node> otherAgentPlan, int solutionStart){
         int conflictPoint;
         for (int timeStep=0; timeStep < otherAgentPlan.size();timeStep++) {
             Node n = otherAgentPlan.get(timeStep);
@@ -37,16 +37,16 @@ public class ConflictDetector {
                 Point thisAgentPoint = new Point(tmp.agentRow,tmp.agentCol);
                 // Has another agent planned to move to the same point?
                 if(otherAgentPoint.equals(thisAgentPoint)){
-                    return conflictPoint;//TODO This agents is standing still in the way!
+                    return new Conflict(conflictPoint, Conflict.type.agentInTheWay,n,tmp);//TODO This agents is standing still in the way!
                 }
             }else{
                 Point otherAgentPoint = new Point(n.agentRow, n.agentCol);
                 if(collisionWithAgent(timeStep, solutionStart, n)){
-                    return conflictPoint;
+                    return new Conflict(conflictPoint, Conflict.type.agentagent, n, timeMap.get(timeStep+solutionStart)); //TODO Make sure its not timestep + solutionstart - 1
                 }
 
                 if(owner.getColor() != n.agentColor && collisionWithBox(timeStep, solutionStart, n)) {
-                    return conflictPoint;
+                    return new Conflict(conflictPoint, Conflict.type.agentbox, n, timeMap.get(timeStep+solutionStart));
                 }
 
 
@@ -56,26 +56,26 @@ public class ConflictDetector {
                     LinkedList<Box> boxListBefore = this.boxMap.get(timeStep + solutionStart - 1);
                     Point thisAgentPointBefore = new Point(thisAgentNodeBefore.agentRow, thisAgentNodeBefore.agentCol);
                     if(thisAgentPointBefore.equals(otherAgentPoint)){ // if there was an agent in the cell I now want to reach
-                        return conflictPoint;//other agent moves into cell this agent was in
+                        return new Conflict(conflictPoint, Conflict.type.agentagent,n,thisAgentNodeBefore);//other agent moves into cell this agent was in
                     }
                     //Is other agent pushing box into thisAgent
                     if(n.action.actionType == Command.Type.Push){
                         Point boxPoint = new Point(n.boxMovedRow, n.boxMovedCol);
                         if(boxPoint.equals(thisAgentPointBefore)){
-                            return conflictPoint;
+                            return new Conflict(conflictPoint, Conflict.type.agentbox,n,thisAgentNodeBefore);
                         }
                     }
                     //Is other agent trying to move into box
                     for (Box box : boxListBefore) {
                         if (n.getAgentCol() == box.getCol() &&
                             n.getAgentRow() == box.getRow() && box.getBoxColor() == owner.getColor()) {
-                            return conflictPoint;
+                            return new Conflict(conflictPoint, Conflict.type.agentbox,n,thisAgentNodeBefore);
                         }
                     }
                 }
             }
         }
-        return -1;//No Conflict
+        return null;//No Conflict
     }
 
     private boolean collisionWithAgent(Integer timeStep, Integer solutionStart, Node node){

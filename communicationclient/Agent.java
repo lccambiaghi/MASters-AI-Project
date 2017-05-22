@@ -6,10 +6,14 @@ import communication.MsgType;
 import communication.GoalMessage;
 import goal.*;
 import level.*;
+import plan.Conflict;
 import plan.ConflictDetector;
 import plan.Planner;
 
 import java.util.*;
+
+import static plan.Conflict.type.agentagent;
+import static plan.Conflict.type.agentbox;
 
 public class Agent {
 
@@ -219,38 +223,44 @@ public class Agent {
             case inform: // for now: announcement of solution
                 // check if there is a conflict
                 // if yes, send back request
-
                 LinkedList<Node> otherAgentSolution = announcement.getContent();
                 int solutionStart = announcement.getContentStart();
 
-                int conflictTime = checkForConflicts(otherAgentSolution,solutionStart);
+                Conflict conflict = checkForConflicts(otherAgentSolution,solutionStart);
 
-                //TODO: Hotfix for when agents are colliding at step 0
-                if (conflictTime == 0 ){
-                    otherAgentSolution = padNoOpNode(otherAgentSolution);
-                }
-
-                if (conflictTime > -1){
-                    if (conflictTime >= allGoalSolution.size()){
-                        Goal moveOutTheWay = new GoalMoveOutTheWay(otherAgentSolution);
-                        moveOutTheWay.setPriority(1);
-                        moveOutTheWay.setAgent(this);
-                        planner.addGoal(moveOutTheWay);
-
-                        Message solutionAccepted = new Message(MsgType.request, otherAgentSolution, id);
-                        msgHub.reply(announcement, solutionAccepted);
-
-                    }else{
-                        LinkedList<Node> newSolution = makeOtherAgentWait(otherAgentSolution, solutionStart);
-                        Message requestedSolution = new Message(MsgType.request, newSolution, id);
-                        msgHub.reply(announcement, requestedSolution);
+                if(conflict!=null){
+                    //TODO: Hotfix for when agents are colliding at step 0
+                    if (conflict.getTime() == 0 ){
+                        otherAgentSolution = padNoOpNode(otherAgentSolution);
+                    }else {
+                        loop:while (conflict != null) {
+                            switch (conflict.getType()) {
+                                case boxbox:
+                                case agentbox:
+                                case agentagent:
+                                    //Make other agent wait one step
+                                    LinkedList<Node> newSolution = makeOtherAgentWait(otherAgentSolution);
+                                    otherAgentSolution = newSolution;
+                                    conflict = checkForConflicts(otherAgentSolution,solutionStart);
+                                    break;
+                                case agentInTheWay:
+                                    // Create subgoalmoveouttheway and approve agents plan
+                                    Goal moveOutTheWay = new GoalMoveOutTheWay(otherAgentSolution);
+                                    moveOutTheWay.setPriority(1);
+                                    moveOutTheWay.setAgent(this);
+                                    planner.addGoal(moveOutTheWay);
+                                    break loop;
+                                default:
+                                    System.err.println("Could not determine the type of conflict");
+                                    break;
+                            }
+                        }
                     }
-
-                }else{
-                    Message solutionAccepted = new Message(MsgType.request, otherAgentSolution, id);
-                    msgHub.reply(announcement, solutionAccepted);
                 }
+                Message solutionAccepted = new Message(MsgType.request, otherAgentSolution, id);
+                msgHub.reply(announcement, solutionAccepted);
                 break;
+
             case request:
                 GoalMessage msg = (GoalMessage) announcement;
                 GoalFreeAgent goal = (GoalFreeAgent)msg.getGoal();
@@ -273,7 +283,7 @@ public class Agent {
 
     }
 
-    private int checkForConflicts(LinkedList<Node> otherAgentSolution, int solutionStart) {
+    private Conflict checkForConflicts(LinkedList<Node> otherAgentSolution, int solutionStart) {
 
         ConflictDetector cd = new ConflictDetector(this);
         cd.addPlan(this.allGoalSolution);
@@ -281,22 +291,10 @@ public class Agent {
         return cd.checkPlan(otherAgentSolution, solutionStart);
     }
 
-    private LinkedList<Node> makeOtherAgentWait(LinkedList<Node> oldSolution, int solutionStart){
-
-        ConflictDetector cd = new ConflictDetector(this);
-        cd.addPlan(allGoalSolution);
-
-        int conflictTime = cd.checkPlan(oldSolution, solutionStart);
+    private LinkedList<Node> makeOtherAgentWait(LinkedList<Node> oldSolution){
         LinkedList<Node> newSolution = new LinkedList<>(oldSolution);
 
-
-        while (conflictTime > -1){
-//            System.err.println("Conflict found at " + conflictTime + " between " + this.getId() + " and " + oldSolution.getFirst().agentId + "in cell otheragentNode\n" + newSolution.get(solutionStart+conflictTime) + " and thisAgentNode\n" +this.getAllGoalSolution().get(solutionStart+conflictTime) );
-            System.err.println("Conflict found at " + conflictTime + " between " + this.getId() + " and " + oldSolution.getFirst().agentId);
-            newSolution = padNoOpNode(oldSolution);
-            conflictTime = cd.checkPlan(newSolution, solutionStart);
-            oldSolution = newSolution;
-        }
+        newSolution = padNoOpNode(oldSolution);
 
         return newSolution;
     }

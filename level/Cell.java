@@ -19,4 +19,22 @@ public class Cell {
     public int getRow() {
         return row;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Cell cell = (Cell) o;
+
+        if (col != cell.col) return false;
+        return row == cell.row;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = col;
+        result = 31 * result + row;
+        return result;
+    }
 }
