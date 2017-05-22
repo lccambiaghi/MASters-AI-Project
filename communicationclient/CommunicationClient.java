@@ -77,8 +77,8 @@ public class CommunicationClient {
             client.levelParser = new LevelParser(strategy,true);
             client.levelParser.readMap();
 
-            client.levelAnalyzer = new LevelAnalyzer();
-            client.levelAnalyzer.analyzeWalls();
+            client.levelAnalyzer = new LevelAnalyzer(client.levelParser.getGraph());
+//            client.levelAnalyzer.analyzeWalls();
             client.levelAnalyzer.assignBoxesToCells();
             //TODO Specify what comparator the queue should use.
 

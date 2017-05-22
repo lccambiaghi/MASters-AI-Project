@@ -1,7 +1,5 @@
 package graph;
 
-import level.CharCell;
-
 import java.util.*;
 
 /**
@@ -33,7 +31,7 @@ public class Graph {
      *
      * Keeps only vertices in components with goal cells (discard the white text which is not a cell, not reachable cells)
      */
-    public void createGraph(){
+    public Graph createGraph(){
         for (Vertex n1 :vertices) {
             if(n1.getGoalCell() != null) goalVertices.add(n1);
             if(n1.getBox() != null) boxVertices.add(n1);
@@ -57,10 +55,11 @@ public class Graph {
                 runDFS(goalVertex);
             }
         }
-
         //Remove all vertices that can't be visited from any goal cell as they will be outside of the walkable map
         vertices.retainAll(visitedVertices);
+        return this;
     }
+
 
     /**
      * It starts from a vertex
@@ -88,11 +87,11 @@ public class Graph {
      * Remove it and see if the graph gets divided when it is removed
      * If yes,
      */
-    public void analyzeGraph(){
-        for (Vertex vertex : vertices) {
+    public void analyzeGraph(Graph graph, HashSet<Vertex> verticesToRemove){
+        for (Vertex vertex : verticesToRemove) {
             int numberOfComponents = 0;//Start on zero as goalcell is counted as single component!
             ArrayList<Graph> components = new ArrayList<>();
-            Graph newGraph = this.getCopy();
+            Graph newGraph = graph.getCopy();
             newGraph.removeVertex(vertex);
             newGraph.visitedVertices = new HashSet<>();
             newGraph.currentComponentVertices = new HashSet<>();
@@ -100,34 +99,41 @@ public class Graph {
             Vertex startVertex = pickRandomVertex(newGraph);
             newGraph.runDFS(startVertex);//Run DFS on new graph
 
-            for (Vertex u: vertices) {
+            for (Vertex u: graph.vertices) {
                 if(!newGraph.visitedVertices.contains(u)){ //then it breaks the graph
-                    Graph newComponent = new Graph();
-                    for (Vertex v : newGraph.currentComponentVertices){
-                        newComponent.addVertex(v);
-                    }
-                    //TODO build graph
-                    components.add(newComponent);
-                    newGraph.currentComponentVertices = new HashSet<>();
                     numberOfComponents++;
-                    if(vertex != u) newGraph.runDFS(u);//Only Run DFS on new graph if it is not trying to on the goalcell we removed.
+                    if(vertex != u){
+                        Graph newComponent = new Graph();
+                        for (Vertex v : newGraph.currentComponentVertices){
+                            newComponent.addVertex(v);
+                        }
+                        //TODO build graph
+                        components.add(newComponent);
+                        newGraph.currentComponentVertices = new HashSet<>();
+                        newGraph.runDFS(u);//Only Run DFS on new graph if it is not trying to on the goalcell we removed.
+                        if(newGraph.currentComponentVertices.size() > 0){
+                            newComponent = new Graph();
+                            for (Vertex v : newGraph.currentComponentVertices){
+                                newComponent.addVertex(v);
+                            }
+                            //TODO build graph
+                            components.add(newComponent);
+                            newGraph.currentComponentVertices = new HashSet<>();
+                        }
+                    }
                 }
             }
 
             //Insert the edges that were removed as Java points to the same object even when copying the verticies and edgesMap
             for (Edge e: newGraph.removedEdges) {
-                edgesMap.get(e.getFrom()).add(e);
+                graph.edgesMap.get(e.getFrom()).add(e);
             }
 
-            //Is it a goalVertex then update the CharCell
-            if(goalVertices.contains(vertex)){
-                CharCell goalCell = vertex.getGoalCell();
-                goalCell.setGraphComponentsIfFulfilled(numberOfComponents);
-//                System.err.println("Removing goal: " + vertex.getGoalCell().getLetter() +" will make graph have "+ numberOfComponents +" components");
-            }
+            int importantComponents = importantComponents(components);
             vertex.setGraphComponentsIfRemoved(numberOfComponents);
-            if(numberOfComponents > this.numberOfComponents && componentsAreImportant(components)) limitedResources.add(vertex); //TODO: numberofcomponents > 1 and bothComponentsAreImportant(components)
-            else nonLimitedResources.add(vertex);
+            vertex.setImportantComponetsIfRemoved(importantComponents);
+            if(numberOfComponents > graph.numberOfComponents && importantComponents > 1) graph.limitedResources.add(vertex); //TODO: numberofcomponents > 1 and bothComponentsAreImportant(components)
+            else graph.nonLimitedResources.add(vertex);
         }
     }
 
@@ -164,7 +170,7 @@ public class Graph {
         edgesMap.remove(v);//Remove all edgesMap from v -> ...
     }
 
-    private boolean componentsAreImportant(ArrayList<Graph> components) {
+    private int importantComponents(ArrayList<Graph> components) {
         int importantComponents = 0;
         for (Graph g : components){
             for(Vertex v : g.vertices){
@@ -174,7 +180,57 @@ public class Graph {
                 }
             }
         }
-        return importantComponents > 1;
+        return importantComponents;
+    }
+
+    public void calculatePriority(Graph graph){
+        Graph newGraph = graph.getCopy();
+        int priority = 0;
+        ArrayList<Vertex> removedGoals = new ArrayList<>();
+        HashSet<Vertex> tmpRemovedGoals = new HashSet<>();
+        HashSet<Vertex> tmpGoals = new HashSet<>();
+
+        while(removedGoals.size() != graph.goalVertices.size()){
+            for (Vertex goalVertex : newGraph.goalVertices) {
+                if (newGraph.edgesMap.get(goalVertex).size() == 1){
+                    goalVertex.getGoalCell().setPriority(priority);
+                    tmpRemovedGoals.add(goalVertex);
+                }else{
+                    tmpGoals.add(goalVertex);
+                }
+            }
+            for (Vertex rv:tmpRemovedGoals) {
+                removedGoals.add(rv);
+                newGraph.removeVertex(rv);
+                newGraph.goalVertices.remove(rv);
+            }
+            priority++;
+            int components = 100;
+            Vertex removeVertex = null;
+            for (Vertex tgv: tmpGoals) {
+                analyzeGraph(newGraph, tmpGoals);
+                if (components > tgv.getImportantComponetsIfRemoved()){
+                    removeVertex = tgv;
+                    components = tgv.getImportantComponetsIfRemoved();
+                }
+
+            }
+            tmpGoals.clear();
+
+            if (removeVertex != null) {
+                removeVertex.getGoalCell().setPriority(priority);
+                removedGoals.add(removeVertex);
+                newGraph.removeVertex(removeVertex);
+                newGraph.goalVertices.remove(removeVertex);
+            }
+            tmpRemovedGoals.clear();
+            priority++;
+        }
+
+        for (Edge e: newGraph.removedEdges) {
+            graph.edgesMap.get(e.getFrom()).add(e);
+        }
+
     }
 
     public List<Vertex> getLimitedResources() {

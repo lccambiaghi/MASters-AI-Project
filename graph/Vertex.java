@@ -14,6 +14,7 @@ public class Vertex {
     private int row;
     private int col;
     private int graphComponentsIfRemoved = 1;
+    private int importantComponetsIfRemoved = 1;
     private boolean satisfied;
     private CharCell goalCell = null;
     private Box box = null;
@@ -46,6 +47,15 @@ public class Vertex {
     public void setGraphComponentsIfRemoved(int graphComponentsIfRemoved) {
         this.graphComponentsIfRemoved = graphComponentsIfRemoved;
     }
+
+    public int getImportantComponetsIfRemoved() {
+        return importantComponetsIfRemoved;
+    }
+
+    public void setImportantComponetsIfRemoved(int importantComponetsIfRemoved) {
+        this.importantComponetsIfRemoved = importantComponetsIfRemoved;
+    }
+
     public boolean isSatisfied(){
         return satisfied;
     }

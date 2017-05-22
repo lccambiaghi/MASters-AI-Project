@@ -20,6 +20,7 @@ public class LevelParser {
     private BufferedReader in;
     private Strategy strategy;
     private boolean debug;
+    private Graph graph;
 
     public LevelParser(Strategy strategy, boolean debug) throws FileNotFoundException {
         this.strategy = strategy;
@@ -28,7 +29,7 @@ public class LevelParser {
         // If debug==true, our client parses the level instead of receiving it from the server
         if(this.debug){
             FileInputStream fis = null;
-            fis = new FileInputStream("levels/MAsimple3.lvl");
+            fis = new FileInputStream("C:\\Users\\salik\\Documents\\02285-MASters-prog_proj\\levels\\SAMASters.lvl");
             in = new BufferedReader(new InputStreamReader(fis));
         }else{
             in = new BufferedReader(new InputStreamReader(System.in));
@@ -93,7 +94,7 @@ public class LevelParser {
 
         row = 0;
         boolean colorLevel = false;
-        Graph graph = new Graph();
+        graph = new Graph();
         for (String lineInMap: map) {
             lineInMap = lineInMap.replaceFirst("\\s++$", "");//Remove trailing whitespaces
 
@@ -147,11 +148,11 @@ public class LevelParser {
         // The following is just for testing that the graph analyzis works :-)
         // TODO is it the right place? Move it in the LevelAnalyzer?
         graph.createGraph();
-        graph.analyzeGraph();
-        List<Vertex> limited = graph.getLimitedResources();
-        List<Vertex> nonLimited = graph.getNonLimitedResources();
-        
         System.err.println("*--------------------------------------*");
 
+    }
+
+    public Graph getGraph() {
+        return graph;
     }
 }

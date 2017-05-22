@@ -72,6 +72,12 @@ public class ConflictDetector {
                             return new Conflict(conflictPoint, Conflict.type.agentbox,n,thisAgentNodeBefore);
                         }
                     }
+                }else{
+                    Node thisAgentNodeBefore = timeMap.get(timeStep+solutionStart).parent;
+                    Point thisAgentPointBefore = new Point(thisAgentNodeBefore.agentRow, thisAgentNodeBefore.agentCol);
+                    if(thisAgentPointBefore.equals(otherAgentPoint)){ // if there was an agent in the cell I now want to reach
+                        return conflictPoint;//other agent moves into cell this agent was in
+                    }
                 }
             }
         }
