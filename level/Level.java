@@ -21,7 +21,8 @@ public class Level {
     private boolean[][] walls;
     public int MAX_ROW;
     public int MAX_COL;
-    private HashMap<Color, List<Agent>> agentsByColorMap = new HashMap<>();
+    private HashMap<Color, List<Agent>> agentsColorMap = new HashMap<>();
+    private List<Agent> allAgents = new ArrayList<>();
 
     private Level (int MAX_ROW, int MAX_COL){
         this.walls = new boolean[MAX_ROW][MAX_COL];
@@ -93,17 +94,23 @@ public class Level {
     }
 
     public void setAgentInColorMap(Agent agent) {
-        if (this.agentsByColorMap.containsKey(agent.getColor())){
-            this.agentsByColorMap.get(agent.getColor()).add(agent);
+        if (this.agentsColorMap.containsKey(agent.getColor())){
+            this.agentsColorMap.get(agent.getColor()).add(agent);
+            allAgents.add(agent);
         }else{
             List<Agent> agentList = new ArrayList<>();
             agentList.add(agent);
-            this.agentsByColorMap.put(agent.getColor(), agentList);
+            this.agentsColorMap.put(agent.getColor(), agentList);
+            allAgents.add(agent);
         }
     }
 
-    public HashMap<Color, List<Agent>> getAgentsByColorMap() {
-        return this.agentsByColorMap;
+    public List<Agent> getAllAgents (){
+        return this.allAgents;
+    }
+
+    public HashMap<Color, List<Agent>> getAgentsColorMap() {
+        return this.agentsColorMap;
     }
 
     public HashSet<Box> getBoxesByChar(Character chr){
