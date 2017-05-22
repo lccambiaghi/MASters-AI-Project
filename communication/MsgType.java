@@ -3,9 +3,12 @@ package communication;
 /**
  * Created by lucacambiaghi on 17/04/2017.
  */
-// TODO abstract class + 3 implementations (announcement, request, proposal)?
 public enum MsgType {
-    queryif, inform,
-    request, agree, refuse, failure,
-    cfp, propose, acceptProposal, rejectProposal;
+    announce, // announce a solution
+    request, // request to perform this solution instead
+    agree, // agree to an announced plan
+    cfp,
+    propose,
+    acceptProposal,
+    rejectProposal;
 }
