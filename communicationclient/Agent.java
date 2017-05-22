@@ -61,9 +61,7 @@ public class Agent {
             if (solution!=null){
                 this.goalSolution.addAll(solution);
             }else{
-                int iterator = 0 ;
-                while(solution==null && iterator <1000){
-                    iterator++;
+                while(solution==null){
                     agentStuck++;
                     solution = searchSubGoal(subgoal);
                 }
@@ -74,8 +72,6 @@ public class Agent {
 
                 this.agentRow = initialPosition.agentRow;
                 this.agentCol = initialPosition.agentCol;
-
-
 
                 for (int row = 0; row < Level.getInstance().MAX_ROW; row++) {
                     for (int col = 0; col < Level.getInstance().MAX_COL; col++) {
@@ -293,9 +289,8 @@ public class Agent {
         int conflictTime = cd.checkPlan(oldSolution, solutionStart);
         LinkedList<Node> newSolution = new LinkedList<>(oldSolution);
 
-        int iterator = 0;
-        while (conflictTime > -1 && iterator < 1000){
-            iterator++;
+
+        while (conflictTime > -1){
 //            System.err.println("Conflict found at " + conflictTime + " between " + this.getId() + " and " + oldSolution.getFirst().agentId + "in cell otheragentNode\n" + newSolution.get(solutionStart+conflictTime) + " and thisAgentNode\n" +this.getAllGoalSolution().get(solutionStart+conflictTime) );
             System.err.println("Conflict found at " + conflictTime + " between " + this.getId() + " and " + oldSolution.getFirst().agentId);
             newSolution = padNoOpNode(oldSolution);
