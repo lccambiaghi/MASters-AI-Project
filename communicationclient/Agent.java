@@ -7,6 +7,7 @@ import communication.GoalMessage;
 import goal.*;
 import level.*;
 import plan.ConflictDetector;
+import plan.Planner;
 
 import java.util.*;
 
@@ -17,7 +18,7 @@ public class Agent {
     private int agentRow;
     private int agentCol;
     private Strategy strategy;
-
+    private Planner planner;
     private int numberOfGoals;
     private LinkedList<Node> allGoalSolution;
     private LinkedList<Node> goalSolution;
@@ -66,8 +67,24 @@ public class Agent {
                 }
                 this.goalSolution.addAll(solution);
                 //Reset agent position to start
-                this.agentRow = solution.getFirst().parent.agentRow;
-                this.agentCol = solution.getFirst().parent.agentCol;
+
+                Node initialPosition = this.goalSolution.getFirst().parent;
+
+                this.agentRow = initialPosition.agentRow;
+                this.agentCol = initialPosition.agentCol;
+
+                for (int row = 0; row < Level.getInstance().MAX_ROW; row++) {
+                    for (int col = 0; col < Level.getInstance().MAX_COL; col++) {
+                        if (initialPosition.boxes[row][col] != null) {
+                            Box box =  initialPosition.boxes[row][col];
+                            box.setRow(row) ;
+                            box.setCol(col);
+
+                        }
+
+                    }
+                }
+
                 return null;
             }
         }
@@ -84,12 +101,18 @@ public class Agent {
             if (this.potentialBoxes.isEmpty() || !firstPotential.equals(b)){
                 initialNode.addBox(b);
             }else{
-                this.removedBoxes.add(b);
+                this.removedBoxes.add(b); //TODO We also remove the box in all future searches. This should not happen - remember to reset potentialboxes
             }
         }
+        /*
+        We are adding a wall to this nodes walls array at the position where the other agent is stuck
+        This is done so that we don't risk finding a solution that goes through the agent that we need to
+        free.
+        */
         if(subGoal instanceof SubGoalMoveBoxOutTheWay){
             SubGoalMoveBoxOutTheWay sub = (SubGoalMoveBoxOutTheWay) subGoal;
-            initialNode.walls[sub.getAgentToFree().agentRow][sub.getAgentToFree().agentCol] = true;
+            initialNode.addWall(sub.getAgentToFree().agentRow, sub.getAgentToFree().agentCol);
+            //initialNode.getWalls()[sub.getAgentToFree().agentRow][sub.getAgentToFree().agentCol] = true;
         }
 
         initialNode.agentRow = this.agentRow;
@@ -148,13 +171,17 @@ public class Agent {
 
     public void evaluateMessage(Message message) {
         Queue<Message> requests = MsgHub.getInstance().getResponses(message);
+        if (requests.isEmpty()){
+            this.allGoalSolution.addAll(this.goalSolution);
+        }
+
         boolean proposalAccepted = false;
         Message response;
         int tempLength = 0;
         for(Message request : requests)
             switch (request.getType()){
                 case request://Another agent request to change solution of this agent or sends the same plan back
-                    if(request.getContent().size() > tempLength){ /* TODO: Does not work if we do anything else than padding with NOOP*/
+                    if(request.getContent().size() > tempLength){ /* TODO: Does not work if we change plans by anything else than padding with NOOP in front*/
                         this.goalSolution = request.getContent();
                         this.allGoalSolution.addAll(this.goalSolution);
                         tempLength = request.getContent().size();
@@ -198,31 +225,20 @@ public class Agent {
 
                 int conflictTime = checkForConflicts(otherAgentSolution,solutionStart);
 
+                //TODO: Hotfix for when agents are colliding at step 0
+                if (conflictTime == 0 ){
+                    otherAgentSolution = padNoOpNode(otherAgentSolution);
+                }
+
                 if (conflictTime > -1){
                     if (conflictTime >= allGoalSolution.size()){
-                        //TODO GoalMoveOutTheWay Should we broadcast this ?
                         Goal moveOutTheWay = new GoalMoveOutTheWay(otherAgentSolution);
-                        LinkedList<Node> moveOut = searchGoal(moveOutTheWay);
-                        this.allGoalSolution.addAll(moveOut);
-//                              NEDENSTÅENDE ER MIT UDKAST TIL AT INDSÆTTE LØSNINGEN TIL MOVEOUTTHEWAY til den rigtige tid.
-//                            if(this.allGoalSolution.isEmpty()){
-//                            for(int i = 0; i < conflictTime; i++){
-//                                Node n = new Node(null);
-//                                n.agentRow = this.getAgentRow();
-//                                n.agentCol = this.getAgentCol();
-//                                this.allGoalSolution.add(n);
-//                            }
-//                            this.allGoalSolution.addAll(moveOut);
-//                        }else{
-//                            for(int i = this.allGoalSolution.size(); i < conflictTime; i++){
-//                                Node n = new Node(null);
-//                                n.agentCol = this.allGoalSolution.getLast().agentCol;
-//                                n.agentRow = this.allGoalSolution.getLast().agentRow;
-//                                this.allGoalSolution.add(n);
-//                            }
-//                            this.allGoalSolution.addAll(moveOut);
-//
-//                        }
+                        moveOutTheWay.setPriority(1);
+                        moveOutTheWay.setAgent(this);
+                        planner.addGoal(moveOutTheWay);
+
+                        Message solutionAccepted = new Message(MsgType.request, otherAgentSolution, id);
+                        msgHub.reply(announcement, solutionAccepted);
 
                     }else{
                         LinkedList<Node> newSolution = makeOtherAgentWait(otherAgentSolution, solutionStart);
@@ -273,21 +289,30 @@ public class Agent {
         int conflictTime = cd.checkPlan(oldSolution, solutionStart);
         LinkedList<Node> newSolution = new LinkedList<>(oldSolution);
 
-        while (conflictTime > -1){
-            System.err.println("Conflict found at " + conflictTime);
 
-            Node n = oldSolution.getFirst().parent;
-            Node noOp = new Node(null);
-            noOp.setBoxes(n.getBoxesCopy());
-            noOp.agentRow = n.agentRow;
-            noOp.agentCol = n.agentCol;
-            noOp.action= new Command(Command.Type.NoOp, null,null);
-            newSolution.addFirst(noOp);
+        while (conflictTime > -1){
+//            System.err.println("Conflict found at " + conflictTime + " between " + this.getId() + " and " + oldSolution.getFirst().agentId + "in cell otheragentNode\n" + newSolution.get(solutionStart+conflictTime) + " and thisAgentNode\n" +this.getAllGoalSolution().get(solutionStart+conflictTime) );
+            System.err.println("Conflict found at " + conflictTime + " between " + this.getId() + " and " + oldSolution.getFirst().agentId);
+            newSolution = padNoOpNode(oldSolution);
             conflictTime = cd.checkPlan(newSolution, solutionStart);
+            oldSolution = newSolution;
         }
 
         return newSolution;
     }
+
+    private LinkedList<Node> padNoOpNode(LinkedList<Node> oldSolution) {
+        LinkedList<Node> newSolution = new LinkedList<>(oldSolution);
+        Node initialNode = oldSolution.getFirst().parent;
+        Node noOp = new Node(initialNode);
+        noOp.setBoxes(initialNode.getBoxesCopy());
+        noOp.agentRow = initialNode.agentRow;
+        noOp.agentCol = initialNode.agentCol;
+        noOp.action= new Command(Command.Type.NoOp, null,null);
+        newSolution.addFirst(noOp);
+        return newSolution;
+    }
+
     public LinkedList<Node> getGoalSolution() {
         return goalSolution;
     }
@@ -342,5 +367,13 @@ public class Agent {
 
     public LinkedList<Node> getAllGoalSolution() {
         return allGoalSolution;
+    }
+
+    public Planner getPlanner() {
+        return planner;
+    }
+
+    public void setPlanner(Planner planner) {
+        this.planner = planner;
     }
 }

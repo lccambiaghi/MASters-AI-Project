@@ -21,8 +21,7 @@ public class Level {
     private boolean[][] walls;
     public int MAX_ROW;
     public int MAX_COL;
-    private int NUM_GOALS = 0;
-    private HashMap<Color, List<Agent>> agentsByColorMap = new HashMap<>(); //TODO What if multiple agents of same color? HashMap<Color, List<Agent>>??
+    private HashMap<Color, List<Agent>> agentsByColorMap = new HashMap<>();
 
     private Level (int MAX_ROW, int MAX_COL){
         this.walls = new boolean[MAX_ROW][MAX_COL];
@@ -107,16 +106,8 @@ public class Level {
         return this.agentsByColorMap;
     }
 
-    public HashSet<Box> getBoxesByColor(Color color){
-        return boxesByColor.get(color);
-    }
-
     public HashSet<Box> getBoxesByChar(Character chr){
         return boxesByChar.get(chr);
-    }
-
-    public HashSet<CharCell> getGoalsByChar(Character chr){
-        return goalsByChar.get(chr);
     }
 
     public HashSet<CharCell> getAllCharCells() {

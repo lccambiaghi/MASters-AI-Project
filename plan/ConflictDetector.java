@@ -45,9 +45,10 @@ public class ConflictDetector {
                     return conflictPoint;
                 }
 
-                if(collisionWithBox(timeStep, solutionStart, n)) {
+                if(owner.getColor() != n.agentColor && collisionWithBox(timeStep, solutionStart, n)) {
                     return conflictPoint;
                 }
+
 
                 // Was another agent at t-1 in the cell I now want to reach?
                 if(timeStep > 0){
@@ -67,7 +68,7 @@ public class ConflictDetector {
                     //Is other agent trying to move into box
                     for (Box box : boxListBefore) {
                         if (n.getAgentCol() == box.getCol() &&
-                            n.getAgentRow() == box.getRow()) {
+                            n.getAgentRow() == box.getRow() && box.getBoxColor() == owner.getColor()) {
                             return conflictPoint;
                         }
                     }
@@ -103,7 +104,7 @@ public class ConflictDetector {
         }
         for (Box box : boxList) {
             if (agentPoint.getAgentCol() == box.getCol() &&
-                agentPoint.getAgentRow() == box.getRow()) {
+                agentPoint.getAgentRow() == box.getRow() && box.getBoxColor() == owner.getColor()) {
                     return true;
             }
         }

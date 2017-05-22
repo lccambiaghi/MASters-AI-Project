@@ -26,6 +26,10 @@ public class CommunicationClient {
 
         String jointAction = "";
         String response = "";
+
+        // If our plan succeeds, the server will output 'success' and terminate the client
+        // Else if we send an inapplicable action, its response will contain false and the server will wait for another line
+        // TODO: If our client wrongly believes that all goals are achieved, it will keep sending NoOps for all agents and the process will keep on forever.
         while(!response.contains("false")) {
             // build joint action and progress iterator of solutions
             jointAction = "[";
@@ -46,9 +50,13 @@ public class CommunicationClient {
             System.out.println(jointAction);
             // Flush buffer
             System.out.flush();
+            if(!jointAction.contains("Pull") || !jointAction.contains("Push") || !jointAction.contains("Move")){
+                jointAction = "";
+            }
             response = in.readLine();
         }
         System.err.format("Server responded with %s to the inapplicable action: %s\n", response, jointAction);
+        // Here we could react after the response contains 'false'. Now we kill the client.
     }
 
 
@@ -63,7 +71,7 @@ public class CommunicationClient {
         try {
             CommunicationClient client = new CommunicationClient();
             Heuristic heuristic = new Heuristic.Greedy();
-//            Heuristic heuristic = new Heuristic.WeightedAStar(5);
+//          Heuristic heuristic = new Heuristic.WeightedAStar(5);
             Strategy strategy = new StrategyBestFirst(heuristic);
 
             client.levelParser = new LevelParser(strategy,true);
@@ -72,9 +80,18 @@ public class CommunicationClient {
             client.levelAnalyzer = new LevelAnalyzer();
             client.levelAnalyzer.analyzeWalls();
             client.levelAnalyzer.assignBoxesToCells();
+            //TODO Specify what comparator the queue should use.
+
             PriorityQueue<Goal> priorityGoals = client.levelAnalyzer.createInitialGoals();
 
             client.planner = new Planner(priorityGoals);
+
+            //TODO: This is a hotfix. We don't like that agents have a reference to the planner. They should might communicate to the planner instead.
+            for (List<Agent> agentList: Level.getInstance().getAgentsByColorMap().values()) {
+                for (Agent a: agentList) {
+                    a.setPlanner(client.planner);
+                }
+            }
 
             MsgHub.createInstance(Level.getInstance());
 
