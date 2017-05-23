@@ -1,5 +1,6 @@
 package communicationclient;
 
+import com.sun.deploy.security.ValidationState;
 import communication.Message;
 import communication.MsgHub;
 import communication.MsgType;
@@ -59,6 +60,7 @@ public class Agent {
         this.latestGoal = goal; // If we need to place it back on the queue
         if(oldSolutions.containsKey(goal)){
             this.goalSolution = oldSolutions.get(goal);
+            updateLevelInstance(this.goalSolution); // Set information from the old plans last node
             return this.goalSolution; // Old search
             //TODO: This is done so that we can fetch old solutions. We cannot find the same solution twice if we don't clear ExploredNodes in strategy between each search. That might be a better solution actually (We cannot guarantee that this old solution will work in the future. boxes can have moved.)
         }
@@ -87,6 +89,7 @@ public class Agent {
         oldSolutions.put(goal,this.goalSolution);
         return this.goalSolution;
     }
+
 
     public LinkedList<Node> searchSubGoal(Goal subGoal) {
         System.err.println("Agent " + getId() + " started search for subgoal: "+subGoal.toString()+" with strategy " + this.strategy.toString());
@@ -171,10 +174,10 @@ public class Agent {
      */
     public void negotiateGoalSolution() {
         MsgHub msgHub = MsgHub.getInstance();
-        boolean solutionAccepted = false;
+        int solutionAccepted = 0;
 
-        while(!solutionAccepted){
-            solutionAccepted = true;
+        loop:while(solutionAccepted == 0){
+            solutionAccepted = 1;
 
             for (Agent other: MsgHub.getInstance().getAllAgents()){
                 if(other.getId() != this.getId()){
@@ -182,8 +185,12 @@ public class Agent {
                     solutionAnnouncement.setContentStart(this.combinedSolution.size());
 
                     msgHub.sendMessage(other.getId(), solutionAnnouncement);
-                    if(checkReplies(solutionAnnouncement) != true){
-                        solutionAccepted = false;
+                    int checkReplies = checkReplies(solutionAnnouncement);
+                    if(checkReplies != 1){ // true
+                        if(checkReplies == 2){
+                            return; // Agent was asked to wait achieving this goal. Exit the negotiationmethod
+                        }
+                        solutionAccepted = 0; // Agent have been asked to change his solution. We need to rebroadcast to all agents from the start.
                         break;
                     }
 
@@ -194,7 +201,7 @@ public class Agent {
         this.combinedSolution.addAll(this.goalSolution);
     }
 
-    public boolean checkReplies(Message message) {
+    public int checkReplies(Message message) {
         Queue<Message> responses = MsgHub.getInstance().getResponses(message);
 
         boolean proposalAccepted = false;
@@ -205,7 +212,7 @@ public class Agent {
                     break;
                 case request://Another agent request to change solution of this agent
                     this.goalSolution = resp.getContent();
-                    return false;
+                    return 0;
                 case propose://Another agent propose to free this agent
                     if(!proposalAccepted){
                         GoalMessage msg = (GoalMessage) resp;
@@ -223,9 +230,28 @@ public class Agent {
                     this.goalSolution = new LinkedList<>(); // Don't add anything to the overall solution.
                     this.planner.addGoal(latestGoal);
                     resetLevelInstance(message.getContent()); // Reset the level to the state before the agent searched for a solution
-                    break loop; // Don't check anymore reply messages
+                    return 2;
             }
-        return true;
+        return 1;
+    }
+
+
+    private void updateLevelInstance(LinkedList<Node> plan) {
+        Node initialNode = plan.getLast();
+        this.agentRow = initialNode.agentRow;
+        this.agentCol = initialNode.agentCol;
+
+        for (int row = 0; row < Level.getInstance().MAX_ROW; row++) {
+            for (int col = 0; col < Level.getInstance().MAX_COL; col++) {
+                if (initialNode.boxes[row][col] != null) {
+                    Box box =  initialNode.boxes[row][col];
+                    box.setRow(row) ;
+                    box.setCol(col);
+
+                }
+
+            }
+        }
     }
 
     private void resetLevelInstance(LinkedList<Node> plan) {
@@ -279,7 +305,7 @@ public class Agent {
                                 case agentbox:
                                 case agentagent:
                                     //Make other agent wait one step
-                                    System.err.println(this.getId() + " tries to make " + otherAgentSolution.getFirst().agentId + " to pad NOOP ");
+                                    //System.err.println(this.getId() + " tries to make " + otherAgentSolution.getFirst().agentId + " to pad NOOP ");
                                     LinkedList<Node> newSolution = makeOtherAgentWait(otherAgentSolution);
                                     otherAgentSolution = newSolution;
                                     conflict = checkForConflicts(otherAgentSolution,solutionStart);
