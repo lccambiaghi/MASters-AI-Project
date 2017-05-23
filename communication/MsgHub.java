@@ -6,7 +6,7 @@ import level.*;
 import java.util.*;
 
 /**
- * MsgHub is where agents post messages and see if they have any responses.
+ * MsgHub is where agentsColorMap post messages and see if they have any responses.
  *
  * Agents can invoke sendMessage(), broadcast(), getResponses()
  */
@@ -14,55 +14,41 @@ public class MsgHub {
 
     private static MsgHub instance;
 
-    private HashMap<Color, List<Agent>> agents;
+    private List<Agent> allAgents;
 
     // in this map we store each message and its replies
     private HashMap<Message, Queue<Message>> messageMap;
 
-    private MsgHub(HashMap<Color, List<Agent>> agents){
-        this.agents = agents;
-        messageMap = new HashMap<>();
+    private MsgHub(List<Agent> agents){
+        this.allAgents = agents;
+        this.messageMap = new HashMap<>();
     }
 
-    public void sendMessage(char receiver, Message message){
+    public void sendMessage(char to, Message message){
         Queue<Message> responses = new ArrayDeque<>();
         messageMap.put(message, responses);
-        for (List<Agent> agentList : this.agents.values()) {
-            for (Agent agent : agentList) {
-                if (agent.getId() == receiver)
-                    agent.receiveAnnouncement(message);
-            }
-        }
+
+        for(Agent agent : allAgents)
+            if(agent.getId() == to)
+                agent.receiveMessage(message); // the receiver will put the reply in the messageMap
+
     }
+
     public void broadcast(Message announcement) {
         Queue<Message> responses = new ArrayDeque<>();
 
         messageMap.put(announcement, responses);
 
-        char sender = announcement.getSender();
+        for(Agent agent: allAgents)
+            agent.receiveMessage(announcement);
 
-        for (List<Agent> agentList : this.agents.values()) {
-            for (Agent agent : agentList) {
-                if (agent.getId() != sender)
-                    agent.receiveAnnouncement(announcement);
-            }
-        }
     }
 
-    public Queue<Message> getResponses(Message announcement) {
-        return messageMap.get(announcement);
-    }
-
-    public static MsgHub createInstance(Level level){
-        HashMap<Color, List<Agent>> agents = level.getAgentsByColorMap();
+    public static void createInstance(){
+        List<Agent> agents = Level.getInstance().getAllAgents();
         if(instance == null) {
             instance = new MsgHub(agents);
         }
-        return instance;
-    }
-
-    public static MsgHub getInstance() {
-        return instance;
     }
 
     public void reply(Message message, Message response) {
@@ -70,5 +56,17 @@ public class MsgHub {
         responses.add(response);
 
         messageMap.put(message, responses);
+    }
+
+    public Queue<Message> getResponses(Message announcement) {
+        return messageMap.get(announcement);
+    }
+
+    public static MsgHub getInstance() {
+        return instance;
+    }
+
+    public List<Agent> getAllAgents (){
+        return this.allAgents;
     }
 }

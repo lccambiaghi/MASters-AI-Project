@@ -22,7 +22,8 @@ public class Agent {
     private Strategy strategy;
     private Planner planner;
     private int numberOfGoals;
-    private LinkedList<Node> allGoalSolution;
+
+    private LinkedList<Node> combinedSolution;
     private LinkedList<Node> goalSolution;
     private ArrayDeque<Goal> subGoals;
     private ArrayList<Box> potentialBoxes = new ArrayList<>();
@@ -32,7 +33,7 @@ public class Agent {
 
     public Agent(char id, Strategy strategy, int row, int col) {
         this.subGoals = new ArrayDeque<>();
-        this.allGoalSolution = new LinkedList<>();
+        this.combinedSolution = new LinkedList<>();
         this.goalSolution = new LinkedList<>();
         this.color = Color.blue;
         this.id = id;
@@ -164,35 +165,56 @@ public class Agent {
         MsgHub.getInstance().broadcast(message);
     }
 
-    public void evaluateMessage(Message message) {
-        Queue<Message> requests = MsgHub.getInstance().getResponses(message);
-        if (requests.isEmpty()){
-            this.allGoalSolution.addAll(this.goalSolution);
+    /**
+     * Negotiate the goalSolution until all other agents agree
+     */
+    public void negotiateGoalSolution() {
+        MsgHub msgHub = MsgHub.getInstance();
+        boolean solutionAccepted = false;
+
+        while(!solutionAccepted){
+            solutionAccepted = true;
+
+            for (Agent other: MsgHub.getInstance().getAllAgents()){
+                if(other.getId() != this.getId()){
+                    Message solutionAnnouncement = new Message(MsgType.announce, goalSolution, this.id);
+                    solutionAnnouncement.setContentStart(this.combinedSolution.size());
+
+                    msgHub.sendMessage(other.getId(), solutionAnnouncement);
+                    if(checkReplies(solutionAnnouncement) != true){
+                        solutionAccepted = false;
+                        break;
+                    }
+
+                }
+            }
         }
 
+        this.combinedSolution.addAll(this.goalSolution);
+    }
+
+    public boolean checkReplies(Message message) {
+        Queue<Message> responses = MsgHub.getInstance().getResponses(message);
+
         boolean proposalAccepted = false;
-        Message response;
-        int tempLength = 0;
-        loop:for(Message request : requests)
-            switch (request.getType()){
-                case request://Another agent request to change solution of this agent or sends the same plan back
-                    if(request.getContent().size() > tempLength){ /* TODO: Does not work if we change plans by anything else than padding with NOOP in front*/
-                        this.goalSolution = request.getContent();
-                        tempLength = request.getContent().size();
-                    }
-                    response = new Message(MsgType.agree, null, id);
-                    sendResponse(request, response);
+        Message respToProposal;
+        for(Message resp : responses)
+            switch (resp.getType()){
+                case agree: // the other agent agrees with the proposed plan
                     break;
+                case request://Another agent request to change solution of this agent
+                    this.goalSolution = resp.getContent();
+                    return false;
                 case propose://Another agent propose to free this agent
                     if(!proposalAccepted){
-                        GoalMessage msg = (GoalMessage) request;
+                        GoalMessage msg = (GoalMessage) resp;
                         GoalFreeAgent goal = (GoalFreeAgent)msg.getGoal();
-                        response = new GoalMessage(MsgType.acceptProposal,goal, null, id);
-                        sendResponse(request.getSender(),response);
+                        respToProposal = new GoalMessage(MsgType.acceptProposal,goal, null, id);
+                        sendResponse(resp.getSender(),respToProposal);
                         proposalAccepted = true;
                     }else{
-                        response = new Message(MsgType.rejectProposal, null, id);
-                        sendResponse(request.getSender(),response);
+                        respToProposal = new Message(MsgType.rejectProposal, null, id);
+                        sendResponse(resp.getSender(),respToProposal);
                     }
                     break;
                 case await:
@@ -204,7 +226,7 @@ public class Agent {
             }
         this.allGoalSolution.addAll(this.goalSolution); // Add the chosen solution to the overall plan
 
-    }
+        return true;
 
     private void resetLevelInstance(LinkedList<Node> plan) {
         // In this method, we can pass in a plan. It will reset box and level information
@@ -225,22 +247,19 @@ public class Agent {
         }
     }
 
-    private void sendResponse(Message request, Message response) {
-        MsgHub.getInstance().broadcast(response);
-    }
     private void sendResponse(char receiver, Message response){
         MsgHub.getInstance().sendMessage(receiver,response);
     }
 
-    public void receiveAnnouncement(Message announcement){
+    public void receiveMessage(Message message){
         MsgHub msgHub = MsgHub.getInstance();
 
-        switch (announcement.getType()){
-            case inform: // for now: announcement of solution
+        switch (message.getType()){
+            case announce: // for now: announcement of solution
                 // check if there is a conflict
                 // if yes, send back request
-                LinkedList<Node> otherAgentSolution = announcement.getContent();
-                int solutionStart = announcement.getContentStart();
+                LinkedList<Node> otherAgentSolution = message.getContent();
+                int solutionStart = message.getContentStart();
 
                 Message response = new Message(MsgType.request, otherAgentSolution, id); // Assuming no conflict
 
@@ -280,23 +299,28 @@ public class Agent {
                             }
                         }
                     }
-                }
+                }else{
+				Message agree = new Message(MsgType.agree, null, id);
+                msgHub.reply(message, agree);
+				break;
+					
+				}
 
                 msgHub.reply(announcement, response); // Send reply
                 break;
 
             case request:
-                GoalMessage msg = (GoalMessage) announcement;
+                GoalMessage msg = (GoalMessage) message;
                 GoalFreeAgent goal = (GoalFreeAgent)msg.getGoal();
                 if(goal.getBox().getBoxColor()==this.color){
                     //TODO maybe search for solution!
                     LinkedList<Node> proposedSolution = new LinkedList<>();
                     Message proposeMessage = new GoalMessage(MsgType.propose,goal,proposedSolution ,id);
-                    msgHub.reply(announcement, proposeMessage);
+                    msgHub.reply(message, proposeMessage);
                 }
                 break;
             case acceptProposal:
-                GoalMessage goalMessage = (GoalMessage) announcement;
+                GoalMessage goalMessage = (GoalMessage) message;
                 GoalFreeAgent freeAgent = (GoalFreeAgent)goalMessage.getGoal();
                 freeAgent.setAgent(this);
                 break;
@@ -310,7 +334,7 @@ public class Agent {
     private Conflict checkForConflicts(LinkedList<Node> otherAgentSolution, int solutionStart) {
 
         ConflictDetector cd = new ConflictDetector(this);
-        cd.addPlan(this.allGoalSolution);
+        cd.addPlan(this.combinedSolution);
 
         return cd.checkPlan(otherAgentSolution, solutionStart);
     }
@@ -359,16 +383,8 @@ public class Agent {
         return this.agentRow;
     }
 
-    public void setAgentRow(int agentRow) {
-        this.agentRow = agentRow;
-    }
-
     public int getAgentCol() {
         return this.agentCol;
-    }
-
-    public void setAgentCol(int agentCol) {
-        this.agentCol = agentCol;
     }
 
     public int getNumberOfGoals() {
@@ -387,12 +403,8 @@ public class Agent {
         return removedBoxes;
     }
 
-    public LinkedList<Node> getAllGoalSolution() {
-        return allGoalSolution;
-    }
-
-    public Planner getPlanner() {
-        return planner;
+    public LinkedList<Node> getCombinedSolution() {
+        return combinedSolution;
     }
 
     public void setPlanner(Planner planner) {

@@ -87,14 +87,15 @@ public class CommunicationClient {
             client.planner = new Planner(priorityGoals);
 
             //TODO: This is a hotfix. We don't like that agents have a reference to the planner. They should might communicate to the planner instead.
-            for (List<Agent> agentList: Level.getInstance().getAgentsByColorMap().values()) {
+            for (List<Agent> agentList: Level.getInstance().getAgentsColorMap().values()) {
                 for (Agent a: agentList) {
                     a.setPlanner(client.planner);
 
                 }
             }
 
-            MsgHub.createInstance(Level.getInstance());
+            //MsgHub.createInstance(Level.getInstance());
+            MsgHub.createInstance();
 
             client.solve();
 

@@ -23,34 +23,20 @@ public class Planner {
         this.goalQueue = priorityQueue;
     }
 
-    public void refineInitialGoals(){
-        PriorityQueue<Goal> tmp = new PriorityQueue<>(new GoalComparator());
-        while(!goalQueue.isEmpty()){
-            GoalBoxToCell goal = (GoalBoxToCell) goalQueue.poll();
-            Agent agent = goal.getBox().getAssignedAgent();
-            agent.setNumberOfGoals(agent.getNumberOfGoals()+1);
-
-            agent.refineBoxToChar(goal); //Plan for a single goal at a time
-            tmp.add(goal);
-        }
-
-        goalQueue = tmp;//Save all the charcells so they are not lost after poll
-    }
-
     public void searchingPhase() {
         this.solutions = new HashMap<>();
-        for (List<Agent> agentList: Level.getInstance().getAgentsByColorMap().values()) {
-            for (Agent a: agentList) {
-                this.solutions.put(Character.getNumericValue(a.getId()), new LinkedList<>());
-            }
 
-        }
+        for (List<Agent> agentList: Level.getInstance().getAgentsColorMap().values())
+            for (Agent a: agentList)
+                this.solutions.put(Character.getNumericValue(a.getId()), new LinkedList<>());
+
         while(!goalQueue.isEmpty()){
             Goal goal = goalQueue.poll();
             Agent agent = goal.getAgent();
-            LinkedList<Node> agentSolution = agent.searchGoal(goal);
-            if (agentSolution == null) {//Is checked in agent.searchGoal
+            LinkedList<Node> goalSolution = agent.searchGoal(goal);
+            if (goalSolution == null) {//Is checked in agent.searchGoal
                 // We add one to make sure that this goal will happen next when putting it back on the queue.
+                // TODO remove hotfix and improve logic
                 goal.setPriority(goal.getPriority()-1);
                 goalQueue.add(goal);//Add goal again
 
@@ -61,9 +47,10 @@ public class Planner {
                     Goal freeAgent = new GoalFreeAgent(b,agentRequestCells, agent);
                     freeAgent.setPriority(0);//High priority
 
+                    //TODO move logic in Agent class
                     Message moveBoxRequest = new GoalMessage(MsgType.request,freeAgent, agentRequestCells,agent.getId());
                     agent.broadcastMessage(moveBoxRequest);
-                    agent.evaluateMessage(moveBoxRequest);
+                    agent.checkReplies(moveBoxRequest);
                     goalQueue.add(freeAgent);
                     agent.setGoalSolution(new LinkedList<>());//Forget Solution
                 }
@@ -71,46 +58,26 @@ public class Planner {
                 System.err.println("Agent " + agent.getId() + " is unable to complete his subgoals.");
             } else {
                 System.err.println("\nSummary for " + agent.getStrategy().toString() + " for agent " + agent.getId() + ":");
-                System.err.println("Found solution of length " + agentSolution.size());
-                System.err.println(agent.getStrategy().searchStatus()+ "\n \n");
+                System.err.println("Found solution of length " + goalSolution.size());
+                System.err.println(agent.getStrategy().searchStatus());
                 agent.setNumberOfGoals(agent.getNumberOfGoals()-1);
 
-                // agentSolution found
-                Message solutionAnnouncement = new Message(MsgType.inform, agentSolution, agent.getId());
-                solutionAnnouncement.setContentStart(agent.getAllGoalSolution().size());
+                // goalSolution found
 
-                agent.broadcastMessage(solutionAnnouncement);
+                // Start negotiation
+                // The agent who found a solution has to check with each agent until his plan is approved
+                agent.negotiateGoalSolution();
 
-                agent.evaluateMessage(solutionAnnouncement);
-                if(goal instanceof GoalBoxToCell){
-                    CharCell goalCell = (CharCell) ((GoalBoxToCell) goal).getDestination();
-                    if(goalCell.isDeadEnd()||goalCell.isCorner()){
-                        //TODO Maybe add in walls[][] and recalculate??
-                    }
-
-                }
-                /*Stuff below is outcommented. In the getSolutions() method, we fetch the global plans from the Agents.*/
-//                agentSolution = agent.getGoalSolution(); // solution is updated after negotiation
-
-//                if(this.solutions.get(Character.getNumericValue(agent.getId()))!=null){
-//                    LinkedList<Node> agentCombinedSolution = this.solutions.get(Character.getNumericValue(agent.getId()));
-//                    agentCombinedSolution.addAll(agentSolution);
-//                    this.solutions.put(Character.getNumericValue(agent.getId()), agentCombinedSolution);
-//                }else{
-//                    LinkedList<Node> agentCombinedSolution = new LinkedList<>();
-//                    agentCombinedSolution.addAll(agentSolution);
-//                    this.solutions.put(Character.getNumericValue(agent.getId()), agentCombinedSolution);
-//                }
-
+                // Negotiation is over: his goalSolution is approved by everyone and he added to his combinedSolution
             }
         }
     }
 
     public List<LinkedList<Node>> getSolutions() {
         this.solutions = new HashMap<>();
-        for (List<Agent> agentList: Level.getInstance().getAgentsByColorMap().values()) {
+        for (List<Agent> agentList: Level.getInstance().getAgentsColorMap().values()) {
             for (Agent a: agentList) {
-                this.solutions.put(Character.getNumericValue(a.getId()), a.getAllGoalSolution());
+                this.solutions.put(Character.getNumericValue(a.getId()), a.getCombinedSolution());
             }
 
         }

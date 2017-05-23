@@ -96,7 +96,7 @@ public class LevelAnalyzer {
             Box closest = cc.getClosestBox(goalBoxes);
             cc.setAssignedBox(closest);
 
-            List<Agent> agentPriorityQueue = this.level.getAgentsByColorMap().get(closest.getBoxColor());
+            List<Agent> agentPriorityQueue = this.level.getAgentsColorMap().get(closest.getBoxColor());
             for (Agent a: agentPriorityQueue) {
                 closest.setAssignedAgent(a); //Will override and the closest agent will get the box
             }
