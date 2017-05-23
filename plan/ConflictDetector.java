@@ -131,7 +131,7 @@ public class ConflictDetector {
         Node agentNodeCurrent = timeMap.get(timeStep + solutionStart); // gets the map of agent points at that that time
         Point otherAgentPoint = new Point(node.agentRow, node.agentCol);
         Point thisAgentPoint = new Point(agentNodeCurrent.agentRow, agentNodeCurrent.agentCol);
-        if (node.action.actionType == Command.Type.Pull|| node.action.actionType== Command.Type.Push){
+        if (node.action.actionType== Command.Type.Push){
             Point otherAgentBox = new Point(node.boxMovedRow, node.boxMovedCol);
             return otherAgentBox.equals(thisAgentPoint);
         }
