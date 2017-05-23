@@ -40,22 +40,10 @@ public class Planner {
                 goal.setPriority(goal.getPriority()-1);
                 goalQueue.add(goal);//Add goal again
 
-                for (Box b:agent.getRemovedBoxes()) {
-                    LinkedList<Node> agentRequestCells = agent.getGoalSolution();
-                    //Search for free space
-                    //Cell destination = new Cell(5,10);
-                    Goal freeAgent = new GoalFreeAgent(b,agentRequestCells, agent);
-                    freeAgent.setPriority(0);//High priority
+                agent.callForHelp();
 
-                    //TODO move logic in Agent class
-                    Message moveBoxRequest = new GoalMessage(MsgType.request,freeAgent, agentRequestCells,agent.getId());
-                    agent.broadcastMessage(moveBoxRequest);
-                    agent.checkReplies(moveBoxRequest);
-                    goalQueue.add(freeAgent);
-                    agent.setGoalSolution(new LinkedList<>());//Forget Solution
-                }
                 System.err.println(agent.getStrategy().searchStatus());
-                System.err.println("Agent " + agent.getId() + " is unable to complete his subgoals.");
+                System.err.println("Agent " + agent.getId() + " has called for help.");
             } else {
                 System.err.println("\nSummary for " + agent.getStrategy().toString() + " for agent " + agent.getId() + ":");
                 System.err.println("Found solution of length " + goalSolution.size());

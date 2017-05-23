@@ -170,6 +170,28 @@ public class Agent {
     }
 
     /**
+     * Asks to other agents to free him
+     * TODO only ask to same colour agents?
+     */
+    public void callForHelp() {
+
+        for (Box b:this.getRemovedBoxes()) {
+            LinkedList<Node> agentRequestCells = this.getGoalSolution();
+            //Search for free space
+            //Cell destination = new Cell(5,10);
+            Goal freeAgent = new GoalFreeAgent(b,agentRequestCells, this);
+            freeAgent.setPriority(0);//High priority
+
+            Message freeMeRequest = new GoalMessage(MsgType.request,freeAgent, agentRequestCells,this.getId());
+            this.broadcastMessage(freeMeRequest);
+            this.checkReplies(freeMeRequest);
+            planner.addGoal(freeAgent);
+            this.setGoalSolution(new LinkedList<>());//Forget Solution
+        }
+
+    }
+
+    /**
      * Negotiate the goalSolution until all other agents agree
      */
     public void negotiateGoalSolution() {
@@ -444,4 +466,5 @@ public class Agent {
     public void setLatestGoal(Goal latestGoal) {
         this.latestGoal = latestGoal;
     }
+
 }
