@@ -58,7 +58,8 @@ public class Agent {
     public LinkedList<Node> searchGoal(Goal goal){
         this.latestGoal = goal; // If we need to place it back on the queue
         if(oldSolutions.containsKey(goal)){
-            return oldSolutions.get(goal); // Old search
+            this.goalSolution = oldSolutions.get(goal);
+            return this.goalSolution; // Old search
             //TODO: This is done so that we can fetch old solutions. We cannot find the same solution twice if we don't clear ExploredNodes in strategy between each search. That might be a better solution actually (We cannot guarantee that this old solution will work in the future. boxes can have moved.)
         }
         this.goalSolution = new LinkedList<>();
@@ -177,7 +178,7 @@ public class Agent {
 
             for (Agent other: MsgHub.getInstance().getAllAgents()){
                 if(other.getId() != this.getId()){
-                    Message solutionAnnouncement = new Message(MsgType.announce, goalSolution, this.id);
+                    Message solutionAnnouncement = new Message(MsgType.announce, this.goalSolution, this.id);
                     solutionAnnouncement.setContentStart(this.combinedSolution.size());
 
                     msgHub.sendMessage(other.getId(), solutionAnnouncement);
@@ -198,7 +199,7 @@ public class Agent {
 
         boolean proposalAccepted = false;
         Message respToProposal;
-        for(Message resp : responses)
+        loop:for(Message resp : responses)
             switch (resp.getType()){
                 case agree: // the other agent agrees with the proposed plan
                     break;
@@ -221,12 +222,11 @@ public class Agent {
                     // In this case an agent needs to replan later.
                     this.goalSolution = new LinkedList<>(); // Don't add anything to the overall solution.
                     this.planner.addGoal(latestGoal);
-                    resetLevelInstance(request.getContent()); // Reset the level to the state before the agent searched for a solution
+                    resetLevelInstance(message.getContent()); // Reset the level to the state before the agent searched for a solution
                     break loop; // Don't check anymore reply messages
             }
-        this.allGoalSolution.addAll(this.goalSolution); // Add the chosen solution to the overall plan
-
         return true;
+    }
 
     private void resetLevelInstance(LinkedList<Node> plan) {
         // In this method, we can pass in a plan. It will reset box and level information
@@ -271,6 +271,7 @@ public class Agent {
                     //TODO: Hotfix for when agents are colliding at step 0
                     if (conflict.getTime() == 0 ){
                         otherAgentSolution = padNoOpNode(otherAgentSolution);
+                        response = new Message(MsgType.request, otherAgentSolution, id);
                     }else {
                         loop:while (conflict != null) {
                             switch (conflict.getType()) {
@@ -305,8 +306,7 @@ public class Agent {
 				break;
 					
 				}
-
-                msgHub.reply(announcement, response); // Send reply
+                msgHub.reply(message, response); // Send reply
                 break;
 
             case request:
