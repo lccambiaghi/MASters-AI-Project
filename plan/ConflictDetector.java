@@ -24,8 +24,16 @@ public class ConflictDetector {
     // return time of first occurring conflict
     public Conflict checkPlan(LinkedList<Node> otherAgentPlan, int solutionStart){
         int conflictPoint;
-        for (int timeStep=0; timeStep < otherAgentPlan.size();timeStep++) {
-            Node n = otherAgentPlan.get(timeStep);
+        int sizeThisAgentPlan = timeMap.size();
+        // HOTFIX FOR THE SITUATION IN WHICH AN AGENT ALREADY MOVED OUT OF THE WAY
+        if(otherAgentPlan.size()==0) return null; // NO conflict
+
+        int timeStepsToCheck = otherAgentPlan.size() > (sizeThisAgentPlan - solutionStart) ? otherAgentPlan.size() : (sizeThisAgentPlan - solutionStart); // If otherAgentPlan is longer than "the rest" (starting from solutionstart) of this agents plan, then go through all of otheragents plan else check the rest of this agents plan
+
+        for (int timeStep=0; timeStep < timeStepsToCheck;timeStep++) {
+
+            Node n = timeStep >= otherAgentPlan.size()  ? otherAgentPlan.getLast() : otherAgentPlan.get(timeStep);
+
             conflictPoint = timeStep+solutionStart;
             if(!timeMap.containsKey(timeStep+solutionStart)){//Check from solutionstart in global plan
                 //Assumue last position of this agent
@@ -35,14 +43,21 @@ public class ConflictDetector {
                 if(!timeMap.isEmpty()) tmp = timeMap.get(timeMap.lastKey());
                 Point otherAgentPoint = new Point(n.agentRow,n.agentCol);
                 Point thisAgentPoint = new Point(tmp.agentRow,tmp.agentCol);
+                if(n.boxMoved != null){
+                    Point otherAgentBoxMoved = new Point(n.boxMovedRow,n.boxMovedCol);
+                    if(thisAgentPoint.equals(otherAgentBoxMoved)){
+                        return new Conflict(conflictPoint, Conflict.type.agentInTheWay,n,tmp);
+                    }
+                }
                 // Has another agent planned to move to the same point?
                 if(otherAgentPoint.equals(thisAgentPoint)){
-                    return new Conflict(conflictPoint, Conflict.type.agentInTheWay,n,tmp);//TODO This agents is standing still in the way!
+                    return new Conflict(conflictPoint, Conflict.type.agentInTheWay,n,tmp);
                 }
             }else{
                 Point otherAgentPoint = new Point(n.agentRow, n.agentCol);
                 if(collisionWithAgent(timeStep, solutionStart, n)){
                     return new Conflict(conflictPoint, Conflict.type.agentagent, n, timeMap.get(timeStep+solutionStart)); //TODO Make sure its not timestep + solutionstart - 1
+                    //TODO Might also be a agentbox
                 }
 
                 if(owner.getColor() != n.agentColor && collisionWithBox(timeStep, solutionStart, n)) {
@@ -73,10 +88,38 @@ public class ConflictDetector {
                         }
                     }
                 }else{
+                    Node thisAgentNode = timeMap.get(timeStep+solutionStart);
+                    Point thisAgentPoint = new Point(thisAgentNode.agentRow, thisAgentNode.agentCol);
+
                     Node thisAgentNodeBefore = timeMap.get(timeStep+solutionStart).parent;
-                    Point thisAgentPointBefore = new Point(thisAgentNodeBefore.agentRow, thisAgentNodeBefore.agentCol);
-                    if(thisAgentPointBefore.equals(otherAgentPoint)){ // if there was an agent in the cell I now want to reach
-                        return conflictPoint;//other agent moves into cell this agent was in
+                    Point thisAgentPointBefore = new Point(thisAgentNodeBefore.agentRow,thisAgentNodeBefore.agentCol);
+
+                    Node otherAgentNodeBefore = n.parent;
+                    Point otherAgentPointBefore = new Point(otherAgentNodeBefore.agentRow,otherAgentNodeBefore.agentCol);
+
+                    if(thisAgentPointBefore.equals(otherAgentPoint)){
+                        return new Conflict(conflictPoint,Conflict.type.agentagent,n,thisAgentNodeBefore);
+                    }
+
+                    if(n.boxMoved != null){
+                        Point otherAgentBoxMoved = new Point(n.boxMovedRow,n.boxMovedCol);
+                        if(otherAgentBoxMoved.equals(thisAgentPoint) || otherAgentBoxMoved.equals(thisAgentPointBefore)){
+                            return new Conflict(conflictPoint,Conflict.type.agentbox,n,thisAgentNode);
+                        }
+                    }
+
+                    if(thisAgentNode.boxMoved != null){
+                        Point thisAgentBoxMoved = new Point(thisAgentNode.boxMovedRow,thisAgentNode.boxMovedCol);
+                        if(thisAgentBoxMoved.equals(otherAgentPointBefore)){
+                            return new Conflict(conflictPoint,Conflict.type.agentbox,otherAgentNodeBefore,thisAgentNode);
+                        }
+                    }
+
+                    if(thisAgentPoint.equals(otherAgentPointBefore)){
+                        return new Conflict(conflictPoint,Conflict.type.agentagent,otherAgentNodeBefore,thisAgentNode);
+                    }
+                    if(thisAgentPoint.equals(otherAgentPoint)){ // if there was an agent in the cell I now want to reach
+                        return new Conflict(conflictPoint, Conflict.type.agentagent,n,thisAgentNode);//other agent moves into cell this agent was in
                     }
                 }
             }

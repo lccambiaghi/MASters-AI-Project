@@ -185,7 +185,7 @@ public class Graph {
 
     public void calculatePriority(Graph graph){
         Graph newGraph = graph.getCopy();
-        int priority = 0;
+        int priority = 10;
         ArrayList<Vertex> removedGoals = new ArrayList<>();
         HashSet<Vertex> tmpRemovedGoals = new HashSet<>();
         HashSet<Vertex> tmpGoals = new HashSet<>();
@@ -204,7 +204,7 @@ public class Graph {
                 newGraph.removeVertex(rv);
                 newGraph.goalVertices.remove(rv);
             }
-            priority++;
+            priority+=10;
             int components = 100;
             Vertex removeVertex = null;
             for (Vertex tgv: tmpGoals) {
@@ -224,7 +224,7 @@ public class Graph {
                 newGraph.goalVertices.remove(removeVertex);
             }
             tmpRemovedGoals.clear();
-            priority++;
+            priority+=10;
         }
 
         for (Edge e: newGraph.removedEdges) {

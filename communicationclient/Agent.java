@@ -12,8 +12,6 @@ import plan.Planner;
 
 import java.util.*;
 
-import static plan.Conflict.type.agentagent;
-import static plan.Conflict.type.agentbox;
 
 public class Agent {
 
@@ -29,6 +27,8 @@ public class Agent {
     private ArrayDeque<Goal> subGoals;
     private ArrayList<Box> potentialBoxes = new ArrayList<>();
     private HashSet<Box> removedBoxes = new HashSet<>();
+    private Goal latestGoal;
+    private HashMap<Goal,LinkedList<Node>> oldSolutions = new HashMap<>();
 
     public Agent(char id, Strategy strategy, int row, int col) {
         this.subGoals = new ArrayDeque<>();
@@ -55,6 +55,11 @@ public class Agent {
         //return subGoals;
     }
     public LinkedList<Node> searchGoal(Goal goal){
+        this.latestGoal = goal; // If we need to place it back on the queue
+        if(oldSolutions.containsKey(goal)){
+            return oldSolutions.get(goal); // Old search
+            //TODO: This is done so that we can fetch old solutions. We cannot find the same solution twice if we don't clear ExploredNodes in strategy between each search. That might be a better solution actually (We cannot guarantee that this old solution will work in the future. boxes can have moved.)
+        }
         this.goalSolution = new LinkedList<>();
         this.potentialBoxes = new ArrayList<>();
         goal.refine();
@@ -72,26 +77,12 @@ public class Agent {
                 this.goalSolution.addAll(solution);
                 //Reset agent position to start
 
-                Node initialPosition = this.goalSolution.getFirst().parent;
-
-                this.agentRow = initialPosition.agentRow;
-                this.agentCol = initialPosition.agentCol;
-
-                for (int row = 0; row < Level.getInstance().MAX_ROW; row++) {
-                    for (int col = 0; col < Level.getInstance().MAX_COL; col++) {
-                        if (initialPosition.boxes[row][col] != null) {
-                            Box box =  initialPosition.boxes[row][col];
-                            box.setRow(row) ;
-                            box.setCol(col);
-
-                        }
-
-                    }
-                }
+                resetLevelInstance(this.goalSolution);
 
                 return null;
             }
         }
+        oldSolutions.put(goal,this.goalSolution);
         return this.goalSolution;
     }
 
@@ -182,12 +173,11 @@ public class Agent {
         boolean proposalAccepted = false;
         Message response;
         int tempLength = 0;
-        for(Message request : requests)
+        loop:for(Message request : requests)
             switch (request.getType()){
                 case request://Another agent request to change solution of this agent or sends the same plan back
                     if(request.getContent().size() > tempLength){ /* TODO: Does not work if we change plans by anything else than padding with NOOP in front*/
                         this.goalSolution = request.getContent();
-                        this.allGoalSolution.addAll(this.goalSolution);
                         tempLength = request.getContent().size();
                     }
                     response = new Message(MsgType.agree, null, id);
@@ -205,8 +195,34 @@ public class Agent {
                         sendResponse(request.getSender(),response);
                     }
                     break;
+                case await:
+                    // In this case an agent needs to replan later.
+                    this.goalSolution = new LinkedList<>(); // Don't add anything to the overall solution.
+                    this.planner.addGoal(latestGoal);
+                    resetLevelInstance(request.getContent()); // Reset the level to the state before the agent searched for a solution
+                    break loop; // Don't check anymore reply messages
             }
+        this.allGoalSolution.addAll(this.goalSolution); // Add the chosen solution to the overall plan
 
+    }
+
+    private void resetLevelInstance(LinkedList<Node> plan) {
+        // In this method, we can pass in a plan. It will reset box and level information
+        Node initialNode = plan.getFirst().parent;
+        this.agentRow = initialNode.agentRow;
+        this.agentCol = initialNode.agentCol;
+
+        for (int row = 0; row < Level.getInstance().MAX_ROW; row++) {
+            for (int col = 0; col < Level.getInstance().MAX_COL; col++) {
+                if (initialNode.boxes[row][col] != null) {
+                    Box box =  initialNode.boxes[row][col];
+                    box.setRow(row) ;
+                    box.setCol(col);
+
+                }
+
+            }
+        }
     }
 
     private void sendResponse(Message request, Message response) {
@@ -226,9 +242,13 @@ public class Agent {
                 LinkedList<Node> otherAgentSolution = announcement.getContent();
                 int solutionStart = announcement.getContentStart();
 
-                Conflict conflict = checkForConflicts(otherAgentSolution,solutionStart);
+                Message response = new Message(MsgType.request, otherAgentSolution, id); // Assuming no conflict
 
-                if(conflict!=null){
+                Conflict conflict = checkForConflicts(otherAgentSolution,solutionStart); // Check for conflicts
+
+
+
+                if(conflict!=null){ // Handle conflicts if they exist
                     //TODO: Hotfix for when agents are colliding at step 0
                     if (conflict.getTime() == 0 ){
                         otherAgentSolution = padNoOpNode(otherAgentSolution);
@@ -239,16 +259,20 @@ public class Agent {
                                 case agentbox:
                                 case agentagent:
                                     //Make other agent wait one step
+                                    System.err.println(this.getId() + " tries to make " + otherAgentSolution.getFirst().agentId + " to pad NOOP ");
                                     LinkedList<Node> newSolution = makeOtherAgentWait(otherAgentSolution);
                                     otherAgentSolution = newSolution;
                                     conflict = checkForConflicts(otherAgentSolution,solutionStart);
+                                    response = new Message(MsgType.request, otherAgentSolution, id);
                                     break;
                                 case agentInTheWay:
                                     // Create subgoalmoveouttheway and approve agents plan
+                                    System.err.println("GoalMoveOutTheWay created for " + this.getId() +" after conflict with " + otherAgentSolution.getFirst().agentId);
                                     Goal moveOutTheWay = new GoalMoveOutTheWay(otherAgentSolution);
                                     moveOutTheWay.setPriority(1);
                                     moveOutTheWay.setAgent(this);
                                     planner.addGoal(moveOutTheWay);
+                                    response = new Message(MsgType.await, otherAgentSolution, id); // Return await, to make the other agent replan later
                                     break loop;
                                 default:
                                     System.err.println("Could not determine the type of conflict");
@@ -257,8 +281,8 @@ public class Agent {
                         }
                     }
                 }
-                Message solutionAccepted = new Message(MsgType.request, otherAgentSolution, id);
-                msgHub.reply(announcement, solutionAccepted);
+
+                msgHub.reply(announcement, response); // Send reply
                 break;
 
             case request:
@@ -373,5 +397,13 @@ public class Agent {
 
     public void setPlanner(Planner planner) {
         this.planner = planner;
+    }
+
+    public Goal getLatestGoal() {
+        return latestGoal;
+    }
+
+    public void setLatestGoal(Goal latestGoal) {
+        this.latestGoal = latestGoal;
     }
 }

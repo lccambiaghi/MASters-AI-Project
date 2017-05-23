@@ -1,6 +1,7 @@
 package goal;
 
 import communicationclient.Agent;
+import communicationclient.Command;
 import communicationclient.Node;
 import level.Box;
 import level.Cell;
@@ -42,7 +43,19 @@ public class SubGoalMoveOutTheWay extends GoalMoveOutTheWay {
     public Integer calculateHeuristic(Node n){
         //TODO Create Heuristics for optimal "parkingspot" maybe use graph :-)
         // TODO Make sure that the agent does not pull or push boxes, but only moves out the way
+
         Integer h=0;//BFS
+        Command action = n.action;
+        if(action==null){
+            return h;
+        }
+        switch (action.actionType) { // Punish if he tries to move boxes
+            case Pull:
+                h = 20;
+                break;
+            case Push:
+                h = 20;
+        }
         return h;
     }
     @Override
