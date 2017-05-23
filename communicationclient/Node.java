@@ -45,6 +45,8 @@ public class Node {
 	public Box boxMoved;
 	public int boxMovedRow;
 	public int boxMovedCol;
+	public int oldBoxMovedRow;
+	public int oldBoxMovedCol;
 	public Box[][] getBoxesCopy() {
 		Box[][] copy = new Box[MAX_ROW][MAX_COL];
 		for (int row = 0; row < MAX_ROW; row++) {
@@ -147,6 +149,8 @@ public class Node {
 						n.boxMoved = n.boxes[newBoxRow][newBoxCol];
 						n.boxMovedRow = newBoxRow;
 						n.boxMovedCol = newBoxCol;
+						n.oldBoxMovedRow = newAgentRow;
+						n.oldBoxMovedCol = newAgentCol;
 						n.boxes[newAgentRow][newAgentCol] = null;
 						expandedNodes.add(n);
 					}
@@ -166,6 +170,8 @@ public class Node {
 						n.boxMoved = n.boxes[this.agentRow][this.agentCol];
 						n.boxMovedRow = this.agentRow;
 						n.boxMovedCol = this.agentCol;
+						n.oldBoxMovedRow = boxRow;
+						n.oldBoxMovedCol = boxCol;
 						n.boxes[boxRow][boxCol] = null;
 						expandedNodes.add(n);
 					}
@@ -202,6 +208,7 @@ public class Node {
 		copy.potentialBoxes = this.potentialBoxes;
 		for (int row = 0; row < MAX_ROW; row++) {
 			System.arraycopy(this.boxes[row], 0, copy.boxes[row], 0, MAX_COL);
+			System.arraycopy(this.walls[row], 0, copy.walls[row], 0, MAX_COL);
 		}
 		return copy;
 	}

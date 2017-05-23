@@ -66,7 +66,7 @@ public class MsgHub {
     }
 
     public void reply(Message message, Message response) {
-        Queue<Message> responses = new ArrayDeque<>();
+        Queue<Message> responses = messageMap.get(message);
         responses.add(response);
 
         messageMap.put(message, responses);

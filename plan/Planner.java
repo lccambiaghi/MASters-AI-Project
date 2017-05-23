@@ -72,7 +72,7 @@ public class Planner {
             } else {
                 System.err.println("\nSummary for " + agent.getStrategy().toString() + " for agent " + agent.getId() + ":");
                 System.err.println("Found solution of length " + agentSolution.size());
-                System.err.println(agent.getStrategy().searchStatus());
+                System.err.println(agent.getStrategy().searchStatus()+ "\n \n");
                 agent.setNumberOfGoals(agent.getNumberOfGoals()-1);
 
                 // agentSolution found

@@ -71,7 +71,7 @@ public class CommunicationClient {
         try {
             CommunicationClient client = new CommunicationClient();
             Heuristic heuristic = new Heuristic.Greedy();
-//          Heuristic heuristic = new Heuristic.WeightedAStar(5);
+ //         Heuristic heuristic = new Heuristic.WeightedAStar(5);
             Strategy strategy = new StrategyBestFirst(heuristic);
 
             client.levelParser = new LevelParser(strategy,true);
@@ -90,6 +90,7 @@ public class CommunicationClient {
             for (List<Agent> agentList: Level.getInstance().getAgentsByColorMap().values()) {
                 for (Agent a: agentList) {
                     a.setPlanner(client.planner);
+
                 }
             }
 
