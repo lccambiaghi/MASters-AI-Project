@@ -30,6 +30,7 @@ public class Agent {
     private Goal latestGoal;
     private HashMap<Goal,LinkedList<Node>> oldSolutions = new HashMap<>();
     private HashSet<Vertex> limitedRessources;
+    private ArrayList<RessourceRequest> thisAgentRessourceRequests = new ArrayList<>();
 
     public Agent(char id, Strategy strategy, int row, int col) {
         this.subGoals = new ArrayDeque<>();
@@ -86,7 +87,7 @@ public class Agent {
                 return null;
             }
         }
-        oldSolutions.put(goal,this.goalSolution);
+//        oldSolutions.put(goal,this.goalSolution);
         return this.goalSolution;
     }
 
@@ -200,9 +201,13 @@ public class Agent {
         ArrayList<RessourceRequest> ressourceRequests = new ArrayList<>();
         int timestep = 0;
         for (Node n: this.goalSolution) {
-            if (limitedRessources.contains(new Vertex(n.agentRow, n.agentCol))) ressourceRequests.add(new RessourceRequest(timestep, new Vertex(n.agentRow, n.agentCol)));
+            if (limitedRessources.contains(new Vertex(n.agentRow, n.agentCol))) {
+                ressourceRequests.add(new RessourceRequest(timestep+this.combinedSolution.size(), new Vertex(n.agentRow, n.agentCol)));
+            }
             if (n.action.actionType == Command.Type.Pull || n.action.actionType == Command.Type.Push){
-                if (limitedRessources.contains(new Vertex(n.boxMovedRow,n.boxMovedCol)))  ressourceRequests.add(new RessourceRequest(timestep, new Vertex(n.boxMovedRow, n.boxMovedCol)));
+                if (limitedRessources.contains(new Vertex(n.boxMovedRow,n.boxMovedCol)))  {
+                    ressourceRequests.add(new RessourceRequest(timestep+this.combinedSolution.size(), new Vertex(n.boxMovedRow, n.boxMovedCol)));
+                }
             }
             timestep++;
         }
@@ -232,6 +237,7 @@ public class Agent {
         }
 
         this.combinedSolution.addAll(this.goalSolution);
+        this.thisAgentRessourceRequests.addAll(ressourceRequests);
     }
 
     public int checkReplies(Message message) {
@@ -318,9 +324,25 @@ public class Agent {
                 // check if there is a conflict
                 // if yes, send back request
                 LinkedList<Node> otherAgentSolution = message.getContent().getContent();
+                ArrayList<RessourceRequest> otherAgentRessourceRequest = message.getContent().getRessourceRequests();
+                ArrayList<RessourceRequest> conflictingRessources = new ArrayList<>();
+                for (RessourceRequest request: thisAgentRessourceRequests){//Check this agents requests against another agents
+                    if(otherAgentRessourceRequest.contains(request)){
+                        conflictingRessources.add(request);
+                    }
+                }
+
                 int solutionStart = message.getContentStart();
                 content = new MsgContent(otherAgentSolution);
                 Message response = new Message(MsgType.request, content, id); // Assuming no conflict
+                if(conflictingRessources.size()>0){
+                    int firstTimestepConflict = conflictingRessources.get(0).getTimestep();
+                    int lastTimestepConflict = conflictingRessources.get(conflictingRessources.size()-1).getTimestep();
+                    int waitTime = lastTimestepConflict-firstTimestepConflict+1;
+                    for (int i = 0; i < waitTime;i++){
+                        otherAgentSolution = padNoOpNodeAtIndex(otherAgentSolution, firstTimestepConflict-solutionStart+1);
+                    }
+                }
 
                 Conflict conflict = checkForConflicts(otherAgentSolution,solutionStart); // Check for conflicts
 
@@ -419,6 +441,17 @@ public class Agent {
         noOp.agentCol = initialNode.agentCol;
         noOp.action= new Command(Command.Type.NoOp, null,null);
         newSolution.addFirst(noOp);
+        return newSolution;
+    }
+    private LinkedList<Node> padNoOpNodeAtIndex(LinkedList<Node> oldSolution,int index) {
+        LinkedList<Node> newSolution = new LinkedList<>(oldSolution);
+        Node initialNode = oldSolution.getFirst().parent;
+        Node noOp = new Node(initialNode);
+        noOp.setBoxes(initialNode.getBoxesCopy());
+        noOp.agentRow = initialNode.agentRow;
+        noOp.agentCol = initialNode.agentCol;
+        noOp.action= new Command(Command.Type.NoOp, null,null);
+        newSolution.add(index,noOp);
         return newSolution;
     }
 

@@ -1,8 +1,8 @@
 package communication;
 
 import communicationclient.Node;
-import sun.awt.image.ImageWatched;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -11,7 +11,7 @@ import java.util.List;
  */
 public class MsgContent {
     private LinkedList<Node> content;
-    private List<RessourceRequest> ressourceRequests;
+    private ArrayList<RessourceRequest> ressourceRequests;
 
     public MsgContent(LinkedList<Node> content) {
         this.content = content;
@@ -25,11 +25,11 @@ public class MsgContent {
         this.content = content;
     }
 
-    public List<RessourceRequest> getRessourceRequests() {
+    public ArrayList<RessourceRequest> getRessourceRequests() {
         return ressourceRequests;
     }
 
-    public void setRessourceRequests(List<RessourceRequest> ressourceRequests) {
+    public void setRessourceRequests(ArrayList<RessourceRequest> ressourceRequests) {
         this.ressourceRequests = ressourceRequests;
     }
 }

@@ -29,4 +29,22 @@ public class RessourceRequest {
     public void setRequestedCell(Vertex requestedCell) {
         this.requestedCell = requestedCell;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        RessourceRequest that = (RessourceRequest) o;
+
+        if (timestep != that.timestep) return false;
+        return requestedCell != null ? requestedCell.equals(that.requestedCell) : that.requestedCell == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = timestep;
+        result = 31 * result + (requestedCell != null ? requestedCell.hashCode() : 0);
+        return result;
+    }
 }
