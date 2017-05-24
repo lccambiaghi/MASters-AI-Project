@@ -29,7 +29,7 @@ public class LevelParser {
         // If debug==true, our client parses the level instead of receiving it from the server
         if(this.debug){
             FileInputStream fis = null;
-            fis = new FileInputStream("competition_levels/MAFooBar.lvl");
+            fis = new FileInputStream("competition_levels/MALemmings.lvl");
             in = new BufferedReader(new InputStreamReader(fis));
         }else{
             in = new BufferedReader(new InputStreamReader(System.in));
@@ -140,6 +140,7 @@ public class LevelParser {
                             newAgent.setColor(agentColor);
                         }
                         level.setAgentInColorMap(newAgent);
+                        v.setAgent(newAgent);
                         graph.addVertex(v);
                         System.err.println("Agent " + newAgent.getId() + " created, Color is " + newAgent.getColor().toString());
                     }

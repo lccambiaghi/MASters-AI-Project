@@ -4,6 +4,7 @@ import communicationclient.Agent;
 import goal.Goal;
 import goal.GoalBoxToCell;
 import graph.Graph;
+import graph.Vertex;
 import heuristic.CharCellComparator;
 import heuristic.GoalComparator;
 import heuristic.HeuristicHelper;
@@ -91,14 +92,22 @@ public class LevelAnalyzer {
         // assign a box to each charCell
         HashSet<CharCell> charCells = this.level.getAllCharCells();
         for (CharCell cc: charCells) {
-            HashSet<Box> goalBoxes = this.level.getBoxesByChar(Character.toUpperCase(cc.getLetter()));
+            HashSet<Vertex> reachableBoxes = this.graph.getBoxesInComponent().get(new Vertex(cc.getRow(),cc.getCol()));
+            HashSet<Box> goalBoxes = new HashSet<>();
+            for (Vertex b:reachableBoxes) {
+                if (b.getBox().getBoxChar()==Character.toUpperCase(cc.getLetter())){
+                    goalBoxes.add(b.getBox());
+                }
+            }
+//            HashSet<Box> goalBoxes = this.level.getBoxesByChar(Character.toUpperCase(cc.getLetter()));
             //TODO is box actually accessible from goal?
             Box closest = cc.getClosestBox(goalBoxes);
             cc.setAssignedBox(closest);
-
-            List<Agent> agentPriorityQueue = this.level.getAgentsColorMap().get(closest.getBoxColor());
-            for (Agent a: agentPriorityQueue) {
-                closest.setAssignedAgent(a); //Will override and the closest agent will get the box
+            HashSet<Vertex> reachableAgents = this.graph.getAgentsInComponent().get(new Vertex(cc.getRow(),cc.getCol()));
+            for (Vertex a: reachableAgents) {
+                if (a.getAgent().getColor()==closest.getBoxColor()){
+                    closest.setAssignedAgent(a.getAgent()); //Will override and the closest agent will get the box
+                }
             }
             closest.setDestination(cc);
         }

@@ -9,10 +9,13 @@ public class Graph {
     private HashSet<Vertex> vertices = new HashSet<>();
     private HashSet<Vertex> goalVertices = new HashSet<>();
     private HashSet<Vertex> boxVertices = new HashSet<>();
+    private HashSet<Vertex> agentVertices = new HashSet<>();
 
     private HashMap<Vertex, HashSet<Edge>> edgesMap = new HashMap<>();
     private HashSet<Vertex> visitedVertices = new HashSet<>();
     private HashSet<Vertex> currentComponentVertices = new HashSet<>();
+    private HashMap<Vertex, HashSet<Vertex>> boxesInComponent = new HashMap<>();
+    private HashMap<Vertex, HashSet<Vertex>> agentsInComponent = new HashMap<>();
 
     private List<Edge> removedEdges = new ArrayList<>();
     private List<Vertex> limitedResources = new ArrayList<>();
@@ -35,6 +38,7 @@ public class Graph {
         for (Vertex n1 :vertices) {
             if(n1.getGoalCell() != null) goalVertices.add(n1);
             if(n1.getBox() != null) boxVertices.add(n1);
+            if(n1.getAgent() != null) agentVertices.add(n1);
 
             HashSet<Edge> n1Edges = new HashSet<>();
             edgesMap.put(n1,n1Edges);
@@ -49,10 +53,30 @@ public class Graph {
         }
 
         //Run DFS from all goalVertices to only consider the components of the level that matter.
+        HashSet<Vertex> reachableBoxes = new HashSet<>();
+        HashSet<Vertex> reachableAgents = new HashSet<>();
         for (Vertex goalVertex: goalVertices) {
             if (!visitedVertices.contains(goalVertex)){
                 numberOfComponents++;
+                currentComponentVertices = new HashSet<>();
                 runDFS(goalVertex);
+                reachableBoxes = new HashSet<>();
+                reachableAgents = new HashSet<>();
+                for (Vertex boxVertex: boxVertices) {
+                    if(currentComponentVertices.contains(boxVertex)){
+                        reachableBoxes.add(boxVertex);
+                    }
+                }
+                for (Vertex agentVertex: agentVertices) {
+                    if(currentComponentVertices.contains(agentVertex)){
+                        reachableAgents.add(agentVertex);
+                    }
+                }
+                boxesInComponent.put(goalVertex, reachableBoxes);
+                agentsInComponent.put(goalVertex, reachableAgents);
+            }else{
+                boxesInComponent.put(goalVertex, reachableBoxes);
+                agentsInComponent.put(goalVertex, reachableAgents);
             }
         }
         //Remove all vertices that can't be visited from any goal cell as they will be outside of the walkable map
@@ -273,4 +297,11 @@ public class Graph {
         this.boxVertices = boxVertices;
     }
 
+    public HashMap<Vertex, HashSet<Vertex>> getBoxesInComponent() {
+        return boxesInComponent;
+    }
+
+    public HashMap<Vertex, HashSet<Vertex>> getAgentsInComponent() {
+        return agentsInComponent;
+    }
 }

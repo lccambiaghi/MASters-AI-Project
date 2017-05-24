@@ -1,5 +1,6 @@
 package graph;
 
+import communicationclient.Agent;
 import level.Box;
 import level.CharCell;
 
@@ -18,6 +19,7 @@ public class Vertex {
     private boolean satisfied;
     private CharCell goalCell = null;
     private Box box = null;
+    private Agent agent = null;
 
     public Vertex(int row, int col){
         this.row = row;
@@ -73,6 +75,14 @@ public class Vertex {
     }
     public Box getBox(){
         return box;
+    }
+
+    public Agent getAgent() {
+        return agent;
+    }
+
+    public void setAgent(Agent agent) {
+        this.agent = agent;
     }
 
     @Override
