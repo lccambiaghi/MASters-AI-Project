@@ -101,8 +101,10 @@ public class CharCell extends Cell{
             if (b.getDestination() == null){ // consider only boxes not already assigned
                 int newDistance = HeuristicHelper.manhattanDistance(b.getRow(), b.getCol(), this.row, this.col);
 
-                if (newDistance < oldDistance)
-                   closestBox = b;
+                if (newDistance < oldDistance){
+                    oldDistance = newDistance;
+                    closestBox = b;
+                }
             }
 
         return closestBox;

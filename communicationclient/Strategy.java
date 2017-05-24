@@ -52,6 +52,9 @@ public abstract class Strategy {
 
 	public abstract boolean frontierIsEmpty();
 	public abstract void clearFrontier();
+	public void clearExplored(){
+		this.explored = new HashSet<>();
+	}
 
 	@Override
 	public abstract String toString();

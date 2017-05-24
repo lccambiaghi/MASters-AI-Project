@@ -92,7 +92,7 @@ public class LevelAnalyzer {
         HashSet<CharCell> charCells = this.level.getAllCharCells();
         for (CharCell cc: charCells) {
             HashSet<Box> goalBoxes = this.level.getBoxesByChar(Character.toUpperCase(cc.getLetter()));
-
+            //TODO is box actually accessible from goal?
             Box closest = cc.getClosestBox(goalBoxes);
             cc.setAssignedBox(closest);
 

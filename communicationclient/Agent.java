@@ -57,13 +57,14 @@ public class Agent {
         //return subGoals;
     }
     public LinkedList<Node> searchGoal(Goal goal){
+        this.strategy.clearExplored();//Clear explored nodes for each new goal??
         this.latestGoal = goal; // If we need to place it back on the queue
-        if(oldSolutions.containsKey(goal)){
-            this.goalSolution = oldSolutions.get(goal);
-            updateLevelInstance(this.goalSolution); // Set information from the old plans last node
-            return this.goalSolution; // Old search
-            //TODO: This is done so that we can fetch old solutions. We cannot find the same solution twice if we don't clear ExploredNodes in strategy between each search. That might be a better solution actually (We cannot guarantee that this old solution will work in the future. boxes can have moved.)
-        }
+//        if(oldSolutions.containsKey(goal)){
+//            this.goalSolution = oldSolutions.get(goal);
+//            updateLevelInstance(this.goalSolution); // Set information from the old plans last node
+//            return this.goalSolution; // Old search
+//            //TODO: This is done so that we can fetch old solutions. We cannot find the same solution twice if we don't clear ExploredNodes in strategy between each search. That might be a better solution actually (We cannot guarantee that this old solution will work in the future. boxes can have moved.)
+//        }
         this.goalSolution = new LinkedList<>();
         this.potentialBoxes = new ArrayList<>();
         goal.refine();

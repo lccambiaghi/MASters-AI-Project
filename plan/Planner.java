@@ -18,6 +18,7 @@ import java.util.*;
 public class Planner {
     private PriorityQueue<Goal> goalQueue;
     private HashMap<Integer, LinkedList<Node>> solutions;
+    private ArrayList<Goal> completedGoals;
 
     public Planner(PriorityQueue<Goal> priorityQueue) {
         this.goalQueue = priorityQueue;
@@ -25,6 +26,7 @@ public class Planner {
 
     public void searchingPhase() {
         this.solutions = new HashMap<>();
+        this.completedGoals = new ArrayList<>();
 
         for (List<Agent> agentList: Level.getInstance().getAgentsColorMap().values())
             for (Agent a: agentList)
@@ -45,7 +47,7 @@ public class Planner {
                 System.err.println(agent.getStrategy().searchStatus());
                 System.err.println("Agent " + agent.getId() + " has called for help.");
             } else {
-                System.err.println("\nSummary for " + agent.getStrategy().toString() + " for agent " + agent.getId() + ":");
+                System.err.println("\nSummary for " + agent.getStrategy().toString() + " for agent " + agent.getId() + ": "+goal.toString());
                 System.err.println("Found solution of length " + goalSolution.size());
                 System.err.println(agent.getStrategy().searchStatus());
                 agent.setNumberOfGoals(agent.getNumberOfGoals()-1);
@@ -55,8 +57,21 @@ public class Planner {
                 // Start negotiation
                 // The agent who found a solution has to check with each agent until his plan is approved
                 agent.negotiateGoalSolution();
-
                 // Negotiation is over: his goalSolution is approved by everyone and he added to his combinedSolution
+                //TODO has this goal destroyed any other goals already completed
+                    if(goal instanceof GoalBoxToCell){//Don't add move out the way goals
+                        Node n = new Node(goal, agent);
+                        //TODO make sure position is updated
+                        HashSet<Box> allBoxes = Level.getInstance().getAllBoxes();
+                        for (Box b : allBoxes) {
+                                n.addBox(b);
+                        }
+                        if (!completedGoals.contains(goal)) completedGoals.add(goal);
+                        for (Goal completedGoal: completedGoals) {
+                            if (!completedGoal.isGoalSatisfied(n) && !goalQueue.contains(completedGoal)) goalQueue.add(completedGoal);
+                        }
+                    }
+
             }
         }
     }

@@ -67,6 +67,10 @@ public abstract class Heuristic implements Comparator<Node> {
 		public AStar(Node initialState) {
 			super(initialState);
 		}
+		public AStar() {
+			super();
+		}
+
 
 		@Override
 		public int f(Node n) {
