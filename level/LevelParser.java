@@ -29,7 +29,7 @@ public class LevelParser {
         // If debug==true, our client parses the level instead of receiving it from the server
         if(this.debug){
             FileInputStream fis = null;
-            fis = new FileInputStream("competition_levels/MALemmings.lvl");
+            fis = new FileInputStream("competition_levels/MAMASters.lvl");
             in = new BufferedReader(new InputStreamReader(fis));
         }else{
             in = new BufferedReader(new InputStreamReader(System.in));
@@ -148,7 +148,6 @@ public class LevelParser {
                 row++;
             }
         }
-        // The following is just for testing that the graph analyzis works :-)
         // TODO is it the right place? Move it in the LevelAnalyzer?
         graph.createGraph();
         System.err.println("*--------------------------------------*");

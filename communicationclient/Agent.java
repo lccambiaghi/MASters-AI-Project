@@ -1,11 +1,9 @@
 package communicationclient;
 
 import com.sun.deploy.security.ValidationState;
-import communication.Message;
-import communication.MsgHub;
-import communication.MsgType;
-import communication.GoalMessage;
+import communication.*;
 import goal.*;
+import graph.Vertex;
 import level.*;
 import plan.Conflict;
 import plan.ConflictDetector;
@@ -31,6 +29,7 @@ public class Agent {
     private HashSet<Box> removedBoxes = new HashSet<>();
     private Goal latestGoal;
     private HashMap<Goal,LinkedList<Node>> oldSolutions = new HashMap<>();
+    private HashSet<Vertex> limitedRessources;
 
     public Agent(char id, Strategy strategy, int row, int col) {
         this.subGoals = new ArrayDeque<>();
@@ -182,8 +181,8 @@ public class Agent {
             //Cell destination = new Cell(5,10);
             Goal freeAgent = new GoalFreeAgent(b,agentRequestCells, this);
             freeAgent.setPriority(0);//High priority
-
-            Message freeMeRequest = new GoalMessage(MsgType.request,freeAgent, agentRequestCells,this.getId());
+            MsgContent content = new MsgContent(agentRequestCells);
+            Message freeMeRequest = new GoalMessage(MsgType.request,freeAgent, content,this.getId());
             this.broadcastMessage(freeMeRequest);
             this.checkReplies(freeMeRequest);
             planner.addGoal(freeAgent);
@@ -198,13 +197,24 @@ public class Agent {
     public void negotiateGoalSolution() {
         MsgHub msgHub = MsgHub.getInstance();
         int solutionAccepted = 0;
+        ArrayList<RessourceRequest> ressourceRequests = new ArrayList<>();
+        int timestep = 0;
+        for (Node n: this.goalSolution) {
+            if (limitedRessources.contains(new Vertex(n.agentRow, n.agentCol))) ressourceRequests.add(new RessourceRequest(timestep, new Vertex(n.agentRow, n.agentCol)));
+            if (n.action.actionType == Command.Type.Pull || n.action.actionType == Command.Type.Push){
+                if (limitedRessources.contains(new Vertex(n.boxMovedRow,n.boxMovedCol)))  ressourceRequests.add(new RessourceRequest(timestep, new Vertex(n.boxMovedRow, n.boxMovedCol)));
+            }
+            timestep++;
+        }
+
 
         loop:while(solutionAccepted == 0){
             solutionAccepted = 1;
-
             for (Agent other: MsgHub.getInstance().getAllAgents()){
                 if(other.getId() != this.getId()){
-                    Message solutionAnnouncement = new Message(MsgType.announce, this.goalSolution, this.id);
+                    MsgContent content = new MsgContent(this.goalSolution);//New message each time as goalsolution might be updated
+                    content.setRessourceRequests(ressourceRequests);
+                    Message solutionAnnouncement = new Message(MsgType.announce, content, this.id);
                     solutionAnnouncement.setContentStart(this.combinedSolution.size());
 
                     msgHub.sendMessage(other.getId(), solutionAnnouncement);
@@ -234,7 +244,7 @@ public class Agent {
                 case agree: // the other agent agrees with the proposed plan
                     break;
                 case request://Another agent request to change solution of this agent
-                    this.goalSolution = resp.getContent();
+                    this.goalSolution = resp.getContent().getContent();
                     return 0;
                 case propose://Another agent propose to free this agent
                     if(!proposalAccepted){
@@ -252,7 +262,7 @@ public class Agent {
                     // In this case an agent needs to replan later.
                     this.goalSolution = new LinkedList<>(); // Don't add anything to the overall solution.
                     this.planner.addGoal(latestGoal);
-                    resetLevelInstance(message.getContent()); // Reset the level to the state before the agent searched for a solution
+                    resetLevelInstance(message.getContent().getContent()); // Reset the level to the state before the agent searched for a solution
                     return 2;
             }
         return 1;
@@ -302,15 +312,15 @@ public class Agent {
 
     public void receiveMessage(Message message){
         MsgHub msgHub = MsgHub.getInstance();
-
+        MsgContent content;
         switch (message.getType()){
             case announce: // for now: announcement of solution
                 // check if there is a conflict
                 // if yes, send back request
-                LinkedList<Node> otherAgentSolution = message.getContent();
+                LinkedList<Node> otherAgentSolution = message.getContent().getContent();
                 int solutionStart = message.getContentStart();
-
-                Message response = new Message(MsgType.request, otherAgentSolution, id); // Assuming no conflict
+                content = new MsgContent(otherAgentSolution);
+                Message response = new Message(MsgType.request, content, id); // Assuming no conflict
 
                 Conflict conflict = checkForConflicts(otherAgentSolution,solutionStart); // Check for conflicts
 
@@ -320,7 +330,8 @@ public class Agent {
                     //TODO: Hotfix for when agents are colliding at step 0
                     if (conflict.getTime() == 0 ){
                         otherAgentSolution = padNoOpNode(otherAgentSolution);
-                        response = new Message(MsgType.request, otherAgentSolution, id);
+                         content = new MsgContent(otherAgentSolution);
+                        response = new Message(MsgType.request, content, id);
                     }else {
                         loop:while (conflict != null) {
                             switch (conflict.getType()) {
@@ -332,7 +343,8 @@ public class Agent {
                                     LinkedList<Node> newSolution = makeOtherAgentWait(otherAgentSolution);
                                     otherAgentSolution = newSolution;
                                     conflict = checkForConflicts(otherAgentSolution,solutionStart);
-                                    response = new Message(MsgType.request, otherAgentSolution, id);
+                                    content = new MsgContent(otherAgentSolution);
+                                    response = new Message(MsgType.request, content, id);
                                     break;
                                 case agentInTheWay:
                                     // Create subgoalmoveouttheway and approve agents plan
@@ -341,7 +353,8 @@ public class Agent {
                                     moveOutTheWay.setPriority(1);
                                     moveOutTheWay.setAgent(this);
                                     planner.addGoal(moveOutTheWay);
-                                    response = new Message(MsgType.await, otherAgentSolution, id); // Return await, to make the other agent replan later
+                                    content = new MsgContent(otherAgentSolution);
+                                    response = new Message(MsgType.await, content, id); // Return await, to make the other agent replan later
                                     break loop;
                                 default:
                                     System.err.println("Could not determine the type of conflict");
@@ -364,7 +377,8 @@ public class Agent {
                 if(goal.getBox().getBoxColor()==this.color){
                     //TODO maybe search for solution!
                     LinkedList<Node> proposedSolution = new LinkedList<>();
-                    Message proposeMessage = new GoalMessage(MsgType.propose,goal,proposedSolution ,id);
+                    content = new MsgContent(proposedSolution);
+                    Message proposeMessage = new GoalMessage(MsgType.propose,goal,content ,id);
                     msgHub.reply(message, proposeMessage);
                 }
                 break;
@@ -468,4 +482,7 @@ public class Agent {
         this.latestGoal = latestGoal;
     }
 
+    public void setLimitedRessources(HashSet<Vertex> limitedRessources) {
+        this.limitedRessources = limitedRessources;
+    }
 }

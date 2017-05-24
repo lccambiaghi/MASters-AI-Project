@@ -8,6 +8,7 @@ import communicationclient.Node;
 import goal.Goal;
 import goal.GoalBoxToCell;
 import goal.GoalFreeAgent;
+import graph.Graph;
 import heuristic.GoalComparator;
 import level.Box;
 import level.CharCell;
@@ -24,13 +25,16 @@ public class Planner {
         this.goalQueue = priorityQueue;
     }
 
-    public void searchingPhase() {
+    public void searchingPhase(Graph graph) {
         this.solutions = new HashMap<>();
         this.completedGoals = new ArrayList<>();
 
         for (List<Agent> agentList: Level.getInstance().getAgentsColorMap().values())
-            for (Agent a: agentList)
+            for (Agent a: agentList){
                 this.solutions.put(Character.getNumericValue(a.getId()), new LinkedList<>());
+                a.setLimitedRessources(graph.getLimitedResources());
+            }
+
 
         while(!goalQueue.isEmpty()){
             Goal goal = goalQueue.poll();

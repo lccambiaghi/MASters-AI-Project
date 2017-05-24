@@ -18,8 +18,7 @@ public class Graph {
     private HashMap<Vertex, HashSet<Vertex>> agentsInComponent = new HashMap<>();
 
     private List<Edge> removedEdges = new ArrayList<>();
-    private List<Vertex> limitedResources = new ArrayList<>();
-    private List<Vertex> nonLimitedResources = new ArrayList<>();
+    private HashSet<Vertex> limitedResources = new HashSet<>();
     private int numberOfComponents = 0;
 
 
@@ -157,7 +156,6 @@ public class Graph {
             vertex.setGraphComponentsIfRemoved(numberOfComponents);
             vertex.setImportantComponetsIfRemoved(importantComponents);
             if(numberOfComponents > graph.numberOfComponents && importantComponents > 1) graph.limitedResources.add(vertex); //TODO: numberofcomponents > 1 and bothComponentsAreImportant(components)
-            else graph.nonLimitedResources.add(vertex);
         }
     }
 
@@ -257,12 +255,8 @@ public class Graph {
 
     }
 
-    public List<Vertex> getLimitedResources() {
+    public HashSet<Vertex> getLimitedResources() {
         return limitedResources;
-    }
-
-    public List<Vertex> getNonLimitedResources() {
-        return nonLimitedResources;
     }
 
     public HashSet<Vertex> getVertices() {
