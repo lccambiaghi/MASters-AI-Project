@@ -29,7 +29,7 @@ public class LevelParser {
         // If debug==true, our client parses the level instead of receiving it from the server
         if(this.debug){
             FileInputStream fis = null;
-            fis = new FileInputStream("competition_levels/MADAT.lvl");
+            fis = new FileInputStream("competition_levels/MAFooBar.lvl");
             in = new BufferedReader(new InputStreamReader(fis));
         }else{
             in = new BufferedReader(new InputStreamReader(System.in));
@@ -135,7 +135,9 @@ public class LevelParser {
                         Vertex v = new Vertex(row,col);
                         Agent newAgent = new Agent(chr, this.strategy, row, col);
                         if(colorLevel) {
-                            newAgent.setColor(colors.get(chr));
+                            Color agentColor = colors.get(chr);
+                            if(agentColor == null) agentColor = Color.blue;
+                            newAgent.setColor(agentColor);
                         }
                         level.setAgentInColorMap(newAgent);
                         graph.addVertex(v);
