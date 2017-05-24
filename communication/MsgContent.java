@@ -4,14 +4,13 @@ import communicationclient.Node;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Created by salik on 24-05-2017.
  */
 public class MsgContent {
     private LinkedList<Node> content;
-    private ArrayList<RessourceRequest> ressourceRequests;
+    private ArrayList<ResourceRequest> resourceRequests;
 
     public MsgContent(LinkedList<Node> content) {
         this.content = content;
@@ -25,11 +24,11 @@ public class MsgContent {
         this.content = content;
     }
 
-    public ArrayList<RessourceRequest> getRessourceRequests() {
-        return ressourceRequests;
+    public ArrayList<ResourceRequest> getResourceRequests() {
+        return resourceRequests;
     }
 
-    public void setRessourceRequests(ArrayList<RessourceRequest> ressourceRequests) {
-        this.ressourceRequests = ressourceRequests;
+    public void setResourceRequests(ArrayList<ResourceRequest> resourceRequests) {
+        this.resourceRequests = resourceRequests;
     }
 }

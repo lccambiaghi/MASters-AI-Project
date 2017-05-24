@@ -1,6 +1,5 @@
 package communicationclient;
 
-import com.sun.deploy.security.ValidationState;
 import communication.*;
 import goal.*;
 import graph.Vertex;
@@ -30,7 +29,7 @@ public class Agent {
     private Goal latestGoal;
     private HashMap<Goal,LinkedList<Node>> oldSolutions = new HashMap<>();
     private HashSet<Vertex> limitedRessources;
-    private ArrayList<RessourceRequest> thisAgentRessourceRequests = new ArrayList<>();
+    private ArrayList<ResourceRequest> thisAgentResourceRequests = new ArrayList<>();
 
     public Agent(char id, Strategy strategy, int row, int col) {
         this.subGoals = new ArrayDeque<>();
@@ -59,12 +58,6 @@ public class Agent {
     public LinkedList<Node> searchGoal(Goal goal){
         this.strategy.clearExplored();//Clear explored nodes for each new goal??
         this.latestGoal = goal; // If we need to place it back on the queue
-//        if(oldSolutions.containsKey(goal)){
-//            this.goalSolution = oldSolutions.get(goal);
-//            updateLevelInstance(this.goalSolution); // Set information from the old plans last node
-//            return this.goalSolution; // Old search
-//            //TODO: This is done so that we can fetch old solutions. We cannot find the same solution twice if we don't clear ExploredNodes in strategy between each search. That might be a better solution actually (We cannot guarantee that this old solution will work in the future. boxes can have moved.)
-//        }
         this.goalSolution = new LinkedList<>();
         this.potentialBoxes = new ArrayList<>();
         goal.refine();
@@ -87,12 +80,11 @@ public class Agent {
                 return null;
             }
         }
-//        oldSolutions.put(goal,this.goalSolution);
         return this.goalSolution;
     }
 
 
-    public LinkedList<Node> searchSubGoal(Goal subGoal) {
+    private LinkedList<Node> searchSubGoal(Goal subGoal) {
         System.err.println("Agent " + getId() + " started search for subgoal: "+subGoal.toString()+" with strategy " + this.strategy.toString());
         Node initialNode = new Node(subGoal, this);
         //TODO make sure position is updated
@@ -138,20 +130,7 @@ public class Agent {
             if (leafNode.isGoalState()) {
                 plan = leafNode.extractPlan();
                 if (plan.size() > 0) {
-                    Node goalState = plan.getLast();
-                    this.agentRow = goalState.agentRow;
-                    this.agentCol = goalState.agentCol;
-                        for (int row = 0; row < Level.getInstance().MAX_ROW; row++) {
-                            for (int col = 0; col < Level.getInstance().MAX_COL; col++) {
-                                if (goalState.boxes[row][col] != null) {
-                                    Box box = goalState.boxes[row][col];
-                                    box.setRow(row);
-                                    box.setCol(col);
-
-                                }
-
-                            }
-                        }
+                    updateLevelInstance(plan);
                     }
                     break;
                 }
@@ -166,7 +145,7 @@ public class Agent {
         return plan;
     }
 
-    public void broadcastMessage(Message message) {
+    private void broadcastMessage(Message message) {
         MsgHub.getInstance().broadcast(message);
     }
 
@@ -179,7 +158,6 @@ public class Agent {
         for (Box b:this.getRemovedBoxes()) {
             LinkedList<Node> agentRequestCells = this.getGoalSolution();
             //Search for free space
-            //Cell destination = new Cell(5,10);
             Goal freeAgent = new GoalFreeAgent(b,agentRequestCells, this);
             freeAgent.setPriority(0);//High priority
             MsgContent content = new MsgContent(agentRequestCells);
@@ -198,15 +176,16 @@ public class Agent {
     public void negotiateGoalSolution() {
         MsgHub msgHub = MsgHub.getInstance();
         int solutionAccepted = 0;
-        ArrayList<RessourceRequest> ressourceRequests = new ArrayList<>();
+        ArrayList<ResourceRequest> resourceRequests = new ArrayList<>();
         int timestep = 0;
+        //Add all nodes where the agent or a box is using a limited Resource TODO maybe put the ressource request at more than one timestep? maybe from first encounter of a limitedresource to the last encounter?
         for (Node n: this.goalSolution) {
             if (limitedRessources.contains(new Vertex(n.agentRow, n.agentCol))) {
-                ressourceRequests.add(new RessourceRequest(timestep+this.combinedSolution.size(), new Vertex(n.agentRow, n.agentCol)));
+                resourceRequests.add(new ResourceRequest(timestep+this.combinedSolution.size(), new Vertex(n.agentRow, n.agentCol)));//Actual timestep
             }
             if (n.action.actionType == Command.Type.Pull || n.action.actionType == Command.Type.Push){
                 if (limitedRessources.contains(new Vertex(n.boxMovedRow,n.boxMovedCol)))  {
-                    ressourceRequests.add(new RessourceRequest(timestep+this.combinedSolution.size(), new Vertex(n.boxMovedRow, n.boxMovedCol)));
+                    resourceRequests.add(new ResourceRequest(timestep+this.combinedSolution.size(), new Vertex(n.boxMovedRow, n.boxMovedCol)));//Actual timestep
                 }
             }
             timestep++;
@@ -218,7 +197,7 @@ public class Agent {
             for (Agent other: MsgHub.getInstance().getAllAgents()){
                 if(other.getId() != this.getId()){
                     MsgContent content = new MsgContent(this.goalSolution);//New message each time as goalsolution might be updated
-                    content.setRessourceRequests(ressourceRequests);
+                    content.setResourceRequests(resourceRequests);
                     Message solutionAnnouncement = new Message(MsgType.announce, content, this.id);
                     solutionAnnouncement.setContentStart(this.combinedSolution.size());
 
@@ -237,7 +216,7 @@ public class Agent {
         }
 
         this.combinedSolution.addAll(this.goalSolution);
-        this.thisAgentRessourceRequests.addAll(ressourceRequests);
+        this.thisAgentResourceRequests.addAll(resourceRequests);
     }
 
     public int checkReplies(Message message) {
@@ -276,21 +255,10 @@ public class Agent {
 
 
     private void updateLevelInstance(LinkedList<Node> plan) {
-        Node initialNode = plan.getLast();
-        this.agentRow = initialNode.agentRow;
-        this.agentCol = initialNode.agentCol;
-
-        for (int row = 0; row < Level.getInstance().MAX_ROW; row++) {
-            for (int col = 0; col < Level.getInstance().MAX_COL; col++) {
-                if (initialNode.boxes[row][col] != null) {
-                    Box box =  initialNode.boxes[row][col];
-                    box.setRow(row) ;
-                    box.setCol(col);
-
-                }
-
-            }
-        }
+        Node finalNode = plan.getLast();
+        this.agentRow = finalNode.agentRow;
+        this.agentCol = finalNode.agentCol;
+        updateBoxes(finalNode);
     }
 
     private void resetLevelInstance(LinkedList<Node> plan) {
@@ -298,16 +266,16 @@ public class Agent {
         Node initialNode = plan.getFirst().parent;
         this.agentRow = initialNode.agentRow;
         this.agentCol = initialNode.agentCol;
-
+        updateBoxes(initialNode);
+    }
+    private void updateBoxes(Node node){
         for (int row = 0; row < Level.getInstance().MAX_ROW; row++) {
             for (int col = 0; col < Level.getInstance().MAX_COL; col++) {
-                if (initialNode.boxes[row][col] != null) {
-                    Box box =  initialNode.boxes[row][col];
+                if (node.boxes[row][col] != null) {
+                    Box box =  node.boxes[row][col];
                     box.setRow(row) ;
                     box.setCol(col);
-
                 }
-
             }
         }
     }
@@ -324,10 +292,12 @@ public class Agent {
                 // check if there is a conflict
                 // if yes, send back request
                 LinkedList<Node> otherAgentSolution = message.getContent().getContent();
-                ArrayList<RessourceRequest> otherAgentRessourceRequest = message.getContent().getRessourceRequests();
-                ArrayList<RessourceRequest> conflictingRessources = new ArrayList<>();
-                for (RessourceRequest request: thisAgentRessourceRequests){//Check this agents requests against another agents
-                    if(otherAgentRessourceRequest.contains(request)){
+
+                ArrayList<ResourceRequest> otherAgentResourceRequest = message.getContent().getResourceRequests();
+                ArrayList<ResourceRequest> conflictingRessources = new ArrayList<>();
+                //TODO this might not be enough as we are not reserving for the full time but only at one timestep
+                for (ResourceRequest request: thisAgentResourceRequests){//Check this agents requests against another agents
+                    if(otherAgentResourceRequest.contains(request)){
                         conflictingRessources.add(request);
                     }
                 }
@@ -340,13 +310,11 @@ public class Agent {
                     int lastTimestepConflict = conflictingRessources.get(conflictingRessources.size()-1).getTimestep();
                     int waitTime = lastTimestepConflict-firstTimestepConflict+1;
                     for (int i = 0; i < waitTime;i++){
-                        otherAgentSolution = padNoOpNodeAtIndex(otherAgentSolution, firstTimestepConflict-solutionStart+1);
+                        otherAgentSolution = padNoOpNodeAtIndex(otherAgentSolution, firstTimestepConflict-solutionStart);
                     }
                 }
 
                 Conflict conflict = checkForConflicts(otherAgentSolution,solutionStart); // Check for conflicts
-
-
 
                 if(conflict!=null){ // Handle conflicts if they exist
                     //TODO: Hotfix for when agents are colliding at step 0
@@ -362,8 +330,8 @@ public class Agent {
                                 case agentagent:
                                     //Make other agent wait one step
                                     //System.err.println(this.getId() + " tries to make " + otherAgentSolution.getFirst().agentId + " to pad NOOP ");
-                                    LinkedList<Node> newSolution = makeOtherAgentWait(otherAgentSolution);
-                                    otherAgentSolution = newSolution;
+                                    otherAgentSolution = makeOtherAgentWait(otherAgentSolution);
+                                    timeStepPlusOne(otherAgentResourceRequest);//Timeshift the resourceRequests as well
                                     conflict = checkForConflicts(otherAgentSolution,solutionStart);
                                     content = new MsgContent(otherAgentSolution);
                                     response = new Message(MsgType.request, content, id);
@@ -384,7 +352,7 @@ public class Agent {
                             }
                         }
                     }
-                }else{
+                }else{//No conflict
 				Message agree = new Message(MsgType.agree, null, id);
                 msgHub.reply(message, agree);
 				break;
@@ -425,11 +393,7 @@ public class Agent {
     }
 
     private LinkedList<Node> makeOtherAgentWait(LinkedList<Node> oldSolution){
-        LinkedList<Node> newSolution = new LinkedList<>(oldSolution);
-
-        newSolution = padNoOpNode(oldSolution);
-
-        return newSolution;
+        return padNoOpNode(oldSolution);
     }
 
     private LinkedList<Node> padNoOpNode(LinkedList<Node> oldSolution) {
@@ -445,7 +409,7 @@ public class Agent {
     }
     private LinkedList<Node> padNoOpNodeAtIndex(LinkedList<Node> oldSolution,int index) {
         LinkedList<Node> newSolution = new LinkedList<>(oldSolution);
-        Node initialNode = oldSolution.getFirst().parent;
+        Node initialNode = oldSolution.get(index).parent;
         Node noOp = new Node(initialNode);
         noOp.setBoxes(initialNode.getBoxesCopy());
         noOp.agentRow = initialNode.agentRow;
@@ -454,7 +418,11 @@ public class Agent {
         newSolution.add(index,noOp);
         return newSolution;
     }
-
+    private void timeStepPlusOne(ArrayList<ResourceRequest> resourceRequests){
+        for (ResourceRequest reguest: resourceRequests) {
+            reguest.setTimestep(reguest.getTimestep()+1);
+        }
+    }
     public LinkedList<Node> getGoalSolution() {
         return goalSolution;
     }

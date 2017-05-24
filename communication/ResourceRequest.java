@@ -5,11 +5,11 @@ import graph.Vertex;
 /**
  * Created by salik on 24-05-2017.
  */
-public class RessourceRequest {
+public class ResourceRequest {
     private int timestep;
     private Vertex requestedCell;
 
-    public RessourceRequest(int timestep, Vertex requestedCell) {
+    public ResourceRequest(int timestep, Vertex requestedCell) {
         this.timestep = timestep;
         this.requestedCell = requestedCell;
     }
@@ -35,7 +35,7 @@ public class RessourceRequest {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        RessourceRequest that = (RessourceRequest) o;
+        ResourceRequest that = (ResourceRequest) o;
 
         if (timestep != that.timestep) return false;
         return requestedCell != null ? requestedCell.equals(that.requestedCell) : that.requestedCell == null;
