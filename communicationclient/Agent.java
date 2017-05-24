@@ -1,6 +1,5 @@
 package communicationclient;
 
-import com.sun.deploy.security.ValidationState;
 import communication.Message;
 import communication.MsgHub;
 import communication.MsgType;
