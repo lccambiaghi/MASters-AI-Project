@@ -4,6 +4,7 @@ import communicationclient.Agent;
 import goal.Goal;
 import goal.GoalBoxToCell;
 import graph.Graph;
+import graph.Vertex;
 import heuristic.CharCellComparator;
 import heuristic.GoalComparator;
 import heuristic.HeuristicHelper;
@@ -91,14 +92,22 @@ public class LevelAnalyzer {
         // assign a box to each charCell
         HashSet<CharCell> charCells = this.level.getAllCharCells();
         for (CharCell cc: charCells) {
-            HashSet<Box> goalBoxes = this.level.getBoxesByChar(Character.toUpperCase(cc.getLetter()));
-
+            //Assign closest reachable box with correct char
+            HashSet<Vertex> reachableBoxes = this.graph.getBoxesInComponent().get(new Vertex(cc.getRow(),cc.getCol()));
+            HashSet<Box> goalBoxes = new HashSet<>();
+            for (Vertex b:reachableBoxes) {
+                if (b.getBox().getBoxChar()==Character.toUpperCase(cc.getLetter())){
+                    goalBoxes.add(b.getBox());
+                }
+            }
             Box closest = cc.getClosestBox(goalBoxes);
             cc.setAssignedBox(closest);
-
-            List<Agent> agentPriorityQueue = this.level.getAgentsColorMap().get(closest.getBoxColor());
-            for (Agent a: agentPriorityQueue) {
-                closest.setAssignedAgent(a); //Will override and the closest agent will get the box
+            //Assign closest reachableAgent of correct color
+            HashSet<Vertex> reachableAgents = this.graph.getAgentsInComponent().get(new Vertex(cc.getRow(),cc.getCol()));
+            for (Vertex a: reachableAgents) {
+                if (a.getAgent().getColor()==closest.getBoxColor()){
+                    closest.setAssignedAgent(a.getAgent()); //Will override and the closest agent will get the box
+                }
             }
             closest.setDestination(cc);
         }
@@ -112,14 +121,11 @@ public class LevelAnalyzer {
             Goal boxToChar = new GoalBoxToCell(assigned, cell);
             //Assign agent to goal...
             boxToChar.setAgent(assigned.getAssignedAgent());
-            //TODO Priority should be optimized. Maybe recalculate priority once a goal is fullfilled(Deadend == wall?) or look at graph and use that to prioritize
+           //Priority is calculated using the graph
             int priority = cell.getPriority();
-//            if(cell.isCorner() || cell.isDeadEnd()){
-//            }else priority += HeuristicHelper.manhattanDistance(assigned.getRow(), assigned.getCol(), assigned.getAssignedAgent().getAgentRow(), assigned.getAssignedAgent().getAgentCol());//take closest box
             boxToChar.setPriority(priority);
             goalPriorityQueue.add(boxToChar);
         }
-
         return goalPriorityQueue;
     }
 

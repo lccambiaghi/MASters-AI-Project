@@ -12,17 +12,17 @@ public class Message {
     private MsgType type;
 
     private int contentStart;
-    private LinkedList<Node> content;
+    private MsgContent content;
 
     private char sender;
 
-    public Message (MsgType type, LinkedList<Node> content, char agentID){
+    public Message (MsgType type, MsgContent content, char agentID){
         this.type = type;
         this.content = content;
         this.sender = agentID;
     }
 
-    public LinkedList<Node> getContent() {
+    public MsgContent getContent() {
         return content;
     }
 

@@ -29,7 +29,7 @@ public class LevelParser {
         // If debug==true, our client parses the level instead of receiving it from the server
         if(this.debug){
             FileInputStream fis = null;
-            fis = new FileInputStream("levels/MAMASters.lvl");
+            fis = new FileInputStream("competition_levels/MAMASters.lvl");
             in = new BufferedReader(new InputStreamReader(fis));
         }else{
             in = new BufferedReader(new InputStreamReader(System.in));
@@ -135,9 +135,12 @@ public class LevelParser {
                         Vertex v = new Vertex(row,col);
                         Agent newAgent = new Agent(chr, this.strategy, row, col);
                         if(colorLevel) {
-                            newAgent.setColor(colors.get(chr));
+                            Color agentColor = colors.get(chr);
+                            if(agentColor == null) agentColor = Color.blue;
+                            newAgent.setColor(agentColor);
                         }
                         level.setAgentInColorMap(newAgent);
+                        v.setAgent(newAgent);
                         graph.addVertex(v);
                         System.err.println("Agent " + newAgent.getId() + " created, Color is " + newAgent.getColor().toString());
                     }
@@ -145,7 +148,6 @@ public class LevelParser {
                 row++;
             }
         }
-        // The following is just for testing that the graph analyzis works :-)
         // TODO is it the right place? Move it in the LevelAnalyzer?
         graph.createGraph();
         System.err.println("*--------------------------------------*");

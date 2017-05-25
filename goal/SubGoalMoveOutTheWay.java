@@ -51,10 +51,10 @@ public class SubGoalMoveOutTheWay extends GoalMoveOutTheWay {
         }
         switch (action.actionType) { // Punish if he tries to move boxes
             case Pull:
-                h = 20;
+                h = 1000;
                 break;
             case Push:
-                h = 20;
+                h = 1000;
         }
         return h;
     }

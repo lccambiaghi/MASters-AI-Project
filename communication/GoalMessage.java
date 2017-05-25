@@ -11,7 +11,7 @@ import java.util.LinkedList;
  */
 public class GoalMessage extends Message {
     Goal goal;
-    public GoalMessage(MsgType type, Goal goal, LinkedList<Node> content, char agentID) {
+    public GoalMessage(MsgType type, Goal goal, MsgContent content, char agentID) {
         super(type, content, agentID);
         this.goal = goal;
     }

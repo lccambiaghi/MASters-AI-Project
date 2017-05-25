@@ -56,7 +56,7 @@ public class GoalBoxToCell extends Goal {
 
     @Override
     public String toString() {
-        return null;
+        return "GoalBoxToCell "+box.getBoxChar();
     }
 
     @Override

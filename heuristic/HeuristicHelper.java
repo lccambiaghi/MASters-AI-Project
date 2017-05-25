@@ -31,7 +31,7 @@ public class HeuristicHelper {
                 }
             }
         }
-        return val*5;
+        return val*15;
     }
 
     public static int keepRight(Node n){

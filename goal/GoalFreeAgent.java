@@ -54,7 +54,7 @@ public class GoalFreeAgent extends Goal{
 
     @Override
     public String toString() {
-        return null;
+        return "GoalFreeAgent "+ agentToFree.getId();
     }
 
     public Box getBox() {
