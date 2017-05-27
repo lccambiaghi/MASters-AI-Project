@@ -9,10 +9,7 @@ import heuristic.CharCellComparator;
 import heuristic.GoalComparator;
 import heuristic.HeuristicHelper;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.PriorityQueue;
+import java.util.*;
 
 /**
  * Created by salik on 19-04-2017.
@@ -93,7 +90,9 @@ public class LevelAnalyzer {
         HashSet<CharCell> charCells = this.level.getAllCharCells();
         for (CharCell cc: charCells) {
             //Assign closest reachable box with correct char
-            HashSet<Vertex> reachableBoxes = this.graph.getBoxesInComponent().get(new Vertex(cc.getRow(),cc.getCol()));
+            // TODO fix boxesInComponent, look at MAHiveMind.lvl
+            HashMap<Vertex, HashSet<Vertex>> boxesInComponent = this.graph.getBoxesInComponent();
+            HashSet<Vertex> reachableBoxes = boxesInComponent.get(new Vertex(cc.getRow(),cc.getCol()));
             HashSet<Box> goalBoxes = new HashSet<>();
             for (Vertex b:reachableBoxes) {
                 if (b.getBox().getBoxChar()==Character.toUpperCase(cc.getLetter())){
@@ -101,6 +100,7 @@ public class LevelAnalyzer {
                 }
             }
             Box closest = cc.getClosestBox(goalBoxes);
+            // What if closest is null?
             cc.setAssignedBox(closest);
             //Assign closest reachableAgent of correct color
             HashSet<Vertex> reachableAgents = this.graph.getAgentsInComponent().get(new Vertex(cc.getRow(),cc.getCol()));
