@@ -61,7 +61,21 @@ public class GoalBoxToCell extends Goal {
 
     @Override
     public boolean isGoalSatisfied(Node node) {
-        return toChar.isGoalSatisfied(node);
+        int goalCharRow = destination.getRow();
+        int goalCharCol = destination.getCol();
+        CharCell goalCharCell = (CharCell)destination;
+        char goalChar = goalCharCell.getLetter();
+
+        Box[][] boxes = node.getBoxes();
+
+        Box box = boxes[goalCharRow][goalCharCol];
+        if (box!=null){
+            char b = Character.toLowerCase(box.getBoxChar());
+            if (b == goalChar) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public Box getBox() {

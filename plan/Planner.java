@@ -39,6 +39,7 @@ public class Planner {
         while(!goalQueue.isEmpty()){
             Goal goal = goalQueue.poll();
             Agent agent = goal.getAgent();
+            if(isGoalAlreadySatisfied(goal, agent)) continue;
             LinkedList<Node> goalSolution = agent.searchGoal(goal);
             if (goalSolution == null) {//Is checked in agent.searchGoal
                 // We add one to make sure that this goal will happen next when putting it back on the queue.
@@ -78,6 +79,22 @@ public class Planner {
 
             }
         }
+    }
+
+    private boolean isGoalAlreadySatisfied(Goal goal, Agent agent) {
+        if(goal instanceof GoalBoxToCell){
+            Node n = new Node(goal, agent);
+            //TODO make sure position is updated
+            HashSet<Box> allBoxes = Level.getInstance().getAllBoxes();
+            for (Box b : allBoxes) {
+                n.addBox(b);
+            }
+            if(goal.isGoalSatisfied(n)){
+                completedGoals.add(goal);
+                return true;
+            }
+        }
+        return false;
     }
 
     public List<LinkedList<Node>> getSolutions() {
