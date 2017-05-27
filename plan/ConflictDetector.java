@@ -97,9 +97,7 @@ public class ConflictDetector {
                     Node otherAgentNodeBefore = n.parent;
                     Point otherAgentPointBefore = new Point(otherAgentNodeBefore.agentRow,otherAgentNodeBefore.agentCol);
 
-                    if(thisAgentPointBefore.equals(otherAgentPoint)){
-                        return new Conflict(conflictPoint,Conflict.type.agentagent,n,thisAgentNodeBefore);
-                    }
+
 
                     if(n.boxMoved != null){
                         Point otherAgentBoxMoved = new Point(n.boxMovedRow,n.boxMovedCol);
@@ -113,6 +111,10 @@ public class ConflictDetector {
                         if(thisAgentBoxMoved.equals(otherAgentPointBefore)){
                             return new Conflict(conflictPoint,Conflict.type.agentbox,otherAgentNodeBefore,thisAgentNode);
                         }
+                    }
+
+                    if(thisAgentPointBefore.equals(otherAgentPoint)){
+                        return new Conflict(conflictPoint,Conflict.type.agentagent,n,thisAgentNodeBefore);
                     }
 
                     if(thisAgentPoint.equals(otherAgentPointBefore)){
@@ -130,24 +132,41 @@ public class ConflictDetector {
     private boolean collisionWithAgent(Integer timeStep, Integer solutionStart, Node node){
         Node agentNodeCurrent = timeMap.get(timeStep + solutionStart); // gets the map of agent points at that that time
         Point otherAgentPoint = new Point(node.agentRow, node.agentCol);
+        Node otherAgentNodeBefore = node.parent;
+
+        Point otherAgentPointBefore = new Point(otherAgentNodeBefore.agentRow,otherAgentNodeBefore.agentCol);
         Point thisAgentPoint = new Point(agentNodeCurrent.agentRow, agentNodeCurrent.agentCol);
-        if (node.action.actionType== Command.Type.Push){
+        if(otherAgentPoint.equals(thisAgentPoint)){
+            return otherAgentPoint.equals(thisAgentPoint);
+        }else if (node.action.actionType== Command.Type.Push){
             Point otherAgentBox = new Point(node.boxMovedRow, node.boxMovedCol);
-            return otherAgentBox.equals(thisAgentPoint);
+            if(otherAgentBox.equals(thisAgentPoint)) return true;
+        }else if(agentNodeCurrent.action.actionType == Command.Type.Push){
+            Point thisAgentBoxPoint = new Point(agentNodeCurrent.boxMovedRow,agentNodeCurrent.boxMovedCol);
+            if(thisAgentBoxPoint.equals(otherAgentPoint) || thisAgentBoxPoint.equals(otherAgentPointBefore)) return true;
         }
-        return otherAgentPoint.equals(thisAgentPoint);
+        return false; // No collision
+
     }
 
     private boolean collisionWithBox(Integer timeStep, Integer solutionStart, Node node){
         LinkedList<Box> boxList = this.boxMap.get(timeStep + solutionStart);
-        Point agentPoint = new Point(node.agentRow, node.agentCol);
+        Point otherAgentPoint = new Point(node.agentRow, node.agentCol);
+//        if(node.action.actionType == Command.Type.Push){
+//            Point boxPoint = new Point(node.boxMovedRow, node.boxMovedCol);
+//            if(boxPoint.equals(otherAgentPoint)) return true; //TODO Remove this, we check if a box from the otheragents node hits the otheragent (which does not make sense)
+//        }
+
+        // Check that otherAgent does not push a box into the box that this agent is moving
+        Node thisAgentNode = timeMap.get(timeStep + solutionStart);
+        Point thisAgentMovedBoxBefore = new Point(thisAgentNode.oldBoxMovedRow,thisAgentNode.oldBoxMovedCol);
         if(node.action.actionType == Command.Type.Push){
-            Point boxPoint = new Point(node.boxMovedRow, node.boxMovedCol);
-            if(boxPoint.equals(agentPoint)) return true;
+            Point otherAgentBoxPoint = new Point(node.boxMovedRow,node.boxMovedCol);
+            if(otherAgentBoxPoint.equals(thisAgentMovedBoxBefore)) return true;
         }
         for (Box box : boxList) {
-            if (agentPoint.getAgentCol() == box.getCol() &&
-                agentPoint.getAgentRow() == box.getRow() && box.getBoxColor() == owner.getColor()) {
+            if (otherAgentPoint.getAgentCol() == box.getCol() &&
+                otherAgentPoint.getAgentRow() == box.getRow() && box.getBoxColor() == owner.getColor()) {
                     return true;
             }
         }

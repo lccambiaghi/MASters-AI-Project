@@ -2,12 +2,6 @@ package communicationclient;
 
 import java.util.ArrayDeque;
 import java.util.HashSet;
-import java.util.PriorityQueue;
-import java.util.Stack;
-
-import communicationclient.Strategy;
-import communicationclient.Memory;
-import communicationclient.Node;
 
 public class StrategyBFS extends Strategy {
 	private ArrayDeque<Node> frontier;
