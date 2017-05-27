@@ -29,7 +29,7 @@ public class LevelParser {
         // If debug==true, our client parses the level instead of receiving it from the server
         if(this.debug){
             FileInputStream fis = null;
-            fis = new FileInputStream("C:\\Users\\arhjo\\Desktop\\competition_levels\\SALiquorice.lvl");
+            fis = new FileInputStream("C:\\Users\\arhjo\\Desktop\\competition_levels\\MABeliebers.lvl");
             in = new BufferedReader(new InputStreamReader(fis));
         }else{
             in = new BufferedReader(new InputStreamReader(System.in));

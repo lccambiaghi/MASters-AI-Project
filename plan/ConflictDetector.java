@@ -138,6 +138,8 @@ public class ConflictDetector {
         Point thisAgentPoint = new Point(agentNodeCurrent.agentRow, agentNodeCurrent.agentCol);
         if(otherAgentPoint.equals(thisAgentPoint)){
             return otherAgentPoint.equals(thisAgentPoint);
+        }else if (otherAgentPointBefore.equals(thisAgentPoint)){
+            return  otherAgentPointBefore.equals(thisAgentPoint);
         }else if (node.action.actionType== Command.Type.Push){
             Point otherAgentBox = new Point(node.boxMovedRow, node.boxMovedCol);
             if(otherAgentBox.equals(thisAgentPoint)) return true;
