@@ -126,6 +126,10 @@ public class Agent {
                 this.potentialBoxes=leafNode.getPotentialBoxes();
                 return null;
             }
+            if(this.strategy.countFrontier()>100000){
+                this.potentialBoxes=leafNode.getPotentialBoxes();
+                return null;
+            }
             leafNode = this.strategy.getAndRemoveLeaf();
             if (leafNode.isGoalState()) {
                 plan = leafNode.extractPlan();
@@ -154,7 +158,6 @@ public class Agent {
      * TODO only ask to same colour agents?
      */
     public void callForHelp() {
-
         for (Box b:this.getRemovedBoxes()) {
             LinkedList<Node> agentRequestCells = this.getGoalSolution();
             //Search for free space
