@@ -44,10 +44,10 @@ public class Planner {
             if (goalSolution == null) {//Is checked in agent.searchGoal
                 // We add one to make sure that this goal will happen next when putting it back on the queue.
                 // TODO remove hotfix and improve logic
-                goal.setPriority(goal.getPriority()-1);
+                //goal.setPriority(goal.getPriority()-1);
                 goalQueue.add(goal);//Add goal again
 
-                agent.callForHelp();
+                agent.callForHelp(goal); // Pass in the goal so that we can set the priority of the newly created goal to be lower
 
                 System.err.println(agent.getStrategy().searchStatus());
                 System.err.println("Agent " + agent.getId() + " has called for help.");

@@ -60,10 +60,12 @@ public class Agent {
         this.latestGoal = goal; // If we need to place it back on the queue
         this.goalSolution = new LinkedList<>();
         this.potentialBoxes = new ArrayList<>();
+        this.removedBoxes = new HashSet<>(); // Forget everything about the previously removed boxes
         goal.refine();
         int agentStuck = 0;
         LinkedList<Goal> subgoals = goal.getSubgoals();
         for(Goal subgoal : subgoals){
+
             LinkedList<Node> solution = searchSubGoal(subgoal);
             if (solution!=null){
                 this.goalSolution.addAll(solution);
@@ -73,10 +75,6 @@ public class Agent {
                     solution = searchSubGoal(subgoal);
                 }
                 this.goalSolution.addAll(solution);
-                //Reset agent position to start
-
-                resetLevelInstance(this.goalSolution);
-
                 return null;
             }
         }
@@ -93,7 +91,7 @@ public class Agent {
         HashSet<Box> addedBoxes = new HashSet<>();
         for (Box b : allBoxes) {
             Box firstPotential = this.potentialBoxes.isEmpty() ? null : this.potentialBoxes.get(0);
-            if (this.potentialBoxes.isEmpty() || !firstPotential.equals(b)){
+            if ((this.potentialBoxes.isEmpty() || !firstPotential.equals(b)) && !this.removedBoxes.contains(b) ){
                 initialNode.addBox(b);
             }else{
                 this.removedBoxes.add(b); //TODO We also remove the box in all future searches. This should not happen - remember to reset potentialboxes
@@ -133,10 +131,6 @@ public class Agent {
                 this.potentialBoxes=leafNode.getPotentialBoxes();
                 return null;
             }
-            if(this.strategy.countFrontier()>100000){
-                this.potentialBoxes=leafNode.getPotentialBoxes();
-                return null;
-            }
             leafNode = this.strategy.getAndRemoveLeaf();
             if (leafNode.isGoalState()) {
                 plan = leafNode.extractPlan();
@@ -163,20 +157,28 @@ public class Agent {
     /**
      * Asks to other agents to free him
      * TODO only ask to same colour agents?
+     * @param goal
      */
-    public void callForHelp() {
+    public void callForHelp(Goal goal) {
+
+        // Reset level instance so other agents can plan from our initialNode
+        resetLevelInstance(this.getGoalSolution());
+
         for (Box b:this.getRemovedBoxes()) {
             LinkedList<Node> agentRequestCells = this.getGoalSolution();
             //Search for free space
             Goal freeAgent = new GoalFreeAgent(b,agentRequestCells, this);
-            freeAgent.setPriority(0);//High priority
+            int newGoalPriority = goal.getPriority()-1 > 0 ? -1 : goal.getPriority()-1; // Trying to set it with lowest priority
+            freeAgent.setPriority(newGoalPriority);//High priority
             MsgContent content = new MsgContent(agentRequestCells);
             Message freeMeRequest = new GoalMessage(MsgType.request,freeAgent, content,this.getId());
             this.broadcastMessage(freeMeRequest);
             this.checkReplies(freeMeRequest);
             planner.addGoal(freeAgent);
-            this.setGoalSolution(new LinkedList<>());//Forget Solution
         }
+
+        // Forget solution - we queue the goal
+        this.setGoalSolution(new LinkedList<>());//Forget Solution
 
     }
 
