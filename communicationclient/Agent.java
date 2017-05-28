@@ -89,6 +89,8 @@ public class Agent {
         Node initialNode = new Node(subGoal, this);
         //TODO make sure position is updated
         HashSet<Box> allBoxes = Level.getInstance().getAllBoxes();
+        this.potentialBoxes.removeAll(this.removedBoxes);
+        HashSet<Box> addedBoxes = new HashSet<>();
         for (Box b : allBoxes) {
             Box firstPotential = this.potentialBoxes.isEmpty() ? null : this.potentialBoxes.get(0);
             if (this.potentialBoxes.isEmpty() || !firstPotential.equals(b)){
@@ -106,6 +108,11 @@ public class Agent {
             SubGoalMoveBoxOutTheWay sub = (SubGoalMoveBoxOutTheWay) subGoal;
             initialNode.addWall(sub.getAgentToFree().agentRow, sub.getAgentToFree().agentCol);
             //initialNode.getWalls()[sub.getAgentToFree().agentRow][sub.getAgentToFree().agentCol] = true;
+        }
+        //Always add box to get to
+        if(subGoal instanceof SubGoalMoveToBox){
+            SubGoalMoveToBox sub = (SubGoalMoveToBox) subGoal;
+            initialNode.addBox(sub.getBox());
         }
 
         initialNode.agentRow = this.agentRow;

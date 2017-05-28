@@ -183,6 +183,13 @@ public class Node {
 	}
 
 	private boolean cellIsFree(int row, int col) {
+		Box box = this.boxes[row][col];
+		if(box!=null){
+			if(!potentialBoxesAdded.contains(box)){
+					potentialBoxes.add(box);
+					potentialBoxesAdded.add(box);
+			}
+		}
 		return !this.walls[row][col] && this.boxes[row][col] == null;
 	}
 
@@ -199,7 +206,6 @@ public class Node {
 
 			}
 		}
-
 		return false;
 	}
 
