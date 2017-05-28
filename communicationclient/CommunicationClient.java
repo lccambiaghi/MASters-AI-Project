@@ -77,7 +77,7 @@ public class CommunicationClient {
 //          Heuristic heuristic = new Heuristic.AStar();
             Strategy strategy = new StrategyBestFirst(heuristic);
 
-            client.levelParser = new LevelParser(strategy,false);
+            client.levelParser = new LevelParser(strategy,true);
             client.levelParser.readMap();
 
             client.levelAnalyzer = new LevelAnalyzer(client.levelParser.getGraph());

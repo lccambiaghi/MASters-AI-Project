@@ -88,10 +88,9 @@ public class Agent {
         //TODO make sure position is updated
         HashSet<Box> allBoxes = Level.getInstance().getAllBoxes();
         this.potentialBoxes.removeAll(this.removedBoxes);
-        HashSet<Box> addedBoxes = new HashSet<>();
         for (Box b : allBoxes) {
             Box firstPotential = this.potentialBoxes.isEmpty() ? null : this.potentialBoxes.get(0);
-            if ((this.potentialBoxes.isEmpty() || !firstPotential.equals(b)) && !this.removedBoxes.contains(b) ){
+            if ((this.potentialBoxes.isEmpty() || !firstPotential.equals(b)) && !this.removedBoxes.contains(b)){
                 initialNode.addBox(b);
             }else{
                 this.removedBoxes.add(b); //TODO We also remove the box in all future searches. This should not happen - remember to reset potentialboxes
