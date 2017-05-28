@@ -52,9 +52,10 @@ public class Graph {
         }
 
         //Run DFS from all goalVertices to only consider the components of the level that matter.
-        HashSet<Vertex> reachableBoxes = new HashSet<>();
-        HashSet<Vertex> reachableAgents = new HashSet<>();
+        HashSet<Vertex> reachableBoxes;
+        HashSet<Vertex> reachableAgents;
         for (Vertex goalVertex: goalVertices) {
+            if(boxesInComponent.containsKey(goalVertex)) continue;//If goal was in already visited component then skip :-)
             if (!visitedVertices.contains(goalVertex)){
                 numberOfComponents++;
                 currentComponentVertices = new HashSet<>();
@@ -71,11 +72,13 @@ public class Graph {
                         reachableAgents.add(agentVertex);
                     }
                 }
-                boxesInComponent.put(goalVertex, reachableBoxes);
-                agentsInComponent.put(goalVertex, reachableAgents);
-            }else{
-                boxesInComponent.put(goalVertex, reachableBoxes);
-                agentsInComponent.put(goalVertex, reachableAgents);
+                //Add all the goals in the component with the reachable boxes and agents
+                for (Vertex goalsInComponent: goalVertices) {
+                   if (currentComponentVertices.contains(goalsInComponent)){
+                       boxesInComponent.put(goalsInComponent, reachableBoxes);
+                       agentsInComponent.put(goalsInComponent, reachableAgents);
+                    }
+                }
             }
         }
         //Remove all vertices that can't be visited from any goal cell as they will be outside of the walkable map
