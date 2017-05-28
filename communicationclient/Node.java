@@ -140,7 +140,8 @@ public class Node {
 					int newBoxRow = newAgentRow + Command.dirToRowChange(c.dir2);
 					int newBoxCol = newAgentCol + Command.dirToColChange(c.dir2);
 					// .. and that new cell of box is free
-					if (this.cellIsFree(newBoxRow, newBoxCol)) {
+					if (this.cellIsFree(newBoxRow, newBoxCol) ) {
+						//boolean b = this.boxAt(newBoxRow,newBoxCol); // If there is a box where we want to push our box. It should be considered a potentialBox - boxAt will make it so.
 						Node n = this.ChildNode();
 						n.action = c;
 						n.agentRow = newAgentRow;
@@ -190,7 +191,7 @@ public class Node {
 		Box box = this.boxes[row][col];
 		if(box!=null){
 			if( box.getBoxColor() == this.agentColor){
-				return  true;
+				return true;
 			}else{
 				if(!potentialBoxesAdded.contains(box)){
 					potentialBoxes.add(box);
