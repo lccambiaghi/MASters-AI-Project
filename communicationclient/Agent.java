@@ -130,6 +130,10 @@ public class Agent {
                 this.potentialBoxes=leafNode.getPotentialBoxes();
                 return null;
             }
+            if(this.strategy.countFrontier()>100000){
+                this.potentialBoxes=leafNode.getPotentialBoxes();
+                return null;
+            }
             leafNode = this.strategy.getAndRemoveLeaf();
             if (leafNode.isGoalState()) {
                 plan = leafNode.extractPlan();
