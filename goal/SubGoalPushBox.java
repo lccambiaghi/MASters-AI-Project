@@ -71,7 +71,9 @@ public class SubGoalPushBox extends GoalBoxToCell {
                     h += HeuristicHelper.keepRight(n);
 
                 }else{
-                    h = 1000;
+                    h = 10;
+                    h += HeuristicHelper.goalCount(n);
+                    h += HeuristicHelper.keepRight(n);
                 }
                 break;
             case Push:
@@ -84,7 +86,9 @@ public class SubGoalPushBox extends GoalBoxToCell {
                     h += HeuristicHelper.keepRight(n);
                 }
                 else{
-                    h=1000;//Punish wrong box
+                    h=10;//Punish wrong box
+                    h += HeuristicHelper.goalCount(n);
+                    h += HeuristicHelper.keepRight(n);
                 }
 
                 break;

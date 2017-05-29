@@ -130,7 +130,7 @@ public class Agent {
                 this.potentialBoxes=leafNode.getPotentialBoxes();
                 return null;
             }
-            if(this.strategy.countFrontier()>100000){
+            if(this.strategy.countFrontier()>500000){
                 this.potentialBoxes=leafNode.getPotentialBoxes();
                 return null;
             }
