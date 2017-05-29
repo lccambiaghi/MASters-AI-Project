@@ -1,0 +1,114 @@
++++++++++++++++++++++++++++++
++B b                       A+
++                           +
++   a   0                   +
++++++++++++++++++++++++++++++
++   A                   a  B+
++                           +
++                           +
++       1                  b+
++++++++++++++++++++++++++++++
+
+[Move(N), NoOp];224
+[Move(N), NoOp];0
+[Move(E), NoOp];1
+[Move(E), NoOp];0
+[Move(E), NoOp];0
+[Move(E), NoOp];0
+[Move(E), NoOp];0
+[Move(E), NoOp];1
+[Move(E), NoOp];0
+[Move(E), NoOp];0
+[Move(E), NoOp];0
+[Move(E), NoOp];0
+[Move(E), NoOp];1
+[Move(E), NoOp];0
+[Move(E), NoOp];0
+[Move(E), NoOp];0
+[Move(E), NoOp];0
+[Move(E), NoOp];0
+[Move(E), NoOp];0
+[Move(E), NoOp];1
+[Pull(W,E), NoOp];0
+[Pull(W,E), NoOp];0
+[Pull(W,E), NoOp];0
+[Pull(W,E), NoOp];0
+[Pull(W,E), NoOp];0
+[Pull(W,E), NoOp];0
+[Pull(W,E), NoOp];0
+[Pull(W,E), NoOp];0
+[Pull(W,E), NoOp];0
+[Pull(W,E), Move(N)];0
+[Pull(W,E), Move(E)];0
+[Pull(W,E), Move(E)];0
+[Pull(W,E), Move(E)];0
+[Pull(W,E), Move(N)];0
+[Pull(W,E), Move(N)];0
+[Pull(W,E), Move(E)];0
+[Pull(W,E), Move(E)];1
+[Pull(W,E), Move(E)];0
+[Pull(W,E), Move(E)];0
+[Pull(W,E), Move(E)];0
+[Pull(W,E), Move(E)];0
+[Pull(W,E), Move(E)];0
+[Pull(W,E), Move(E)];1
+[Push(E,S), Move(E)];0
+[Push(S,S), Move(E)];0
+[Move(W), Move(E)];0
+[Move(N), Move(E)];0
+[Move(W), Move(E)];0
+[Pull(E,W), Move(E)];0
+[Pull(S,W), Move(E)];0
+[NoOp, Push(E,S)];0
+[NoOp, Push(S,S)];0
+[NoOp, Push(S,S)];0
+[NoOp, Move(N)];0
+[NoOp, Move(N)];1
+[NoOp, Move(W)];0
+[NoOp, Move(W)];0
+[NoOp, Move(W)];0
+[NoOp, Move(W)];0
+[NoOp, Move(W)];0
+[NoOp, Move(W)];0
+[NoOp, Move(W)];0
+[NoOp, Move(W)];1
+[NoOp, Move(W)];0
+[NoOp, Move(W)];0
+[NoOp, Move(W)];0
+[NoOp, Move(W)];0
+[NoOp, Move(W)];0
+[NoOp, Move(W)];0
+[NoOp, Move(W)];0
+[NoOp, Move(W)];1
+[NoOp, Move(W)];0
+[NoOp, Move(W)];0
+[NoOp, Move(W)];0
+[NoOp, Move(W)];0
+[NoOp, Move(W)];0
+[NoOp, Move(W)];0
+[NoOp, Pull(E,W)];0
+[NoOp, Pull(S,W)];1
+[NoOp, Push(N,E)];0
+[NoOp, Push(E,E)];0
+[NoOp, Push(E,E)];0
+[NoOp, Push(E,E)];0
+[NoOp, Push(E,E)];0
+[NoOp, Push(E,E)];0
+[NoOp, Push(E,E)];1
+[NoOp, Push(E,E)];0
+[NoOp, Push(E,E)];0
+[NoOp, Push(E,E)];0
+[NoOp, Push(E,E)];0
+[NoOp, Push(E,E)];0
+[NoOp, Push(E,E)];0
+[NoOp, Push(E,E)];1
+[NoOp, Push(E,E)];0
+[NoOp, Push(E,E)];0
+[NoOp, Push(E,E)];0
+[NoOp, Push(E,E)];0
+3f6351c51866644b64183bf7e631a86c7e531e2f
+successful
+236
+97
+7b41c5355a9f010b2ce6ac0e5133783ff84d8668
+1496095381655
