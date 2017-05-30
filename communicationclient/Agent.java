@@ -43,7 +43,8 @@ public class Agent {
     }
 
     public void refineBoxToChar(GoalBoxToCell goal){
-        System.err.println("Agent " + this.id + " started planning");
+
+        //System.err.println("Agent " + this.id + " started planning");
 
         Box goalBox = goal.getBox();
         if (goalBox.getDestination() != null) { // if box has a goal assigned
@@ -52,7 +53,7 @@ public class Agent {
                 this.subGoals.addLast(subgoal);
             }
         }
-        System.err.println("Agent " + this.id + " planned " + subGoals.size() + "subgoals");
+        //System.err.println("Agent " + this.id + " planned " + subGoals.size() + "subgoals");
         //return subGoals;
     }
     public LinkedList<Node> searchGoal(Goal goal){
@@ -83,7 +84,7 @@ public class Agent {
 
 
     private LinkedList<Node> searchSubGoal(Goal subGoal) {
-        System.err.println("Agent " + getId() + " started search for subgoal: "+subGoal.toString()+" with strategy " + this.strategy.toString());
+        //System.err.println("Agent " + getId() + " started search for subgoal: "+subGoal.toString()+" with strategy " + this.strategy.toString());
         Node initialNode = new Node(subGoal, this);
         //TODO make sure position is updated
         HashSet<Box> allBoxes = Level.getInstance().getAllBoxes();
@@ -111,6 +112,11 @@ public class Agent {
             SubGoalMoveToBox sub = (SubGoalMoveToBox) subGoal;
             initialNode.addBox(sub.getBox());
         }
+        //Always add box to get to
+        if(subGoal instanceof SubGoalPushBox){
+            SubGoalPushBox sub = (SubGoalPushBox) subGoal;
+            initialNode.addBox(sub.getBox());
+        }
 
         initialNode.agentRow = this.agentRow;
         initialNode.agentCol = this.agentCol;
@@ -123,15 +129,33 @@ public class Agent {
         Node leafNode = null;
         while (true) {
             if (iterations == 1000) {
-                System.err.println(this.strategy.searchStatus());
+//                System.err.println(this.strategy.searchStatus());
                 iterations = 0;
             }
             if (this.strategy.frontierIsEmpty()) {
                 this.potentialBoxes=leafNode.getPotentialBoxes();
+                if(subGoal instanceof SubGoalMoveToBox){
+                    SubGoalMoveToBox sub = (SubGoalMoveToBox) subGoal;
+                    this.potentialBoxes.removeAll(Collections.singleton(sub.getBox()));
+                }
+                //Always add box to get to
+                if(subGoal instanceof SubGoalPushBox){
+                    SubGoalPushBox sub = (SubGoalPushBox) subGoal;
+                    this.potentialBoxes.removeAll(Collections.singleton(sub.getBox()));
+                }
                 return null;
             }
-            if(this.strategy.countFrontier()>500000){
+            if(this.strategy.countFrontier()>200000){
                 this.potentialBoxes=leafNode.getPotentialBoxes();
+                if(subGoal instanceof SubGoalMoveToBox){
+                    SubGoalMoveToBox sub = (SubGoalMoveToBox) subGoal;
+                    this.potentialBoxes.removeAll(Collections.singleton(sub.getBox()));
+                }
+                //Always add box to get to
+                if(subGoal instanceof SubGoalPushBox){
+                    SubGoalPushBox sub = (SubGoalPushBox) subGoal;
+                    this.potentialBoxes.removeAll(Collections.singleton(sub.getBox()));
+                }
                 return null;
             }
             leafNode = this.strategy.getAndRemoveLeaf();
@@ -166,12 +190,17 @@ public class Agent {
 
         // Reset level instance so other agents can plan from our initialNode
         resetLevelInstance(this.getGoalSolution());
-
-        for (Box b:this.getRemovedBoxes()) {
+        ArrayList<Box> boxesToRemove = new ArrayList<>();
+        for (Box b: this.getRemovedBoxes()) {
+            for (Node n: this.getGoalSolution()){
+                if (b.getRow()==n.agentRow && b.getCol()==n.agentCol||(b.getRow()==n.boxMovedRow&&b.getCol()==n.boxMovedCol)) boxesToRemove.add(b);
+            }
+        }
+        for (Box b:boxesToRemove) {
             LinkedList<Node> agentRequestCells = this.getGoalSolution();
             //Search for free space
             Goal freeAgent = new GoalFreeAgent(b,agentRequestCells, this);
-            int newGoalPriority = goal.getPriority()-1 > 0 ? -1 : goal.getPriority()-1; // Trying to set it with lowest priority
+            int newGoalPriority = goal.getPriority()-1 > 0 ? goal.getPriority()-1: -1 ; // Trying to set it with lowest priority
             freeAgent.setPriority(newGoalPriority);//High priority
             MsgContent content = new MsgContent(agentRequestCells);
             Message freeMeRequest = new GoalMessage(MsgType.request,freeAgent, content,this.getId());
@@ -307,7 +336,6 @@ public class Agent {
                 // check if there is a conflict
                 // if yes, send back request
                 LinkedList<Node> otherAgentSolution = message.getContent().getContent();
-
                 ArrayList<ResourceRequest> otherAgentResourceRequest = message.getContent().getResourceRequests();
                 ArrayList<ResourceRequest> conflictingRessources = new ArrayList<>();
                 //TODO this might not be enough as we are not reserving for the full time but only at one timestep
@@ -353,16 +381,17 @@ public class Agent {
                                     break;
                                 case agentInTheWay:
                                     // Create subgoalmoveouttheway and approve agents plan
-                                    System.err.println("GoalMoveOutTheWay created for " + this.getId() +" after conflict with " + otherAgentSolution.getFirst().agentId);
+                                    //System.err.println("GoalMoveOutTheWay created for " + this.getId() +" after conflict with " + otherAgentSolution.getFirst().agentId);
                                     Goal moveOutTheWay = new GoalMoveOutTheWay(otherAgentSolution);
-                                    moveOutTheWay.setPriority(1);
+                                    int newPriority = otherAgentSolution.getFirst().getSubGoal().getPriority()-1;
+                                    moveOutTheWay.setPriority(newPriority);
                                     moveOutTheWay.setAgent(this);
                                     planner.addGoal(moveOutTheWay);
                                     content = new MsgContent(otherAgentSolution);
                                     response = new Message(MsgType.await, content, id); // Return await, to make the other agent replan later
                                     break loop;
                                 default:
-                                    System.err.println("Could not determine the type of conflict");
+                                    //System.err.println("Could not determine the type of conflict");
                                     break;
                             }
                         }

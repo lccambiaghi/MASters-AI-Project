@@ -37,6 +37,8 @@ public class GoalFreeAgent extends Goal{
             toCell = new SubGoalMoveBoxOutTheWay(this.box, this.requestedCells, agentToFree);
             subgoals.add(toBox);
             subgoals.add(toCell);
+            toBox.setPriority(this.priority);
+            toCell.setPriority(this.priority);
         }
         isRefined=true;
 

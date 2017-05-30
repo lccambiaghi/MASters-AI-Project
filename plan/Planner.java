@@ -49,12 +49,12 @@ public class Planner {
 
                 agent.callForHelp(goal); // Pass in the goal so that we can set the priority of the newly created goal to be lower
 
-                System.err.println(agent.getStrategy().searchStatus());
-                System.err.println("Agent " + agent.getId() + " has called for help.");
+                //System.err.println(agent.getStrategy().searchStatus());
+                //System.err.println("Agent " + agent.getId() + " has called for help.");
             } else {
-                System.err.println("\nSummary for " + agent.getStrategy().toString() + " for agent " + agent.getId() + ": "+goal.toString());
-                System.err.println("Found solution of length " + goalSolution.size());
-                System.err.println(agent.getStrategy().searchStatus());
+                //System.err.println("\nSummary for " + agent.getStrategy().toString() + " for agent " + agent.getId() + ": "+goal.toString());
+                //System.err.println("Found solution of length " + goalSolution.size());
+                //System.err.println(agent.getStrategy().searchStatus());
                 agent.setNumberOfGoals(agent.getNumberOfGoals()-1);
 
                 // goalSolution found

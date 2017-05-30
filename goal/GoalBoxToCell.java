@@ -39,6 +39,8 @@ public class GoalBoxToCell extends Goal {
             toChar = new SubGoalPushBox(this.box, this.destination);
             subgoals.add(toBox);
             subgoals.add(toChar);
+            toBox.setPriority(this.priority);
+            toChar.setPriority(this.priority);
         }
         isRefined = true;
 

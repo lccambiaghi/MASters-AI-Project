@@ -105,10 +105,14 @@ public class ConflictDetector {
                             return new Conflict(conflictPoint,Conflict.type.agentbox,n,thisAgentNode);
                         }
                     }
-
                     if(thisAgentNode.boxMoved != null){
                         Point thisAgentBoxMoved = new Point(thisAgentNode.boxMovedRow,thisAgentNode.boxMovedCol);
+                        Point thisAgentBoxMovedBefore = new Point(thisAgentNode.oldBoxMovedRow,thisAgentNode.oldBoxMovedCol);
+
                         if(thisAgentBoxMoved.equals(otherAgentPointBefore)){
+                            return new Conflict(conflictPoint,Conflict.type.agentbox,otherAgentNodeBefore,thisAgentNode);
+                        }
+                        if(thisAgentBoxMovedBefore.equals(otherAgentPoint)){
                             return new Conflict(conflictPoint,Conflict.type.agentbox,otherAgentNodeBefore,thisAgentNode);
                         }
                     }

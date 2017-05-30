@@ -19,6 +19,7 @@ public class SubGoalMoveBoxOutTheWay extends GoalFreeAgent {
         super(box, requestedCells,agentToFree);
         for (Node n: requestedCells) {
             this.requestedCells.add(new Cell(n.agentRow,n.agentCol));
+            if(n.boxMoved!=null) this.requestedCells.add(new Cell(n.boxMovedRow,n.boxMovedCol));
         }
     }
     @Override
@@ -31,6 +32,9 @@ public class SubGoalMoveBoxOutTheWay extends GoalFreeAgent {
             if (box!=null){
                 if(this.box==box) return false;
             }
+//            if(node.boxMoved!=null){
+//                if(c.getRow()==node.boxMovedRow&&c.getCol()==node.boxMovedCol) return false;
+//            }
         }
         return true;
     }

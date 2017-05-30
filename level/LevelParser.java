@@ -29,7 +29,7 @@ public class LevelParser {
         // If debug==true, our client parses the level instead of receiving it from the server
         if(this.debug){
             FileInputStream fis = null;
-            fis = new FileInputStream("C:\\Users\\salik\\Documents\\02285-MASters-prog_proj\\competition_levels\\MAGroupOne.lvl");
+            fis = new FileInputStream("C:\\Users\\salik\\Documents\\02285-MASters-prog_proj\\competition_levels\\MAEvilCorp.lvl");
             in = new BufferedReader(new InputStreamReader(fis));
         }else{
             in = new BufferedReader(new InputStreamReader(System.in));
@@ -82,14 +82,14 @@ public class LevelParser {
         Level level = Level.createInstance(MAX_ROW, MAX_COL);
 
         if(this.debug){
-            System.err.println(" ");
-            System.err.println("Debug is ON. Printing scanned map");
+            //System.err.println(" ");
+            //System.err.println("Debug is ON. Printing scanned map");
 
             for (String lineInMap: map) {
-                System.err.println(lineInMap);
+                //System.err.println(lineInMap);
             }
 
-            System.err.println(" ");
+            //System.err.println(" ");
         }
 
         row = 0;
@@ -142,7 +142,9 @@ public class LevelParser {
                         level.setAgentInColorMap(newAgent);
                         v.setAgent(newAgent);
                         graph.addVertex(v);
-                        System.err.println("Agent " + newAgent.getId() + " created, Color is " + newAgent.getColor().toString());
+                        if(this.debug) {
+                            //System.err.println("Agent " + newAgent.getId() + " created, Color is " + newAgent.getColor().toString());
+                        }
                     }
                 }
                 row++;
@@ -150,8 +152,9 @@ public class LevelParser {
         }
         // TODO is it the right place? Move it in the LevelAnalyzer?
         graph.createGraph();
-        System.err.println("*--------------------------------------*");
-
+        if(this.debug) {
+            //System.err.println("*--------------------------------------*");
+        }
     }
 
     public Graph getGraph() {
