@@ -84,7 +84,7 @@ public class Agent {
 
 
     private LinkedList<Node> searchSubGoal(Goal subGoal) {
-        //System.err.println("Agent " + getId() + " started search for subgoal: "+subGoal.toString()+" with strategy " + this.strategy.toString());
+        System.err.println("Agent " + getId() + " started search for subgoal: "+subGoal.toString()+" with strategy " + this.strategy.toString());
         Node initialNode = new Node(subGoal, this);
         //TODO make sure position is updated
         HashSet<Box> allBoxes = Level.getInstance().getAllBoxes();
@@ -129,7 +129,7 @@ public class Agent {
         Node leafNode = null;
         while (true) {
             if (iterations == 1000) {
-//                System.err.println(this.strategy.searchStatus());
+                System.err.println(this.strategy.searchStatus());
                 iterations = 0;
             }
             if (this.strategy.frontierIsEmpty()) {
@@ -204,6 +204,7 @@ public class Agent {
             freeAgent.setPriority(newGoalPriority);//High priority
             MsgContent content = new MsgContent(agentRequestCells);
             Message freeMeRequest = new GoalMessage(MsgType.request,freeAgent, content,this.getId());
+            freeMeRequest.setContentStart(this.combinedSolution.size());
             this.broadcastMessage(freeMeRequest);
             this.checkReplies(freeMeRequest);
             planner.addGoal(freeAgent);
@@ -353,7 +354,7 @@ public class Agent {
                     int lastTimestepConflict = conflictingRessources.get(conflictingRessources.size()-1).getTimestep();
                     int waitTime = lastTimestepConflict-firstTimestepConflict+1;
                     for (int i = 0; i < waitTime;i++){
-                        otherAgentSolution = padNoOpNodeAtIndex(otherAgentSolution, firstTimestepConflict-solutionStart);
+//                        otherAgentSolution = padNoOpNodeAtIndex(otherAgentSolution, firstTimestepConflict-solutionStart);
                     }
                 }
 

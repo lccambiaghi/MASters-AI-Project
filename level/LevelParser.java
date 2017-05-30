@@ -29,7 +29,7 @@ public class LevelParser {
         // If debug==true, our client parses the level instead of receiving it from the server
         if(this.debug){
             FileInputStream fis = null;
-            fis = new FileInputStream("C:\\Users\\salik\\Documents\\02285-MASters-prog_proj\\competition_levels\\MAEvilCorp.lvl");
+            fis = new FileInputStream("C:\\Users\\salik\\Documents\\02285-MASters-prog_proj\\competition_levels\\MAOmnics.lvl");
             in = new BufferedReader(new InputStreamReader(fis));
         }else{
             in = new BufferedReader(new InputStreamReader(System.in));
@@ -118,6 +118,8 @@ public class LevelParser {
                         graph.addVertex(v);
                         if(colorLevel) {
                             Color boxColor = colors.get(chr);
+
+                            if(boxColor == null) boxColor = Color.blue;
                             box.setColor(boxColor);
                         }
                         level.addBox(box);

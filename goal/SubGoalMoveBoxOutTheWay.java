@@ -49,8 +49,7 @@ public class SubGoalMoveBoxOutTheWay extends GoalFreeAgent {
 //        int goalCharCol = destination.getCol();
 
         Integer h=0;
-//        h = HeuristicHelper.manhattanDistance(boxRow, boxCol, goalCharRow, goalCharCol);
-
+//        h = HeuristicHelper.goalCount(n);
         return h;
     }
     @Override

@@ -59,7 +59,9 @@ public class SubGoalPushBox extends GoalBoxToCell {
         }
         switch (action.actionType){
             case Move:
-                    h=1000;
+                h=10;//Punish a move
+                h += HeuristicHelper.goalCount(n);
+                h += HeuristicHelper.keepRight(n);
                 break;
             case Pull:
                 newBoxRow = n.boxMovedRow;
@@ -69,6 +71,7 @@ public class SubGoalPushBox extends GoalBoxToCell {
                     h = HeuristicHelper.manhattanDistance(newBoxRow, newBoxCol, goalCharRow, goalCharCol);
                     h += HeuristicHelper.goalCount(n);
                     h += HeuristicHelper.keepRight(n);
+                    h += 0;//Add a small penalty for pulling
 
                 }else{
                     h = 10;
