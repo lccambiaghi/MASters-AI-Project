@@ -69,13 +69,27 @@ public class ConflictDetector {
 
                 Node thisAgentNodeBefore = timeMap.get(timeStep+solutionStart).parent;
                 Point thisAgentPointBefore = new Point(thisAgentNodeBefore.agentRow,thisAgentNodeBefore.agentCol);
-
                 Node otherAgentNodeBefore = n.parent;
                 Point otherAgentPointBefore = new Point(otherAgentNodeBefore.agentRow,otherAgentNodeBefore.agentCol);
+
                 if(n.boxMoved != null){
                     Point otherAgentBoxMoved = new Point(n.boxMovedRow,n.boxMovedCol);
+                    Point otherAgentBoxMovedBefore = new Point(n.oldBoxMovedRow,n.oldBoxMovedCol);
                     if(otherAgentBoxMoved.equals(thisAgentPoint) || otherAgentBoxMoved.equals(thisAgentPointBefore)){
                         return new Conflict(conflictPoint,Conflict.type.agentbox,n,thisAgentNode);
+                    }
+                    if(otherAgentBoxMovedBefore.equals(thisAgentPoint)|| otherAgentBoxMovedBefore.equals(thisAgentPointBefore)){
+                        return new Conflict(conflictPoint,Conflict.type.agentbox,n,thisAgentNode);
+                    }
+                    if(thisAgentNode.boxMoved != null){
+                        Point thisAgentBoxMoved = new Point(thisAgentNode.boxMovedRow,thisAgentNode.boxMovedCol);
+                        Point thisAgentBoxMovedBefore = new Point(thisAgentNode.oldBoxMovedRow,thisAgentNode.oldBoxMovedCol);
+                        if(thisAgentBoxMoved.equals(otherAgentBoxMovedBefore)|| thisAgentBoxMoved.equals(otherAgentBoxMoved)){
+                            return new Conflict(conflictPoint,Conflict.type.boxbox,otherAgentNodeBefore,thisAgentNode);
+                        }
+                        if(thisAgentBoxMovedBefore.equals(otherAgentBoxMoved)|| thisAgentBoxMovedBefore.equals(otherAgentBoxMovedBefore)){
+                            return new Conflict(conflictPoint,Conflict.type.boxbox,otherAgentNodeBefore,thisAgentNode);
+                        }
                     }
                 }
                 if(thisAgentNode.boxMoved != null){

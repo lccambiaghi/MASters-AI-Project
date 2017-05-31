@@ -354,7 +354,7 @@ public class Agent {
                     int lastTimestepConflict = conflictingRessources.get(conflictingRessources.size()-1).getTimestep();
                     int waitTime = lastTimestepConflict-firstTimestepConflict+1;
                     for (int i = 0; i < waitTime;i++){
-//                        otherAgentSolution = padNoOpNodeAtIndex(otherAgentSolution, firstTimestepConflict-solutionStart);
+                        otherAgentSolution = padNoOpNodeAtIndex(otherAgentSolution, firstTimestepConflict-solutionStart);
                     }
                 }
 
