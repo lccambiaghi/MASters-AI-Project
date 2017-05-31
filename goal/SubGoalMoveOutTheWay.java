@@ -3,6 +3,7 @@ package goal;
 import communicationclient.Agent;
 import communicationclient.Command;
 import communicationclient.Node;
+import heuristic.HeuristicHelper;
 import level.Box;
 import level.Cell;
 
@@ -51,10 +52,12 @@ public class SubGoalMoveOutTheWay extends GoalMoveOutTheWay {
         }
         switch (action.actionType) { // Punish if he tries to move boxes
             case Pull:
-                h = 1000;
+//                h = 1000;
+                h= HeuristicHelper.goalCount(n);
                 break;
             case Push:
-                h = 1000;
+//                h = 1000;
+                h= HeuristicHelper.goalCount(n);
         }
         return h;
     }

@@ -57,7 +57,7 @@ public class CommunicationClient {
             response = in.readLine();
             error++;
         }
-        System.err.format("Server responded with %s to the inapplicable action: %s a timestep: %s\n", response, jointAction, error);
+        System.err.format("Server responded with %s to the inapplicable action: %s at timestep: %s\n", response, jointAction, error);
         // Here we could react after the response contains 'false'. Now we kill the client.
     }
 
@@ -67,17 +67,17 @@ public class CommunicationClient {
      */
     public static void main(String[] args) {
 
-        System.err.println("*--------------------------------------*");
-        System.err.println("|     CommunicationClient started      |");
-        System.err.println("*--------------------------------------*");
+        //System.err.println("*--------------------------------------*");
+        //System.err.println("|     CommunicationClient started      |");
+        //System.err.println("*--------------------------------------*");
         try {
             CommunicationClient client = new CommunicationClient();
-            Heuristic heuristic = new Heuristic.Greedy();
-//          Heuristic heuristic = new Heuristic.WeightedAStar(5);
+//            Heuristic heuristic = new Heuristic.Greedy();
+          Heuristic heuristic = new Heuristic.WeightedAStar(5);
 //          Heuristic heuristic = new Heuristic.AStar();
             Strategy strategy = new StrategyBestFirst(heuristic);
 
-            client.levelParser = new LevelParser(strategy,true);
+            client.levelParser = new LevelParser(strategy,false);
             client.levelParser.readMap();
 
             client.levelAnalyzer = new LevelAnalyzer(client.levelParser.getGraph());
@@ -103,7 +103,7 @@ public class CommunicationClient {
             client.solve();
 
         } catch (IOException ex) {
-            System.err.println("IOException thrown!");
+            //System.err.println("IOException thrown!");
         }
     }
 }

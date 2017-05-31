@@ -27,6 +27,7 @@ public class GoalMoveOutTheWay extends Goal {
         if (!isRefined){
             toCell = new SubGoalMoveOutTheWay(this.requestedCells);
             subgoals.add(toCell);
+            toCell.setPriority(this.priority);
         }
         isRefined=true;
 
